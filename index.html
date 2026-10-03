@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6B4EFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Business English Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: single column, max 720px, sticky top bar, thumb-zone actions at the bottom of each card. */
+:root{
+  --bg:#F7F8FA; --surface:#FFFFFF; --surface-2:#F0F1F5; --line:#E6E7EC;
+  --fg:#2D2F36; --muted:#7E818C;
+  --primary:#6B4EFF; --primary-ink:#FFFFFF; --primary-soft:#F0EDFF;
+  --dark:#383A42; --dark-ink:#FFFFFF; --yellow:#F8C53E;
+  --mint:#DDF1EF; --blue:#E0F0FD; --purple:#ECE8FD; --peach:#FFEBD6; --rose:#FCE6F1; --sand:#FEF3C7;
+  --ok:#0E9F6E; --ok-soft:#D9F5EA; --bad:#E5372B; --bad-soft:#FDE4E1; --warn:#B7791F; --warn-soft:#FDF1D6;
+  --shadow:0 10px 24px -12px rgba(40,30,90,.18);
+  --r-sm:10px; --r-md:14px; --r-lg:22px;
+  --font:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15161B; --surface:#1F2028; --surface-2:#282A34; --line:#343643;
+  --fg:#ECEDF2; --muted:#9A9DAB;
+  --primary:#8C76FF; --primary-ink:#FFFFFF; --primary-soft:#2B2552;
+  --dark:#ECEDF2; --dark-ink:#1F2028; --yellow:#E9B93A;
+  --mint:#1E3533; --blue:#1C2E40; --purple:#2A2545; --peach:#3A2C1F; --rose:#3A2231; --sand:#3A331C;
+  --ok:#34D399; --ok-soft:#173A2E; --bad:#FF6B5E; --bad-soft:#41211F; --warn:#F5B94A; --warn-soft:#3B3019;
+  --shadow:0 10px 24px -12px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15161B; --surface:#1F2028; --surface-2:#282A34; --line:#343643;
+  --fg:#ECEDF2; --muted:#9A9DAB;
+  --primary:#8C76FF; --primary-ink:#FFFFFF; --primary-soft:#2B2552;
+  --dark:#ECEDF2; --dark-ink:#1F2028; --yellow:#E9B93A;
+  --mint:#1E3533; --blue:#1C2E40; --purple:#2A2545; --peach:#3A2C1F; --rose:#3A2231; --sand:#3A331C;
+  --ok:#34D399; --ok-soft:#173A2E; --bad:#FF6B5E; --bad-soft:#41211F; --warn:#F5B94A; --warn-soft:#3B3019;
+  --shadow:0 10px 24px -12px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:8px 48px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);}
+.topbar-in{max-width:720px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.topbar h1{font-size:1.05rem;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress{height:4px;background:var(--line)}
+.progress>i{display:block;height:100%;width:0;background:var(--primary);transition:width .35s ease}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.icon-btn svg{width:20px;height:20px}
+
+h2{font-size:1.45rem;line-height:1.25;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h3{font-size:1.05rem;margin:0}
+.eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2>*{min-width:0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow)}
+.tile{border:0;text-align:left;border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;gap:4px;min-height:112px;justify-content:space-between;transition:transform .15s}
+.tile:active{transform:scale(.97)}
+.tile .big{font-size:1.9rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.tile small{color:var(--muted);font-weight:500}
+.t-mint{background:var(--mint)}.t-blue{background:var(--blue)}.t-purple{background:var(--purple)}.t-peach{background:var(--peach)}.t-rose{background:var(--rose)}.t-sand{background:var(--sand)}
+.t-dark{background:var(--dark);color:var(--dark-ink)}.t-dark small,.t-dark .eyebrow{color:var(--dark-ink);opacity:.7}
+
+.btn{border:0;border-radius:999px;padding:14px 20px;font-weight:600;background:var(--primary);color:var(--primary-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1;min-height:50px;transition:transform .12s,opacity .12s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.soft{background:var(--surface-2);color:var(--fg)}
+.btn.small{padding:8px 14px;min-height:0;flex:0 0 auto;font-size:.85rem}
+.actions{display:flex;gap:10px;margin-top:18px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.85rem;font-weight:500;white-space:nowrap}
+.chip.on{background:var(--dark);color:var(--dark-ink);border-color:var(--dark)}
+.seg{display:flex;background:var(--surface-2);border-radius:999px;padding:4px}
+.seg button{flex:1;border:0;background:transparent;border-radius:999px;padding:8px 10px;font-weight:600;font-size:.85rem}
+.seg button.on{background:var(--surface);box-shadow:var(--shadow)}
+
+.deck{display:flex;gap:14px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-lg);padding:18px;text-align:left;width:100%}
+.deck .ico{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.deck .ico svg{width:26px;height:26px}
+.deck .meta{flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-variant-numeric:tabular-nums}
+.pill.due{background:var(--primary-soft);color:var(--primary)}
+.pill.new{background:var(--warn-soft);color:var(--warn)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+
+/* flashcard */
+.flip{perspective:1200px;cursor:pointer;user-select:none}
+.flip-in{display:grid;transition:transform .5s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 20px;min-height:240px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.face.back{transform:rotateY(180deg);background:var(--primary-soft);border-color:transparent}
+.phrase{font-size:clamp(1.35rem,5.5vw,1.9rem);font-weight:700;line-height:1.25;text-wrap:balance}
+.trans{font-size:1.1rem;font-weight:600;color:var(--primary)}
+.note{background:var(--surface-2);border-radius:var(--r-md);padding:12px 14px;font-size:.9rem}
+.face.back .note{background:var(--surface)}
+.note b{display:block;font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--primary);margin-bottom:2px}
+.hint{font-size:.8rem;color:var(--muted)}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.grade{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:10px 4px;font-weight:600;font-size:.9rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+.grade small{font-weight:500;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.grade.again{color:var(--bad)}.grade.easy{color:var(--ok)}
+
+.opt{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:15px 16px;font-weight:500}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+
+.zone{min-height:72px;border:2px dashed var(--line);border-radius:var(--r-md);padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;background:var(--surface-2)}
+.tok{border:0;border-radius:10px;padding:9px 13px;font-weight:500;background:var(--primary);color:var(--primary-ink)}
+.tok.pool{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pairs>div{display:flex;flex-direction:column;gap:10px;min-width:0}
+.pc{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:12px;min-height:64px;font-size:.88rem;font-weight:500;line-height:1.3;overflow-wrap:anywhere;hyphens:auto;transition:all .15s}
+.pc.r{border-style:dashed}
+.pc.sel{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.pc.done{opacity:.25;pointer-events:none}
+.pc.err{background:var(--bad-soft);border-color:var(--bad)}
+
+input[type=text],input[type=url],textarea,input[type=search]{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:14px 16px;font-size:16px}
+textarea{resize:vertical}
+.fb{border-radius:var(--r-md);padding:14px 16px;font-size:.92rem}
+.fb.ok{background:var(--ok-soft)}.fb.bad{background:var(--bad-soft)}.fb.warn{background:var(--warn-soft)}
+.diff del{color:var(--bad);text-decoration-thickness:2px}
+.diff ins{color:var(--ok);text-decoration:none;font-weight:600}
+.dlg{line-height:1.7;white-space:normal}
+.dlg .sp{font-family:var(--mono);font-size:.78rem;color:var(--muted);margin-right:6px}
+.dlg mark{background:var(--yellow);color:#2D2F36;border-radius:4px;padding:0 3px}
+.blank{display:inline-block;min-width:90px;border-bottom:2px solid var(--primary);color:var(--primary);font-weight:600}
+
+.audio{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.audio svg{width:20px;height:20px}
+
+.dict-row{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:10px}
+.dict-row:last-child{border-bottom:0}
+.dict-row .meta{flex:1;min-width:0}
+.dict-row details{margin-top:6px}
+.dict-row summary{font-size:.8rem;color:var(--primary);font-weight:600;cursor:pointer}
+
+.kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--muted)}
+.desk-only{display:none}
+@media (hover:hover) and (pointer:fine){.desk-only{display:inline}}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--dark);color:var(--dark-ink);padding:11px 20px;border-radius:999px;font-size:.9rem;font-weight:500;z-index:99;max-width:90%;text-align:center;box-shadow:var(--shadow);animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.spin{width:36px;height:36px;border:4px solid var(--line);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite;margin:24px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.week span{width:100%;border-radius:6px;background:var(--surface-2);display:block}
+@media (min-width:640px){.wrap{padding-block:16px 64px}.card{padding:28px}.tile{min-height:128px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <button class="icon-btn" id="backBtn" data-act="back" aria-label="Back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <h1 id="title">Business English</h1>
+    <button class="icon-btn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+</div>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ============================================================
+   Business English Trainer (offline edition)
+   - Data: two published Google Sheets (TSV). Cached in localStorage,
+     so after one successful load the app works with no network.
+   - Progress: SM-2 style spaced repetition, namespaced per deck.
+   - No AI calls. Everything below runs in the browser.
+   ============================================================ */
+
+// ---------- 1. Config & storage ----------
+const DEFAULT_SOURCES = {
+  phr: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv',
+  voc: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv'
+};
+const DECKS = {
+  phr: { name:'Phrases & Functions', short:'Phrases', sub:'Mode 1 · meeting language, dialogues', tone:'t-mint', icoBg:'var(--primary-soft)', icoFg:'var(--primary)' },
+  voc: { name:'Vocabulary & Chunks', short:'Vocabulary', sub:'Mode 2 · finance, workflow, idioms', tone:'t-peach', icoBg:'var(--peach)', icoFg:'var(--bad)' }
+};
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast('Could not save locally. Storage is full or blocked.'); } }
+};
+const K = { srs:'bet.srs.v2', data:'bet.data.v2', cfg:'bet.cfg.v2', log:'bet.log.v2' };
+
+let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', newPerDay:10, lessonSize:7, autoSpeak:true, theme:'system' }, LS.get(K.cfg, {}));
+let srs = LS.get(K.srs, {});
+let log = LS.get(K.log, {});        // { 'YYYY-MM-DD': {rev:n, ok:n} }
+let data = LS.get(K.data, { phr:null, voc:null }); // { items:[], at:ts }
+applyTheme();
+
+// One-time migration of the old shared SRS store (keys were bare ids, shared by both modes)
+(function migrate(){
+  const old = LS.get('businessEnglishSRS', null);
+  if (!old || LS.get('bet.migrated', false)) return;
+  Object.entries(old).forEach(([id, v]) => {
+    ['phr','voc'].forEach(d => { if (!srs[d+':'+id]) srs[d+':'+id] = { ivl:v.interval||0, ease:v.ease||2.5, due:v.nextReview||Date.now(), reps:v.interval?1:0, lapses:0, seen:true }; });
+  });
+  LS.set(K.srs, srs); LS.set('bet.migrated', true);
+})();
+
+// ---------- 2. Helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const today = (d=new Date()) => d.toISOString().slice(0,10);
+const DAY = 86400000, MIN = 60000;
+function toast(msg){ document.querySelector('.toast')?.remove(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
+function bar(p){ $('#bar').style.width = Math.max(0,Math.min(100,p))+'%'; }
+function applyTheme(){ const r=document.documentElement; if(cfg.theme==='system') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', cfg.theme); }
+let voices = [];
+function loadVoices(){ voices = (window.speechSynthesis?.getVoices()||[]).filter(v=>/^en[-_]/i.test(v.lang)); }
+if ('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text){
+  if(!('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(String(text).replace(/\*\*/g,''));
+  u.lang='en-US'; u.rate=0.92;
+  const v = voices.find(v=>/en-US/i.test(v.lang) && /natural|enhanced|premium|samantha|google/i.test(v.name)) || voices.find(v=>/en-US/i.test(v.lang));
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+const ICON = {
+  audio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+};
+const audioBtn = t => `<button class="audio" data-act="say" data-t="${esc(t)}" aria-label="Play audio">${ICON.audio}</button>`;
+
+// text normalisation + typo tolerance
+const norm = s => String(s).toLowerCase().replace(/[’']/g,"'").replace(/[^\p{L}\p{N}' ]+/gu,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=[...Array(n+1).keys()]; for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function check(input, target){
+  const a=norm(input), b=norm(target);
+  if (a===b) return 'exact';
+  const tol = b.length>20?3:b.length>8?2:b.length>4?1:0;
+  return lev(a.replace(/ /g,''), b.replace(/ /g,'')) <= tol ? 'typo' : 'wrong';
+}
+// word-level diff for feedback (LCS)
+function diff(input, target){
+  const A=input.trim().split(/\s+/), B=target.trim().split(/\s+/), n=A.length, m=B.length;
+  const L=Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j]= norm(A[i])===norm(B[j]) ? L[i+1][j+1]+1 : Math.max(L[i+1][j],L[i][j+1]);
+  let i=0,j=0,out=[];
+  while(i<n&&j<m){ if(norm(A[i])===norm(B[j])){out.push(esc(B[j]));i++;j++;} else if(L[i+1][j]>=L[i][j+1]){out.push('<del>'+esc(A[i])+'</del>');i++;} else {out.push('<ins>'+esc(B[j])+'</ins>');j++;} }
+  while(i<n) out.push('<del>'+esc(A[i++])+'</del>'); while(j<m) out.push('<ins>'+esc(B[j++])+'</ins>');
+  return out.join(' ');
+}
+
+// ---------- 3. Parsing (same column logic as before) ----------
+function splitTSV(t){ return t.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t').map(c=>c.trim())); }
+function parsePhr(t){
+  const rows=splitTSV(t); if(!rows.length) return [];
+  const h=rows[0].map(x=>x.toLowerCase()); const f=(p,d)=>{const i=h.findIndex(p);return i===-1?d:i;};
+  const id=f(x=>x==='#',0), en=f(x=>x.includes('universal phrase'),1), ru=f(x=>x.includes('native translation'),2),
+        cat=f(x=>x.includes('category'),3), intent=f(x=>x.includes('strategic intent'),4), dl=f(x=>x.includes('dialogue'),-1);
+  return rows.slice(1).filter(c=>c[en]&&c[ru]).map((c,i)=>({
+    deck:'phr', id:String(parseInt(c[id])||i+1), en:c[en], ru:c[ru], cat:c[cat]||'Uncategorized',
+    note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'') : ''
+  }));
+}
+function parseVoc(t){
+  const rows=splitTSV(t); if(!rows.length) return [];
+  const h=rows[0].map(x=>x.toLowerCase()); const has=k=>x=>k.some(w=>x.includes(w));
+  let en=h.findIndex(has(['en','english','phrase','фраза','английский'])), ru=h.findIndex(has(['ru','russian','translation','перевод','русский']));
+  const ctx=h.findIndex(has(['context','topic','контекст','тема'])), list=h.findIndex(has(['list','category','список','категория','раздел'])),
+        id=h.findIndex(x=>x==='id'), ex=h.findIndex(has(['explanation','объяснение','значение','meaning'])), exm=h.findIndex(has(['example','пример']));
+  const header = en>-1||ru>-1; if(en===-1) en=0; if(ru===-1) ru=1;
+  const rename = n => /1/.test(n)?'Hard Business':/2/.test(n)?'Workflow':/3/.test(n)?'Vibe & Idioms':n;
+  return rows.slice(header?1:0).filter(c=>c[en]&&c[ru]).map((c,i)=>({
+    deck:'voc', id:String((id>-1&&parseInt(c[id]))||i+1), en:c[en], ru:c[ru],
+    cat: rename(list>-1&&c[list]?c[list]:'Main List'), note:ex>-1?c[ex]||'':'', example:exm>-1?c[exm]||'':'',
+    ctx: ctx>-1?c[ctx]||'':'', dialogue:''
+  }));
+}
+const CAT_DESC = {
+  'Clarification':'Clarifying details and softly requesting elaboration without losing authority.',
+  'Polite Disagreement':'Politely disagreeing and diplomatically challenging a position.',
+  'Hedging':'Softening categorical statements to keep flexibility and limit risk.',
+  'Summarizing':'Summarizing outcomes and documenting agreements reached.',
+  'Elaborating & Exemplifying':'Expanding an argument and giving concrete business examples.',
+  'Returning to the point':'Steering the conversation back to the main topic.',
+  'Conceding a point':'Making a strategic concession to move a negotiation forward.',
+  'Floor Management':'Taking the floor politely or handing it to others.'
+};
+
+async function loadDeck(deck, {force=false}={}){
+  const cached = data[deck];
+  if (cached && !force) return cached;
+  try{
+    const r = await fetch(cfg.sources[deck], {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const items = (deck==='phr'?parsePhr:parseVoc)(await r.text());
+    if(!items.length) throw new Error('The sheet returned no rows');
+    data[deck] = { items, at:Date.now() }; LS.set(K.data, data);
+    return data[deck];
+  }catch(e){
+    if (cached){ toast('Offline. Using the copy saved '+fmtAgo(cached.at)+'.'); return cached; }
+    throw e;
+  }
+}
+function fmtAgo(ts){ const d=Math.round((Date.now()-ts)/DAY); return d<=0?'today':d===1?'yesterday':d+' days ago'; }
+
+// ---------- 4. Spaced repetition (SM-2 variant, 4 grades) ----------
+// again = relearn in 10 min · hard = ×1.2 · good = ×ease · easy = ×ease×1.3
+const keyOf = it => it.deck+':'+it.id;
+const card = it => srs[keyOf(it)];
+const isNew = it => !card(it);
+const isDue = it => { const c=card(it); return !!c && c.due <= Date.now(); };
+function preview(it, g){
+  const c = card(it) || {ivl:0, ease:2.5};
+  if (g==='again') return '10m';
+  let ivl = g==='hard' ? Math.max(1, Math.round(c.ivl*1.2)) : g==='good' ? (c.ivl===0?1:c.ivl===1?3:Math.round(c.ivl*c.ease)) : (c.ivl===0?4:Math.round(c.ivl*c.ease*1.3));
+  return ivl<30 ? ivl+'d' : (ivl/30).toFixed(1).replace('.0','')+'mo';
+}
+function grade(it, g){
+  const k=keyOf(it), c = srs[k] || {ivl:0, ease:2.5, reps:0, lapses:0};
+  if (g==='again'){ c.lapses=(c.lapses||0)+(c.reps?1:0); c.ivl=0; c.ease=Math.max(1.3,c.ease-0.2); c.due=Date.now()+10*MIN; }
+  else {
+    if (g==='hard'){ c.ivl=Math.max(1,Math.round(c.ivl*1.2)); c.ease=Math.max(1.3,c.ease-0.15); }
+    if (g==='good'){ c.ivl = c.ivl===0?1 : c.ivl===1?3 : Math.round(c.ivl*c.ease); }
+    if (g==='easy'){ c.ivl = c.ivl===0?4 : Math.round(c.ivl*c.ease*1.3); c.ease=Math.min(3.0,c.ease+0.15); }
+    const fuzz = c.ivl>2 ? Math.round(c.ivl*0.05*(Math.random()*2-1)) : 0;
+    c.due = startOfDay(Date.now()+(c.ivl+fuzz)*DAY);
+  }
+  c.reps=(c.reps||0)+1; c.last=Date.now(); srs[k]=c; LS.set(K.srs, srs);
+  bump(g!=='again');
+}
+// An error in a production exercise pulls the card back into today's queue
+function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,1); c.due=Date.now(); LS.set(K.srs,srs); }
+function startOfDay(ts){ const d=new Date(ts); d.setHours(4,0,0,0); return d.getTime(); }
+function bump(ok){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].rev++; if(ok) log[t].ok++; LS.set(K.log,log); }
+function newToday(deck){ return Object.entries(srs).filter(([k,c])=>k.startsWith(deck+':') && c.reps===1 && c.last && today(new Date(c.last))===today()).length; }
+function streak(){ let s=0, d=new Date(); if(!log[today(d)]) d.setDate(d.getDate()-1); while(log[today(d)]){ s++; d.setDate(d.getDate()-1);} return s; }
+function status(it){
+  const c=card(it); if(!c) return '<span class="pill new">New</span>';
+  if(c.due<=Date.now()) return '<span class="pill due">Due</span>';
+  const d=Math.ceil((c.due-Date.now())/DAY); return `<span class="pill ${c.ivl>=21?'ok':''}">${c.ivl>=21?'Mature · ':''}in ${d}d</span>`;
+}
+
+// ---------- 5. State & router ----------
+const st = { view:'home', deck:null, cat:'all', q:'', S:null };
+const pool = () => (data[st.deck]?.items||[]).filter(i=>st.cat==='all'||i.cat===st.cat);
+const actions = {};
+document.addEventListener('click', e => { const el=e.target.closest('[data-act]'); if(!el) return; const f=actions[el.dataset.act]; if(f){ e.preventDefault(); f(el.dataset, el, e); } });
+
+function go(view){ st.view=view; render(); window.scrollTo(0,0); }
+function render(){
+  const app=$('#app'); $('#backBtn').hidden = st.view==='home';
+  const V = { home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
+  if(st.view!=='session') bar(0);
+  $('#title').textContent = st.view==='home' ? 'Business English' : st.view==='settings' ? 'Settings' : DECKS[st.deck]?.short || '';
+  app.innerHTML = V[st.view]();
+  afterRender();
+}
+actions.back = () => {
+  if (st.view==='session' && st.S && st.S.step!=='summary'){ if(!st.S.confirmExit){ st.S.confirmExit=true; toast('Tap back again to leave. Progress so far is saved.'); return; } }
+  st.S=null; speechSynthesis?.cancel(); go(st.view==='deck'||st.view==='settings'?'home':'deck');
+};
+actions.say = d => speak(d.t);
+
+// ---------- 6. Home ----------
+function counts(deck){
+  const items=data[deck]?.items||[];
+  const due=items.filter(isDue).length, fresh=items.filter(isNew).length;
+  const newLeft=Math.max(0,cfg.newPerDay-newToday(deck));
+  return { total:items.length, due, fresh, newLeft:Math.min(newLeft,fresh) };
+}
+function vHome(){
+  const t=log[today()]||{rev:0,ok:0};
+  const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return {k:today(d),l:'MTWTFSS'[(d.getDay()+6)%7]};});
+  const mx=Math.max(10,...days.map(d=>log[d.k]?.rev||0));
+  const deckCard = k => { const c=counts(k), D=DECKS[k], loaded=!!data[k];
+    return `<button class="deck" data-act="openDeck" data-d="${k}">
+      <div class="ico" style="background:${D.icoBg};color:${D.icoFg}">${k==='phr'?ICON.chat:ICON.book}</div>
+      <div class="meta"><h3>${D.name}</h3><div class="muted" style="font-size:.85rem">${D.sub}</div>
+      <div class="row" style="margin-top:8px;gap:6px">${loaded?`<span class="pill due">${c.due} due</span><span class="pill new">${c.newLeft} new</span><span class="pill">${c.total} total</span>`:'<span class="pill">Tap to load</span>'}</div></div></button>`; };
+  return `<div class="stack">
+    <div class="card" style="background:var(--dark);color:var(--dark-ink);border:0">
+      <div class="eyebrow" style="color:inherit;opacity:.65">Today</div>
+      <div class="row" style="justify-content:space-between;align-items:flex-end;margin-top:6px">
+        <div><div style="font-size:2.2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${t.rev}</div><div style="opacity:.7;font-size:.85rem">reviews${t.rev?` · ${Math.round(t.ok/t.rev*100)}% recalled`:''}</div></div>
+        <div style="text-align:right"><div style="font-size:1.4rem;font-weight:700;color:var(--yellow)">${streak()} day${streak()===1?'':'s'}</div><div style="opacity:.7;font-size:.85rem">streak</div></div>
+      </div>
+      <div class="week">${days.map(d=>`<div><span style="height:${4+Math.round((log[d.k]?.rev||0)/mx*36)}px;background:${log[d.k]?'var(--yellow)':'rgba(127,127,127,.25)'}"></span>${d.l}</div>`).join('')}</div>
+    </div>
+    <div class="eyebrow">Your decks</div>
+    ${deckCard('phr')}${deckCard('voc')}
+    <p class="hint">Data is saved on this device after the first load, so practice works offline. Use Settings to refresh the sheets or move progress between phone and laptop.</p>
+  </div>`;
+}
+actions.openDeck = async d => {
+  st.deck=d.d; st.cat='all';
+  if(!data[d.d]){ go('loading'); try{ await loadDeck(d.d); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); } }
+  go('deck');
+};
+
+// ---------- 7. Deck dashboard ----------
+function vDeck(){
+  const D=DECKS[st.deck], items=data[st.deck].items, cats=[...new Set(items.map(i=>i.cat))];
+  const p=pool(), due=p.filter(isDue).length, fresh=p.filter(isNew).length, newLeft=Math.min(fresh,Math.max(0,cfg.newPerDay-newToday(st.deck)));
+  const withDlg=p.filter(i=>i.dialogue).length, isP=st.deck==='phr';
+  const desc = CAT_DESC[st.cat];
+  const ex = isP ? [
+    ['match','t-blue','Match','Recognise meaning'],['scramble','t-purple','Scramble','Rebuild word order'],
+    ['dialogue','t-peach','Dialogue','Read in context',withDlg],['cloze','t-rose','Fill the gap','Type phrase in dialogue',withDlg],
+    ['spell','t-sand','Recall','RU → type EN'],['pairs','t-mint','Quick pairs','Connect 6 pairs']
+  ] : [
+    ['match','t-blue','Match','Recognise meaning'],['pairs','t-peach','Quick pairs','Connect 6 pairs'],
+    ['spell','t-sand','Recall','RU → type EN'],['scramble','t-purple','Scramble','Rebuild word order']
+  ];
+  return `<div class="stack">
+    <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
+    <div class="chips">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(c)} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
+    ${desc?`<div class="note">${esc(desc)}</div>`:''}
+    <div class="card" style="background:var(--primary);color:var(--primary-ink);border:0">
+      <div class="eyebrow" style="color:inherit;opacity:.75">Daily lesson</div>
+      <div class="row" style="gap:18px;margin:8px 0 4px">
+        <div><div style="font-size:2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${due}</div><small style="opacity:.8">due</small></div>
+        <div><div style="font-size:2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${newLeft}</div><small style="opacity:.8">new today</small></div>
+      </div>
+      <p style="opacity:.85;font-size:.85rem;margin:6px 0 0">Review cards, then drill the ones you missed: ${isP?'match → scramble → fill the gap':'match → pairs → recall'}.</p>
+      <div class="actions">
+        <button class="btn" style="background:var(--surface);color:var(--fg)" data-act="lesson" ${due+newLeft?'':'disabled'}>Start lesson</button>
+        <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${due+newLeft?'':'disabled'}>Cards only</button>
+      </div>
+    </div>
+    <div class="eyebrow">Free practice · ${p.length} items</div>
+    <div class="grid2">${ex.map(([k,t,n,s,cnt])=>`<button class="tile ${t}" data-act="drill" data-k="${k}" ${cnt===0?'disabled style="opacity:.45"':''}><h3>${n}</h3><small>${s}${cnt!==undefined?` · ${cnt}`:''}</small></button>`).join('')}</div>
+    <button class="deck" data-act="dict" style="padding:14px 18px"><div class="meta"><h3>Dictionary</h3><small class="muted">Search, listen, see progress per item</small></div><span class="pill">${p.length}</span></button>
+    <div class="row muted" style="font-size:.8rem;justify-content:space-between">Loaded ${fmtAgo(data[st.deck].at)} <button class="btn ghost small" data-act="refresh">Refresh from sheet</button></div>
+  </div>`;
+}
+actions.cat = d => { st.cat=d.c; render(); };
+actions.dict = () => { st.q=''; go('dict'); };
+actions.refresh = async () => { toast('Refreshing…'); try{ await loadDeck(st.deck,{force:true}); toast('Updated: '+data[st.deck].items.length+' items'); render(); }catch(e){ toast('Refresh failed: '+e.message); } };
+
+// ---------- 8. Sessions ----------
+// A session is an ordered list of steps over a set of items.
+function reviewQueue(){
+  const p=pool(), now=Date.now();
+  const due=p.filter(isDue).sort((a,b)=>{const A=card(a),B=card(b); return (A.ivl===0?0:1)-(B.ivl===0?0:1) || A.ease-B.ease || A.due-B.due;});
+  const fresh=shuffle(p.filter(isNew)).slice(0,Math.max(0,cfg.newPerDay-newToday(st.deck)));
+  return [...due, ...fresh];
+}
+function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), done:0, confirmExit:false }, o); st.S.step=st.S.steps[0]; go('session'); }
+actions.lesson = () => {
+  const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','spell','summary'];
+  newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
+};
+actions.flash = () => { const q=reviewQueue(); if(!q.length) return toast('All caught up for today.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
+actions.drill = d => {
+  let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
+  if(!p.length) return toast('Nothing to practise in this filter.');
+  // weakest first: due, then low ease, then random
+  const w = it => { const c=card(it); return !c?1.5 : (c.due<=Date.now()?0:1) + c.ease/3; };
+  const items = shuffle(p).sort((a,b)=>w(a)-w(b)).slice(0, d.k==='pairs'?6:10);
+  newSession({ kind:'drill', items:shuffle(items), steps:[d.k,'summary'] });
+};
+function nextStep(){
+  const S=st.S; let idx=S.steps.indexOf(S.step)+1;
+  while(idx<S.steps.length){
+    const s=S.steps[idx];
+    if(s==='summary') break;
+    if(!S.items.length){ idx=S.steps.length-1; break; }
+    if(s==='cloze' && !S.items.some(i=>i.dialogue)){ idx++; continue; }
+    break;
+  }
+  S.step=S.steps[Math.min(idx,S.steps.length-1)]; S.i=0; S.sub=null;
+  if(S.step==='cloze') S.list=S.items.filter(i=>i.dialogue);
+  render(); window.scrollTo(0,0);
+}
+const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && st.S.step==='cloze' ? st.S.list : st.S.items);
+const cur = () => list()[st.S.i];
+function advance(){ const S=st.S; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
+const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
+const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
+const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`].filter(Boolean).join('');
+const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs' };
+function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
+  const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
+  return `<div class="row" style="justify-content:space-between;margin-bottom:12px"><span class="eyebrow">${stepLabel[S.step]}${stepN.length>1?` · step ${k+1}/${stepN.length}`:''}</span><span class="pill">${Math.min(S.i+1,L.length)} / ${L.length}</span></div>`; }
+
+function vSession(){
+  const S=st.S; if(!S) return '';
+  if(S.step==='summary') return vSummary();
+  if(!list().length){ setTimeout(nextStep); return ''; }
+  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs })[S.step]();
+}
+
+// 8a. Flashcard review with 4-grade SRS
+function vSort(){
+  const it=cur(), S=st.S, isEn=cfg.dir==='en-ru';
+  const gb=(g,l,n)=>`<button class="grade ${g}" data-act="grade" data-g="${g}">${l}<small>${preview(it,g)} <span class="kbd desk-only">${n}</span></small></button>`;
+  return `<div class="flip" id="flip" data-act="flip">
+    <div class="flip-in">
+      <div class="face"><div class="row" style="justify-content:space-between">${status(it)}<span class="pill">${esc(it.cat)}</span></div>
+        <div class="phrase" style="flex:1;display:flex;align-items:center">${esc(front(it))}</div>
+        <div class="row" style="justify-content:space-between"><span class="hint">Recall the meaning, then tap to flip <span class="kbd desk-only">Space</span></span>${isEn?audioBtn(it.en):''}</div></div>
+      <div class="face back"><div class="phrase" style="font-size:1.15rem;color:var(--muted)">${esc(front(it))}</div>
+        <div class="trans" style="font-size:1.35rem">${esc(back(it))}</div>${notes(it)}
+        <div class="row" style="justify-content:flex-end;margin-top:auto">${audioBtn(it.en)}</div></div>
+    </div></div>
+  <div id="grades" ${S.flipped?'':'hidden'}><div class="grades">${gb('again','Again',1)}${gb('hard','Hard',2)}${gb('good','Good',3)}${gb('easy','Easy',4)}</div>
+  ${S.kind==='lesson'?`<p class="hint" style="margin-top:10px">Again and Hard go into the practice set (${S.items.length}/${cfg.lessonSize}).</p>`:''}</div>
+  <div id="flipHint" ${S.flipped?'hidden':''} class="actions"><button class="btn soft" data-act="flip">Show answer</button></div>`;
+}
+actions.flip = () => { const S=st.S; const f=$('#flip'); if(!f) return; f.classList.toggle('on'); if(!S.flipped){ S.flipped=true; $('#grades').hidden=false; $('#flipHint').hidden=true; if(cfg.autoSpeak && cfg.dir==='ru-en') speak(cur().en);} };
+actions.grade = d => {
+  const S=st.S, it=cur(); grade(it,d.g); S.flipped=false; S.done++;
+  if(d.g==='again') S.misses.add(it);
+  if(S.kind==='lesson'){
+    if(d.g==='again' && !S.items.includes(it)) S.items.push(it);
+    else if(d.g==='hard') S.hard.push(it);
+    if(S.items.length>=cfg.lessonSize) return nextStep();
+    if(S.i+1>=S.queue.length){ S.items.push(...shuffle(S.hard).slice(0,cfg.lessonSize-S.items.length)); S.items=shuffle(S.items); }
+  }
+  advance();
+};
+
+// 8b. Memorise
+function vLearn(){ const it=cur(); return `<div class="card" style="background:var(--mint);border:0">
+  <div class="phrase">${esc(it.en)}</div><div class="trans" style="margin:8px 0 14px;color:var(--fg)">${esc(it.ru)}</div>${notes(it)}
+  <div class="actions" style="align-items:center">${audioBtn(it.en)}<button class="btn" data-act="next">Continue</button></div></div>`; }
+actions.next = () => advance();
+
+// 8c. Multiple choice (meaning recognition)
+function vMatch(){
+  const S=st.S, it=cur();
+  if(!S.sub){ const all=data[st.deck].items.filter(x=>x.id!==it.id&&back(x)!==back(it)); const same=all.filter(x=>x.cat===it.cat);
+    const d=shuffle(same.length>=3?same:all).slice(0,3); S.sub={opts:shuffle([it,...d]), tries:0}; }
+  return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${esc(front(it))}</div>${cfg.dir==='en-ru'?audioBtn(it.en):''}</div>
+  <div class="stack" style="margin-top:18px;gap:10px">${S.sub.opts.map((o,n)=>`<button class="opt" data-act="pick" data-n="${n}"><span class="kbd desk-only">${n+1}</span> ${esc(back(o))}</button>`).join('')}</div></div>`;
+}
+actions.pick = (d, el) => {
+  const S=st.S, it=cur(), o=S.sub.opts[+d.n];
+  if(o===it){ el.classList.add('right'); document.querySelectorAll('.opt').forEach(b=>b.disabled=true); if(cfg.autoSpeak) speak(it.en); setTimeout(advance, 650); }
+  else { el.classList.add('wrong'); el.disabled=true; S.sub.tries++; S.misses.add(it); }
+};
+
+// 8d. Scramble (word order)
+function vScramble(){
+  const S=st.S, it=cur();
+  if(!S.sub){ const w=it.en.trim().split(/\s+/).map((t,i)=>({t,i})); let p=shuffle(w); if(w.length>1&&p.every((x,k)=>x.i===k)) p=p.reverse(); S.sub={pool:p, pick:[], target:w.map(x=>x.t).join(' ')}; }
+  return `<div class="card"><div class="trans" style="color:var(--fg)">${esc(it.ru)}</div>${it.note?`<p class="hint" style="margin:6px 0 0">${esc(it.note)}</p>`:''}
+  <div class="zone" style="margin:16px 0 12px">${S.sub.pick.length?S.sub.pick.map((w,k)=>`<button class="tok" data-act="unpick" data-k="${k}">${esc(w.t)}</button>`).join(''):'<span class="hint" style="margin:auto">Tap words to build the phrase</span>'}</div>
+  <div class="row" style="gap:8px">${S.sub.pool.map((w,k)=>`<button class="tok pool" data-act="tok" data-k="${k}">${esc(w.t)}</button>`).join('')}</div>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions"><button class="btn ghost" data-act="reveal" style="flex:0 0 auto">Show</button><button class="btn" data-act="checkScr" ${S.sub.pool.length?'disabled':''}>Check</button></div></div>`;
+}
+actions.tok = d => { const s=st.S.sub; s.pick.push(s.pool.splice(+d.k,1)[0]); render(); };
+actions.unpick = d => { const s=st.S.sub; s.pool.push(s.pick.splice(+d.k,1)[0]); render(); };
+actions.checkScr = () => { const S=st.S, it=cur(), got=S.sub.pick.map(w=>w.t).join(' ');
+  if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok">Correct.</div>'; speak(it.en); setTimeout(advance,900); }
+  else { S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb bad diff">${diff(got,S.sub.target)}</div>`; } };
+actions.reveal = () => { const S=st.S, it=cur(); S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb warn"><b>${esc(it.en)}</b></div>`; speak(it.en);
+  setTimeout(()=>{ S.sub=null; render(); },2200); };
+
+// 8e. Dialogue read & cloze
+function fmtDialogue(text, mode){ // mode: 'show' | 'blank' | 'reveal'
+  let h=esc(text);
+  h = h.replace(/\*\*(.+?)\*\*/g, (_,m)=> mode==='blank' ? '<span class="blank">&nbsp;?&nbsp;</span>' : `<mark>${m}</mark>`);
+  return h.replace(/(^|\s)([AB]):\s*/g, (_,s,w)=>`${s?'<br><br>':''}<span class="sp">${w}</span>`).replace(/\n/g,'<br>');
+}
+function blankByPhrase(it){ return /\*\*/.test(it.dialogue) ? it.dialogue : it.dialogue.replace(new RegExp(it.en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'), m=>'**'+m+'**'); }
+const expected = it => (it.dialogue.match(/\*\*(.+?)\*\*/)||[])[1] || it.en;
+function vDialogue(){ const it=cur(); return `<div class="card"><div class="phrase" style="font-size:1.25rem">${esc(it.en)}</div><div class="muted">${esc(it.ru)}</div>
+  <div class="dlg note" style="margin-top:14px">${fmtDialogue(blankByPhrase(it),'show')}</div>
+  <div class="actions" style="align-items:center">${audioBtn(it.en)}<button class="btn" data-act="next">Continue</button></div></div>`; }
+function vCloze(){ const it=cur(); return `<div class="card"><div class="dlg note">${fmtDialogue(blankByPhrase(it),'blank')}</div>
+  <p style="margin:14px 0 8px"><b>Meaning:</b> ${esc(it.ru)}</p>${it.note?`<p class="hint" style="margin:0 0 12px">${esc(it.note)}</p>`:''}
+  <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the missing phrase"></form>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+
+// 8f. Recall (type the English)
+function vSpell(){ const it=cur(); const L=it.en.split(/\s+/).length;
+  return `<div class="card"><div class="trans" style="font-size:1.3rem;color:var(--fg)">${esc(it.ru)}</div>
+  <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(it.en.split(/\s+/)[0][0])}…”</p>
+  <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="English phrase"></form>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+actions.typeCheck = () => {
+  const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
+  const target = S.step==='cloze' ? expected(it) : it.en, r=check(v,target);
+  if(S.sub?.locked) return;
+  if(r==='wrong'){ S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb bad"><div class="diff">${diff(v,target)}</div><div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
+  S.sub={locked:true}; inp.disabled=true;
+  $('#fb').innerHTML = r==='exact' ? `<div class="fb ok">Correct.${S.step==='cloze'?`<div class="dlg" style="margin-top:8px">${fmtDialogue(blankByPhrase(it),'show')}</div>`:''}</div>`
+                                    : `<div class="fb warn">Accepted with a typo: <span class="diff">${diff(v,target)}</span></div>`;
+  speak(target); setTimeout(advance, S.step==='cloze'?2600:r==='exact'?900:2000);
+};
+actions.giveup = () => { const S=st.S, it=cur(), target=S.step==='cloze'?expected(it):it.en; S.misses.add(it); softLapse(it);
+  $('#fb').innerHTML=`<div class="fb warn">Answer: <b>${esc(target)}</b><div class="hint" style="margin-top:4px">Now type it once to lock it in.</div></div>`; speak(target); $('#ans').value=''; $('#ans').focus(); };
+
+// 8g. Quick pairs (boards of up to 6)
+function vPairs(){
+  const S=st.S;
+  if(!S.sub){ const start=S.i, chunk=S.items.slice(start,start+6); S.sub={chunk, L:shuffle(chunk), R:shuffle(chunk), sel:null, done:[]}; }
+  const s=S.sub, c=(it,side)=>`<button class="pc ${side==='r'?'r':''} ${s.done.includes(it)?'done':''} ${s.sel&&s.sel.it===it&&s.sel.side===side?'sel':''}" data-act="pair" data-side="${side}" data-k="${s.chunk.indexOf(it)}">${esc(side==='l'?it.en:it.ru)}</button>`;
+  return `<div class="pairs"><div>${s.L.map(i=>c(i,'l')).join('')}</div><div>${s.R.map(i=>c(i,'r')).join('')}</div></div>`;
+}
+actions.pair = (d, el) => {
+  const S=st.S, s=S.sub, it=s.chunk[+d.k];
+  if(!s.sel || s.sel.side===d.side){ s.sel = (s.sel&&s.sel.it===it&&s.sel.side===d.side)?null:{it,side:d.side}; if(d.side==='l'&&s.sel) speak(it.en); return render(); }
+  if(s.sel.it===it){ s.done.push(it); s.sel=null;
+    if(s.done.length===s.chunk.length){ S.i+=s.chunk.length; S.sub=null; render(); if(S.i>=S.items.length) setTimeout(nextStep,350); return; }
+    return render(); }
+  S.misses.add(it); S.misses.add(s.sel.it); el.classList.add('err'); document.querySelector('.pc.sel')?.classList.add('err');
+  setTimeout(()=>{ s.sel=null; render(); },380);
+};
+
+// 8h. Summary
+function vSummary(){
+  bar(100); const S=st.S, m=[...S.misses];
+  return `<div class="card" style="background:var(--mint);border:0;text-align:center;padding-block:36px">
+    <div class="eyebrow">Session complete</div><h2 style="margin:8px 0 4px">${S.kind==='drill'?S.items.length+' items practised':S.done+' cards reviewed'}</h2>
+    <p class="muted" style="margin:0">${m.length?`${m.length} to revisit`:'No mistakes'}</p></div>
+  ${m.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Missed</div>${m.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
+  <div class="actions" style="flex-direction:column">
+    ${m.length?`<button class="btn" data-act="retry">Retry mistakes (type them)</button>`:''}
+    <button class="btn ${m.length?'ghost':''}" data-act="back">Back to deck</button></div>`;
+}
+actions.retry = () => { const m=shuffle([...st.S.misses]); newSession({kind:'drill', items:m, steps:['spell','summary']}); };
+
+// ---------- 9. Dictionary ----------
+function vDict(){
+  const q=norm(st.q), p=pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q));
+  return `<div class="stack"><input type="search" id="search" placeholder="Search EN, RU or notes" value="${esc(st.q)}">
+  <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">${p.length} items</span><button class="btn ghost small" data-act="copyDict">Copy list</button></div>
+  <div class="card" style="padding-block:4px">${p.length?p.map(w=>`<div class="dict-row"><div class="meta"><b>${esc(w.en)}</b><div class="muted">${esc(w.ru)}</div>
+    <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span></div>
+    ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
+    </div>${audioBtn(w.en)}</div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
+}
+actions.copyDict = () => { const q=norm(st.q); copy(pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q)).map(w=>`${w.en} - ${w.ru}${w.note?` [${w.note}]`:''}`).join('\n'), 'List copied'); };
+function copy(text, msg){ (navigator.clipboard?.writeText(text)||Promise.reject()).then(()=>toast(msg)).catch(()=>{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy');toast(msg);}catch(e){toast('Copy blocked. Select the text manually.');} t.remove(); }); }
+
+// ---------- 10. Settings, sync, import ----------
+function vSettings(){
+  const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${cfg[k]==v?'on':''}" data-act="set" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  return `<div class="stack">
+  <div class="card stack"><h3>Practice</h3>
+    <div><div class="eyebrow" style="margin-bottom:6px">Card direction</div>${seg('dir',[['en-ru','EN → RU'],['ru-en','RU → EN']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">New cards per day, per deck</div>${seg('newPerDay',[[5,'5'],[10,'10'],[15,'15'],[25,'25']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Theme</div>${seg('theme',[['system','System'],['light','Light'],['dark','Dark']])}</div>
+  </div>
+  <div class="card stack"><h3>Data sources</h3><p class="hint" style="margin:0">Google Sheets published as TSV (File → Share → Publish to web → TSV).</p>
+    <label class="eyebrow" for="srcP">Phrases sheet</label><input type="url" id="srcP" value="${esc(cfg.sources.phr)}">
+    <label class="eyebrow" for="srcV">Vocabulary sheet</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
+    <div class="row"><button class="btn small" data-act="saveSrc">Save and reload both</button><button class="btn ghost small" data-act="resetSrc">Defaults</button></div>
+    <details><summary class="hint" style="cursor:pointer">No network? Paste TSV or pick a file</summary><div class="stack" style="margin-top:10px">
+      ${seg('importDeck',[['phr','Phrases'],['voc','Vocabulary']])}
+      <textarea id="tsv" rows="4" placeholder="Paste rows copied from the sheet (with header)"></textarea>
+      <div class="row"><button class="btn small" data-act="importTsv">Import pasted</button><label class="btn ghost small" for="tsvFile">Choose .tsv / .csv</label><input type="file" id="tsvFile" accept=".tsv,.txt,.csv" hidden></div></div></details>
+  </div>
+  <div class="card stack"><h3>Move progress between devices</h3>
+    <p class="hint" style="margin:0">Progress is stored on each device. Copy the code on one device and paste it on the other. Newer reviews win per card.</p>
+    <div class="row"><button class="btn small" data-act="exportP">Copy progress code</button><button class="btn ghost small" data-act="downloadP">Download backup</button></div>
+    <textarea id="imp" rows="3" placeholder="Paste a progress code here"></textarea>
+    <div class="row"><button class="btn small" data-act="importP">Merge progress</button><label class="btn ghost small" for="impFile">Open backup file</label><input type="file" id="impFile" accept=".json" hidden></div>
+  </div>
+  <div class="card stack"><h3>Reset</h3><p class="hint" style="margin:0">${Object.keys(srs).length} cards tracked.</p>
+    <button class="btn ghost small" data-act="wipe" style="color:var(--bad)">${st.wipeArm?'Tap again to erase all progress':'Erase all progress'}</button></div>
+  </div>`;
+}
+actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
+actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
+actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; LS.set(K.cfg,cfg); toast('Loading…');
+  const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
+  toast(r.every(x=>x.status==='fulfilled')?'Both sheets loaded.':'One sheet failed. Check the link is published as TSV.'); };
+actions.resetSrc = () => { cfg.sources={...DEFAULT_SOURCES}; LS.set(K.cfg,cfg); render(); };
+function importText(text){ const d=cfg.importDeck||'phr', items=(d==='phr'?parsePhr:parseVoc)(text.includes('\t')?text:text.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,'\t').replace(/"/g,''));
+  if(!items.length) return toast('No rows found. Include the header row.'); data[d]={items,at:Date.now()}; LS.set(K.data,data); toast(`Imported ${items.length} ${DECKS[d].short.toLowerCase()} items`); }
+actions.importTsv = () => importText($('#tsv').value);
+const progressBlob = () => JSON.stringify({v:2, at:Date.now(), srs, log});
+actions.exportP = () => copy(progressBlob(), 'Progress code copied');
+actions.downloadP = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([progressBlob()],{type:'application/json'})); a.download=`business-english-progress-${today()}.json`; a.click(); toast('Backup saved'); };
+function mergeProgress(text){ try{ const p=JSON.parse(text); let n=0;
+  Object.entries(p.srs||{}).forEach(([k,c])=>{ if(!srs[k] || (c.last||0)>(srs[k].last||0)){ srs[k]=c; n++; } });
+  Object.entries(p.log||{}).forEach(([d,v])=>{ const m=log[d]; if(!m||v.rev>m.rev) log[d]=v; });
+  LS.set(K.srs,srs); LS.set(K.log,log); toast(`Merged: ${n} cards updated`); render(); }catch(e){ toast('That code is not valid progress data.'); } }
+actions.importP = () => mergeProgress($('#imp').value.trim());
+actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs={}; log={}; LS.set(K.srs,srs); LS.set(K.log,log); st.wipeArm=false; toast('Progress erased'); render(); };
+
+// ---------- 11. Wiring after each render ----------
+function afterRender(){
+  const s=$('#search'); if(s){ s.oninput=()=>{ st.q=s.value; const pos=s.selectionStart; render(); const n=$('#search'); n.focus(); n.setSelectionRange(pos,pos); }; }
+  const f=$('#typeForm'); if(f){ f.onsubmit=e=>{e.preventDefault(); actions.typeCheck();}; setTimeout(()=>$('#ans')?.focus(),60); }
+  const tf=$('#tsvFile'); if(tf) tf.onchange=()=>{ const r=new FileReader(); r.onload=()=>importText(r.result); r.readAsText(tf.files[0]); };
+  const jf=$('#impFile'); if(jf) jf.onchange=()=>{ const r=new FileReader(); r.onload=()=>mergeProgress(r.result); r.readAsText(jf.files[0]); };
+  if(st.view==='session' && st.S){ const S=st.S, it=list()[S.i];
+    if(cfg.autoSpeak && it && ((S.step==='sort'&&cfg.dir==='en-ru'&&!S.flipped) || S.step==='learn')) speak(it.en); }
+}
+// Laptop shortcuts
+document.addEventListener('keydown', e => {
+  if(st.view!=='session'||!st.S||e.target.matches('input,textarea')) return;
+  const S=st.S;
+  if(S.step==='sort'){ if(e.code==='Space'){ e.preventDefault(); actions.flip(); } else if(S.flipped && '1234'.includes(e.key)) actions.grade({g:['again','hard','good','easy'][+e.key-1]}); }
+  else if(S.step==='match' && '1234'.includes(e.key)){ const b=document.querySelectorAll('.opt')[+e.key-1]; if(b&&!b.disabled) actions.pick({n:+e.key-1}, b); }
+  else if((S.step==='learn'||S.step==='dialogue') && (e.key==='Enter'||e.code==='Space')){ e.preventDefault(); advance(); }
+});
+
+render();
+</script>
+</body>
+</html>
