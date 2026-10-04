@@ -321,6 +321,35 @@ body.sess .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .tok.pool.key{background:var(--primary-soft);color:var(--primary);box-shadow:inset 0 -2px 0 var(--primary)}
 .note mark{background:var(--primary-soft);color:inherit;box-shadow:inset 0 -2px 0 var(--primary);padding:0 2px}
 .diff mark{background:var(--primary-soft);color:inherit;padding:0 2px}
+
+.tile.wide{grid-column:1/-1;min-height:0}
+.br{color:var(--muted);font-weight:400}
+.skel{font-family:var(--serif);font-size:1.12rem;line-height:1.7;letter-spacing:.02em;color:var(--muted);margin:16px 0 12px;padding:12px 14px;background:var(--surface-2);border-radius:4px;overflow-wrap:anywhere}
+.skel mark{background:var(--primary-soft);color:var(--fg);box-shadow:inset 0 -2px 0 var(--primary);padding:0 2px;letter-spacing:0}
+textarea#ans{font-family:var(--serif);font-size:1.12rem;line-height:1.45}
+
+.tile.wide{grid-column:1/-1;min-height:0}
+.bullet-tile h3{font-size:1.25rem}
+.bullet-intro{padding:28px 0 0;display:flex;flex-direction:column;gap:14px}
+.bullet-keys{display:flex;justify-content:space-between;font-weight:600;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.bullet-keys b{color:var(--primary);font-size:1.2rem}
+.bullet-head{display:flex;justify-content:space-between;align-items:baseline;margin:4px 0 8px}
+.bullet-time{font-family:var(--serif);font-weight:700;font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums;min-width:2ch}
+.bullet-time.low{color:var(--primary);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.55}}
+.bullet-score{color:var(--muted);font-size:.95rem}.bullet-score b{color:var(--fg);font-family:var(--serif);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.bullet-streak{color:var(--primary);font-weight:600}
+.bullet-clock{height:4px;background:var(--surface-2);margin-bottom:22px}.bullet-clock i{display:block;height:100%;background:var(--primary);transition:width .2s linear}
+.bcard{border:1px solid var(--line);border-top:3px solid var(--fg);border-radius:6px;padding:30px 22px;min-height:min(46vh,300px);display:flex;flex-direction:column;justify-content:center;gap:16px;text-align:center;transition:transform .14s var(--ease),opacity .14s,border-color .1s,background .1s;touch-action:pan-y;user-select:none}
+.bcard .phrase{font-size:clamp(1.6rem,7vw,2.2rem)}
+.bcard-rule{width:32px;height:3px;background:var(--primary);margin:0 auto}
+.bcard-ru{font-size:1.25rem;font-weight:500}
+.bcard.hit{border-color:var(--ok);background:var(--ok-soft)}.bcard.miss{border-color:var(--bad);background:var(--bad-soft);animation:shake .32s}
+.bcard.hit.go-r{transform:translateX(26px);opacity:.4}.bcard.hit.go-l{transform:translateX(-26px);opacity:.4}
+.bullet-actions .btn{font-size:1.05rem}
+.bullet-actions .bno{background:transparent;color:var(--fg);border:1.5px solid var(--fg)}
+.bullet-actions .byes{background:var(--fg);color:var(--bg)}
+body.bul .progress{display:none}
 </style>
 </head>
 <body>
@@ -406,12 +435,20 @@ const audioBtn = t => `<button class="audio" data-act="say" data-t="${esc(t)}" a
 // text normalisation + typo tolerance
 const norm = s => String(s).toLowerCase().replace(/[’']/g,"'").replace(/[^\p{L}\p{N}' ]+/gu,' ').replace(/\s+/g,' ').trim();
 function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=[...Array(n+1).keys()]; for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
-function check(input, target){
+// [placeholders] in a phrase are optional when typing: "explain [the concept] to sb" accepts both forms
+const stripBr = t => String(t).replace(/\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim();
+const variants = t => [...new Set([stripBr(t), String(t).replace(/[\[\]]/g,'')])];
+function check1(input, target){
   const a=norm(input), b=norm(target);
   if (a===b) return 'exact';
-  const tol = b.length>20?3:b.length>8?2:b.length>4?1:0;
+  const tol = b.length>60?Math.min(6,Math.ceil(b.length/20)):b.length>20?3:b.length>8?2:b.length>4?1:0;
   return lev(a.replace(/ /g,''), b.replace(/ /g,'')) <= tol ? 'typo' : 'wrong';
 }
+function check(input, target){ const r=variants(target).map(t=>check1(input,t)); return r.includes('exact')?'exact':r.includes('typo')?'typo':'wrong'; }
+// the variant closest to what was typed, for feedback diffs
+function bestTarget(input, target){ const a=norm(input).replace(/ /g,''); return variants(target).sort((x,y)=>lev(a,norm(x).replace(/ /g,''))-lev(a,norm(y).replace(/ /g,'')))[0]; }
+// show [placeholders] dimmed
+const showBr = t => esc(t).replace(/\[([^\]]*)\]/g,'<span class="br">[$1]</span>');
 // word-level diff for feedback (LCS)
 function diff(input, target){
   const A=input.trim().split(/\s+/), B=target.trim().split(/\s+/), n=A.length, m=B.length;
@@ -542,8 +579,10 @@ document.addEventListener('click', e => { const el=e.target.closest('[data-act]'
 
 function go(view){ st.view=view; render(); window.scrollTo(0,0); }
 function render(){
+  if(!(st.view==='session' && st.S?.step==='bullet' && st.S.b?.end)) stopBulletTimer();
   const app=$('#app'); $('#backBtn').hidden = st.view==='home';
   document.body.classList.toggle('sess', st.view==='session' && st.S && st.S.step!=='summary');
+  document.body.classList.toggle('bul', st.view==='session' && st.S?.step==='bullet');
   $('#backBtn').innerHTML = document.body.classList.contains('sess') ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
   $('#backBtn').setAttribute('aria-label', document.body.classList.contains('sess')?'End session':'Back');
   const V = { home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
@@ -617,7 +656,9 @@ function vDeck(){
     ['spell','t-sand','Recall','RU → type EN'],['pairs','t-mint','Quick pairs','Connect 6 pairs']
   ] : [
     ['match','t-blue','Match','Recognise meaning'],['pairs','t-peach','Quick pairs','Connect 6 pairs'],
-    ['spell','t-sand','Recall','RU → type EN'],['scramble','t-purple','Scramble','Rebuild an example sentence']
+    ['scramble','t-purple','Scramble chunk','Rebuild the chunk'],['scrambleEx','t-rose','Scramble sentence','Rebuild an example',p.filter(i=>i.examples?.length).length],
+    ['spell','t-sand','Recall','RU → type EN'],['sentence','t-blue','Write the sentence','Listen and type an example',p.filter(i=>i.examples?.length).length],
+    ['bullet','t-rose wide bullet-tile','Bullet','60 seconds · right or wrong? · best '+bestBullet(st.deck)]
   ];
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
@@ -629,7 +670,7 @@ function vDeck(){
         <div><div style="font-family:var(--serif);font-size:2.4rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">${due}</div><small style="opacity:.75">due</small></div>
         <div><div style="font-family:var(--serif);font-size:2.4rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">${newLeft}</div><small style="opacity:.75">new today</small></div>
       </div>
-      <p style="opacity:.8;font-size:.88rem;margin:8px 0 0">Review cards, then drill the ones you missed: ${isP?'match → scramble → fill the gap':'match → pairs → recall'}.</p>
+      <p style="opacity:.8;font-size:.88rem;margin:8px 0 0">Review cards, then drill the ones you missed: ${isP?'match → scramble → fill the gap':'match → pairs → scramble → write → recall'}.</p>
       <div class="actions">
         <button class="btn" style="background:var(--yellow);color:#24222E" data-act="lesson" ${due+newLeft?'':'disabled'}>Start lesson</button>
         <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${due+newLeft?'':'disabled'}>Cards only</button>
@@ -656,13 +697,14 @@ function reviewQueue(){
 function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), skipped:new Set(), done:0, practised:0 }, o); st.S.step=st.S.steps[0]; go('session'); }
 actions.lesson = () => {
   const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
-  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','spell','summary'];
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','sentence','spell','summary'];
   newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
 };
 actions.flash = () => { const q=reviewQueue(); if(!q.length) return toast('All caught up for today.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
 actions.drill = d => {
+  if(d.k==='bullet') return startBullet();
   let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
-  if(d.k==='scramble' && st.deck==='voc'){ const w=p.filter(i=>i.examples?.length); if(w.length) p=w; }
+  if(d.k==='sentence'||d.k==='scrambleEx') p=p.filter(i=>i.examples?.length);
   if(!p.length) return toast('Nothing to practise in this filter.');
   // weakest first: due, then low ease, then random
   const w = it => { const c=card(it); return !c?1.5 : (c.due<=Date.now()?0:1) + c.ease/3; };
@@ -676,28 +718,31 @@ function nextStep(){
     if(s==='summary') break;
     if(!S.items.length){ idx=S.steps.length-1; break; }
     if(s==='cloze' && !S.items.some(i=>i.dialogue)){ idx++; continue; }
+    if((s==='sentence'||s==='scrambleEx') && !S.items.some(i=>i.examples?.length)){ idx++; continue; }
     break;
   }
   S.step=S.steps[Math.min(idx,S.steps.length-1)]; S.i=0; S.sub=null;
   if(S.step==='cloze') S.list=S.items.filter(i=>i.dialogue);
+  if(S.step==='sentence'||S.step==='scrambleEx') S.list=S.items.filter(i=>i.examples?.length);
   render(); window.scrollTo(0,0);
 }
-const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && st.S.step==='cloze' ? st.S.list : st.S.items);
+const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx') && st.S.kind!=='drill' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
 function advance(){ const S=st.S; S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
 const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
-const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs' };
+const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', scrambleEx:'Scramble sentence' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
   return `<div class="sess-head"><div><div class="step">${stepLabel[S.step]}</div>${stepN.length>1?`<div class="dots" style="margin-top:6px" aria-label="Step ${k+1} of ${stepN.length}">${stepN.map((_,j)=>`<i class="${j<k?'on':j===k?'cur':''}"></i>`).join('')}</div>`:''}</div><span class="cnt">${Math.min(S.i+1,L.length)} of ${L.length}</span></div>`; }
 
 function vSession(){
   const S=st.S; if(!S) return '';
-  if(S.step==='summary') return vSummary();
+  if(S.step==='summary') return S.kind==='bullet' ? vBulletSummary() : vSummary();
+  if(S.step==='bullet') return vBullet();
   if(!list().length){ setTimeout(nextStep); return ''; }
-  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs })[S.step]();
+  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, scrambleEx:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs, sentence:vSentence })[S.step]();
 }
 
 // 8a. Flashcard review with 4-grade SRS
@@ -757,7 +802,7 @@ actions.pick = (d, el) => {
 // 8d. Scramble (word order)
 function vScramble(){
   const S=st.S, it=cur();
-  if(!S.sub){ const ex=it.deck==='voc'&&it.examples?.length ? it.examples[Math.floor(Math.random()*it.examples.length)] : null; S.sub=buildScramble(ex||it.en, ex?it.en:null); }
+  if(!S.sub){ const ex=S.step==='scrambleEx'&&it.examples?.length ? it.examples[Math.floor(Math.random()*it.examples.length)] : null; S.sub=buildScramble(ex||it.en, ex?it.en:null); }
   const ctx=S.sub.chunk;
   return `<div class="card">${ctx?`<div class="hint" style="margin-bottom:4px">Put the example in order</div><div class="phrase" style="font-size:1.35rem">${esc(it.en)}</div><div class="muted" style="margin-top:2px">${esc(it.ru)}</div>`
     :`<div class="trans" style="color:var(--fg)">${esc(it.ru)}</div>${it.note?`<p class="hint" style="margin:6px 0 0">${esc(it.note)}</p>`:''}`}
@@ -766,7 +811,7 @@ function vScramble(){
   <div id="fb" style="margin-top:12px"></div>
   <div class="actions"><button class="btn ghost" data-act="reveal" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="checkScr" ${S.sub.pool.length?'disabled':''}>Check</button></div></div>`;
 }
-actions.tok = d => { const s=st.S.sub; s.pick.push(s.pool.splice(+d.k,1)[0]); render(); };
+actions.tok = d => { const s=st.S.sub; s.pick.push(s.pool.splice(+d.k,1)[0]); render(); if(!s.pool.length) actions.checkScr(); };
 actions.unpick = d => { const s=st.S.sub; s.pool.push(s.pick.splice(+d.k,1)[0]); render(); };
 actions.checkScr = () => { const S=st.S, it=cur(), got=S.sub.pick.map(w=>w.t).join(' ');
   if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok"><span class="ttl">Correct</span></div>'; speak(S.sub.target); setTimeout(advance,S.sub.chunk?1600:900); }
@@ -810,25 +855,43 @@ function vCloze(){ const it=cur(); return `<div class="card"><div class="dlg not
   <div id="fb" style="margin-top:12px"></div>
   <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 
+// 8f2. Write the sentence (Duolingo-style dictation of a full example)
+function vSentence(){
+  const S=st.S, it=cur();
+  if(!S.sub){ const ex=it.examples?.length?it.examples[Math.floor(Math.random()*it.examples.length)]:it.en; S.sub={target:ex}; }
+  const t=S.sub.target, m=findChunk(t,it.en);
+  const mask = w => w.replace(/[\p{L}\p{N}]/gu,(c,i)=>i===0?c:'·');
+  const words = (a,b)=>a.split(' ').filter(Boolean).map(mask).join(' ');
+  const skel = m ? esc(words(t.slice(0,m.i)))+' <mark>'+esc(t.substr(m.i,m.len))+'</mark> '+esc(words(t.slice(m.i+m.len))) : esc(words(t));
+  return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;gap:12px">
+    <div style="min-width:0"><div class="hint" style="margin-bottom:4px">Listen and type the full sentence</div><div class="phrase" style="font-size:1.25rem">${esc(it.en)}</div><div class="muted" style="margin-top:2px">${esc(it.ru)}</div></div>
+    ${audioBtn(t)}</div>
+  <div class="skel">${skel}</div>
+  <form id="typeForm"><textarea id="ans" rows="3" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type what you hear"></textarea></form>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`;
+}
+
 // 8f. Recall (type the English)
-function vSpell(){ const it=cur(); const L=it.en.split(/\s+/).length;
+function vSpell(){ const it=cur(), core=stripBr(it.en)||it.en, L=core.split(/\s+/).length, opt=/\[/.test(it.en);
   return `<div class="card"><div class="trans" style="font-size:1.3rem;color:var(--fg)">${esc(it.ru)}</div>
-  <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(it.en.split(/\s+/)[0][0])}…”</p>
+  <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(core[0])}…”${opt?' · [brackets] optional':''}</p>
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="English phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
   <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
-  const target = S.step==='cloze' ? expected(it) : it.en, r=check(v,target);
+  const full=typeTarget(it), r=check(v,full), target=bestTarget(v,full);
   if(S.sub?.locked) return;
   if(r==='wrong'){ S.misses.add(it); softLapse(it); buzz(); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(v,target)}</div><div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
-  S.sub={locked:true}; inp.disabled=true;
+  S.sub=Object.assign(S.sub||{},{locked:true}); inp.disabled=true;
   $('#fb').innerHTML = r==='exact' ? `<div class="fb ok"><span class="ttl">Correct</span>${S.step==='cloze'?`<div class="dlg" style="margin-top:8px">${fmtDialogue(blankByPhrase(it),'show')}</div>`:''}</div>`
                                     : `<div class="fb warn"><span class="ttl">Accepted, watch the spelling</span><div class="diff">${diff(v,target)}</div></div>`;
-  speak(target); setTimeout(advance, S.step==='cloze'?2600:r==='exact'?900:2000);
+  speak(target); setTimeout(advance, S.step==='cloze'?2200:r==='exact'?(S.step==='sentence'?1300:700):2000);
 };
-actions.giveup = () => { const S=st.S, it=cur(), target=S.step==='cloze'?expected(it):it.en; S.misses.add(it); softLapse(it);
-  $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${esc(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; speak(target); $('#ans').value=''; $('#ans').focus(); };
+const typeTarget = it => st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
+actions.giveup = () => { const S=st.S, it=cur(), target=typeTarget(it); if(S.sub?.locked) return; S.misses.add(it); softLapse(it);
+  $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${showBr(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; speak(target); $('#ans').value=''; $('#ans').focus(); };
 
 // 8g. Quick pairs (boards of up to 6)
 function vPairs(){
@@ -927,11 +990,14 @@ actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs=
 // ---------- 11. Wiring after each render ----------
 function afterRender(){
   const s=$('#search'); if(s){ s.oninput=()=>{ st.q=s.value; const pos=s.selectionStart; render(); const n=$('#search'); n.focus(); n.setSelectionRange(pos,pos); }; }
-  const f=$('#typeForm'); if(f){ f.onsubmit=e=>{e.preventDefault(); actions.typeCheck();}; setTimeout(()=>$('#ans')?.focus(),60); }
+  const f=$('#typeForm'); if(f){ f.onsubmit=e=>{e.preventDefault(); actions.typeCheck();}; setTimeout(()=>$('#ans')?.focus(),60);
+    const inp=$('#ans'); if(inp.tagName==='TEXTAREA') inp.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); actions.typeCheck(); } };
+    inp.oninput=()=>{ const S=st.S; if(!S||S.sub?.locked) return; if(check1(inp.value, bestTarget(inp.value, typeTarget(cur())))==='exact') actions.typeCheck(); }; }
   const tf=$('#tsvFile'); if(tf) tf.onchange=()=>{ const r=new FileReader(); r.onload=()=>importText(r.result); r.readAsText(tf.files[0]); };
   const jf=$('#impFile'); if(jf) jf.onchange=()=>{ const r=new FileReader(); r.onload=()=>mergeProgress(r.result); r.readAsText(jf.files[0]); };
   if(st.view==='session' && st.S){ const S=st.S, it=list()[S.i];
-    if(cfg.autoSpeak && it && ((S.step==='sort'&&cfg.dir==='en-ru'&&!S.flipped) || S.step==='learn')) speak(it.en); }
+    if(cfg.autoSpeak && it && ((S.step==='sort'&&cfg.dir==='en-ru'&&!S.flipped) || S.step==='learn')) speak(it.en);
+    if(cfg.autoSpeak && S.step==='sentence' && S.sub && !S.sub.spoken){ S.sub.spoken=true; setTimeout(()=>speak(S.sub.target),250); } }
 }
 // Laptop shortcuts
 document.addEventListener('keydown', e => {
@@ -961,10 +1027,81 @@ function openExit(){
 function closeExit(){ $('#exitSheet')?.remove(); }
 actions.closeExit = closeExit;
 actions.skipStep = () => { closeExit(); speechSynthesis?.cancel(); nextStep(); };
-actions.finishNow = () => { closeExit(); speechSynthesis?.cancel(); const S=st.S; S.early=true; S.step='summary'; S.i=0; S.sub=null; render(); window.scrollTo(0,0); };
+actions.finishNow = () => { closeExit(); if(st.S?.kind==='bullet'&&st.S.b.end){ stopBulletTimer(); return finishBullet(); } speechSynthesis?.cancel(); const S=st.S; S.early=true; S.step='summary'; S.i=0; S.sub=null; render(); window.scrollTo(0,0); };
 actions.quitNow = () => { closeExit(); st.S=null; speechSynthesis?.cancel(); go('deck'); };
 document.addEventListener('keydown', e => { if(e.key==='Escape' && st.view==='session' && st.S && st.S.step!=='summary'){ e.preventDefault(); openExit(); } });
 
+// ---------- Bullet: 60-second right/wrong sprint (Vocabulary only, not part of the lesson) ----------
+const BULLET_SEC=60;
+const bestBullet = d => LS.get('bet.bullet.'+d, 0);
+function startBullet(){
+  const p=pool(); if(p.length<2) return toast('Bullet needs at least 2 chunks in this filter.');
+  newSession({ kind:'bullet', items:[], steps:['bullet','summary'], b:{ deck:shuffle(p), k:0, score:0, total:0, streak:0, best:0, wrong:[], end:0 } });
+}
+function bulletCard(){
+  const b=st.S.b, all=pool(); if(b.k>=b.deck.length){ b.deck=shuffle(b.deck); b.k=0; }
+  const it=b.deck[b.k++], truth=Math.random()<.5;
+  let shown=it.ru;
+  if(!truth){ const same=all.filter(x=>x!==it&&x.ru!==it.ru&&x.cat===it.cat), others=same.length?same:all.filter(x=>x!==it&&x.ru!==it.ru); if(others.length) shown=others[Math.floor(Math.random()*others.length)].ru; }
+  b.cur={it, shown, ok:shown===it.ru};
+}
+function vBullet(){
+  const S=st.S, b=S.b; bar(0);
+  if(!b.end) return `<div class="bullet-intro">
+      <div class="phrase" style="font-size:2rem">Bullet</div>
+      <p class="muted" style="margin:6px 0 0">${BULLET_SEC} seconds. A chunk and a translation appear. Decide if the translation is right.</p>
+      <div class="bullet-keys"><span><b>←</b> Wrong</span><span>Right <b>→</b></span></div>
+      <p class="hint" style="margin:0">Swipe, tap the buttons, or use arrow keys. Best: ${bestBullet(st.deck)}</p></div>
+    <div class="actions"><button class="btn" data-act="bulletGo">Start</button></div>`;
+  const left=Math.max(0,Math.ceil((b.end-Date.now())/1000));
+  return `<div class="bullet-head"><span class="bullet-time" id="bTime">${left}</span><span class="bullet-score"><b id="bScore">${b.score}</b> correct${b.streak>2?` · <span class="bullet-streak">${b.streak} in a row</span>`:''}</span></div>
+    <div class="bullet-clock"><i id="bClock" style="width:${left/BULLET_SEC*100}%"></i></div>
+    <div class="bcard" id="bcard">
+      <div class="phrase">${esc(b.cur.it.en)}</div>
+      <div class="bcard-rule"></div>
+      <div class="bcard-ru">${esc(b.cur.shown)}</div>
+    </div>
+    <div class="actions bullet-actions">
+      <button class="btn bno" data-act="bulletAns" data-v="0"><span aria-hidden="true">←</span> Wrong</button>
+      <button class="btn byes" data-act="bulletAns" data-v="1">Right <span aria-hidden="true">→</span></button></div>`;
+}
+actions.bulletGo = () => { const b=st.S.b; b.end=Date.now()+BULLET_SEC*1000; bulletCard(); render(); startBulletTimer(); };
+actions.bulletAns = d => {
+  const S=st.S, b=S.b; if(!b.end||Date.now()>b.end||b.lock) return;
+  const said=d.v==='1', right=said===b.cur.ok; b.total++;
+  if(right){ b.score++; b.streak++; b.best=Math.max(b.best,b.streak); }
+  else { b.streak=0; buzz(); if(!b.wrong.includes(b.cur.it)) b.wrong.push(b.cur.it); S.misses.add(b.cur.it); }
+  const c=$('#bcard'); b.lock=true;
+  if(c){ c.classList.add(right?'hit':'miss', said?'go-r':'go-l'); }
+  setTimeout(()=>{ b.lock=false; if(Date.now()<b.end){ bulletCard(); render(); } }, right?140:420);
+};
+function startBulletTimer(){ stopBulletTimer(); st.bTimer=setInterval(()=>{
+  const b=st.S?.b; if(!b){ return stopBulletTimer(); }
+  const ms=b.end-Date.now(), t=$('#bTime'), k=$('#bClock');
+  if(t) t.textContent=Math.max(0,Math.ceil(ms/1000)); if(k) k.style.width=Math.max(0,ms/(BULLET_SEC*10))+'%';
+  if(t && ms<=10000) t.classList.add('low');
+  if(ms<=0){ stopBulletTimer(); finishBullet(); }
+},200); }
+function stopBulletTimer(){ if(st.bTimer){ clearInterval(st.bTimer); st.bTimer=null; } }
+function finishBullet(){ const S=st.S, b=S.b; b.prevBest=bestBullet(st.deck); if(b.score>b.prevBest) LS.set('bet.bullet.'+st.deck,b.score); S.step='summary'; render(); window.scrollTo(0,0); }
+function vBulletSummary(){
+  bar(100); const b=st.S.b, acc=b.total?Math.round(b.score/b.total*100):0, rec=b.score>b.prevBest&&b.score>0;
+  return `<div class="summary-hero">
+    <div class="n">${b.score}</div><h2 style="margin:10px 0 4px;font-size:1.25rem">correct in ${BULLET_SEC} seconds</h2>
+    <p class="muted" style="margin:0">${rec?'New best. ':`Best ${Math.max(b.prevBest,b.score)}. `}${b.total} answered, ${acc}% accurate, longest run ${b.best}</p></div>
+  ${b.wrong.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Got wrong</div>${b.wrong.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
+  <div class="actions" style="flex-direction:column">
+    <button class="btn" data-act="bulletAgain">Play again</button>
+    ${b.wrong.length?`<button class="btn ghost" data-act="retry">Practise mistakes (type them)</button>`:''}
+    <button class="btn ghost" data-act="back">Back to deck</button></div>`;
+}
+actions.bulletAgain = () => startBullet();
+// arrows + swipe
+document.addEventListener('keydown', e => { if(st.S?.step!=='bullet'||st.view!=='session'||$('#exitSheet')) return;
+  if(!st.S.b.end && (e.key==='Enter'||e.code==='Space')){ e.preventDefault(); return actions.bulletGo(); }
+  if(e.key==='ArrowLeft'){ e.preventDefault(); actions.bulletAns({v:'0'}); } if(e.key==='ArrowRight'){ e.preventDefault(); actions.bulletAns({v:'1'}); } });
+let bx=null; document.addEventListener('touchstart', e => { if(st.S?.step==='bullet' && e.target.closest('#bcard')) bx=e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => { if(bx===null) return; const dx=e.changedTouches[0].clientX-bx; bx=null; if(Math.abs(dx)>50) actions.bulletAns({v:dx>0?'1':'0'}); });
 render();
 </script>
 </body>
