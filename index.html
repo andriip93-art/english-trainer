@@ -167,8 +167,11 @@ h3{font-size:1.02rem;font-weight:600;margin:0}
 .pc{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:12px;min-height:64px;font-size:.9rem;font-weight:500;line-height:1.3;overflow-wrap:anywhere;hyphens:auto;transition:all .2s var(--ease);text-align:left}
 .pc.l{font-family:var(--serif);font-weight:500}
 .pc.r{background:var(--surface-2);border-color:transparent}
-.pc.sel{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
-.pc.done{opacity:0;transform:scale(.92);pointer-events:none}
+.pc{position:relative}
+.pc.sel{background:var(--primary-soft);color:var(--primary);border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);font-weight:600;transform:translateY(-1px)}
+.pc.done{background:var(--ok-soft);border-color:transparent;color:var(--ok);opacity:.6;pointer-events:none;padding-right:30px}
+.pc.done::after{content:"";position:absolute;right:11px;top:50%;width:6px;height:11px;margin-top:-7px;border:solid var(--ok);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.pc.just{opacity:1;animation:pop .35s var(--ease)}
 .pc.err{background:var(--bad-soft);border-color:var(--bad);animation:shake .32s}
 
 input[type=text],input[type=url],textarea,input[type=search]{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:14px 16px;font-size:16px}
@@ -250,7 +253,6 @@ h2{font-family:var(--serif);font-weight:700}
 .audio{background:transparent;border:1px solid var(--line);color:var(--fg)}
 .pill{border-radius:3px;font-weight:700}
 .pill.due{background:var(--primary-soft);color:var(--primary)}
-.pc.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tok{background:var(--fg);color:var(--bg);border-radius:4px}
 .tok.pool{border-radius:4px}
 .zone{border-radius:4px}
@@ -303,6 +305,22 @@ body.sess #fb .fb{border-radius:6px 6px 0 0;padding:16px 18px;box-shadow:0 -10px
 /* settings: grouped list */
 .card.stack>h3{font-family:var(--serif);font-weight:700;font-size:1.15rem;padding-top:10px;position:relative}
 .card.stack>h3::before{content:"";position:absolute;top:0;left:0;width:24px;height:3px;background:var(--primary)}
+
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:absolute;inset:0;background:rgba(13,13,13,.45);animation:fade .2s}
+.sheet{position:relative;width:100%;max-width:520px;background:var(--bg);border-top:4px solid var(--primary);border-radius:8px 8px 0 0;
+  padding:22px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:sheet .26s var(--ease)}
+.sheet h3{font-family:var(--serif);font-weight:700;font-size:1.3rem}
+.sheet .btn{flex:none;width:100%;flex-wrap:wrap}
+@keyframes fade{from{opacity:0}}
+@media (min-width:640px){.sheet-wrap{align-items:center}.sheet{border-radius:6px}}
+body.sess .actions .btn.ghost{padding-inline:16px}
+body.sess .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+
+.tok.key{background:var(--primary);color:var(--primary-ink)}
+.tok.pool.key{background:var(--primary-soft);color:var(--primary);box-shadow:inset 0 -2px 0 var(--primary)}
+.note mark{background:var(--primary-soft);color:inherit;box-shadow:inset 0 -2px 0 var(--primary);padding:0 2px}
+.diff mark{background:var(--primary-soft);color:inherit;padding:0 2px}
 </style>
 </head>
 <body>
@@ -417,17 +435,28 @@ function parsePhr(t){
     note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'') : ''
   }));
 }
+// Examples may sit in two columns or together in one cell ("1) ... 2) ...", line breaks, " / ", or plain sentences)
+function splitExamples(cells){
+  const out=[];
+  cells.filter(Boolean).forEach(c=>{
+    let parts=c.split(/\s*(?:\n|\s\/\s|\|\||;\s(?=[A-Z])|\s(?=\(?\d[.)]\s))\s*/);
+    if(parts.length===1) parts=c.split(/(?<=[.!?])\s+(?=[A-Z"“'])/);
+    parts.map(x=>x.replace(/^\(?\d[.)]\s*/,'').replace(/^[-•]\s*/,'').replace(/\*\*/g,'').trim()).filter(x=>x.split(/\s+/).length>=3).forEach(x=>out.push(x));
+  });
+  return out.slice(0,4);
+}
 function parseVoc(t){
   const rows=splitTSV(t); if(!rows.length) return [];
   const h=rows[0].map(x=>x.toLowerCase()); const has=k=>x=>k.some(w=>x.includes(w));
   let en=h.findIndex(has(['en','english','phrase','фраза','английский'])), ru=h.findIndex(has(['ru','russian','translation','перевод','русский']));
   const ctx=h.findIndex(has(['context','topic','контекст','тема'])), list=h.findIndex(has(['list','category','список','категория','раздел'])),
-        id=h.findIndex(x=>x==='id'), ex=h.findIndex(has(['explanation','объяснение','значение','meaning'])), exm=h.findIndex(has(['example','пример']));
+        id=h.findIndex(x=>x==='id'), ex=h.findIndex(has(['explanation','объяснение','значение','meaning']));
+  const exCols=h.map((x,i)=>/example|пример|sentence|usage/.test(x)?i:-1).filter(i=>i>-1);
   const header = en>-1||ru>-1; if(en===-1) en=0; if(ru===-1) ru=1;
   const rename = n => /1/.test(n)?'Hard Business':/2/.test(n)?'Workflow':/3/.test(n)?'Vibe & Idioms':n;
   return rows.slice(header?1:0).filter(c=>c[en]&&c[ru]).map((c,i)=>({
     deck:'voc', id:String((id>-1&&parseInt(c[id]))||i+1), en:c[en], ru:c[ru],
-    cat: rename(list>-1&&c[list]?c[list]:'Main List'), note:ex>-1?c[ex]||'':'', example:exm>-1?c[exm]||'':'',
+    cat: rename(list>-1&&c[list]?c[list]:'Main List'), note:ex>-1?c[ex]||'':'', examples:splitExamples(exCols.map(j=>c[j]||'')), example:exCols.map(j=>c[j]||'').filter(Boolean).join(' / '),
     ctx: ctx>-1?c[ctx]||'':'', dialogue:''
   }));
 }
@@ -460,32 +489,41 @@ async function loadDeck(deck, {force=false}={}){
 function fmtAgo(ts){ const d=Math.round((Date.now()-ts)/DAY); return d<=0?'today':d===1?'yesterday':d+' days ago'; }
 
 // ---------- 4. Spaced repetition (SM-2 variant, 4 grades) ----------
-// again = relearn in 10 min · hard = ×1.2 · good = ×ease · easy = ×ease×1.3
+// Widened for a large, growing library (days):
+//   again → 1d · hard → 2d, then ×1.2 · good → 4d, then ×ease · easy → 21d, then ×ease×1.3 · cap 365d
+const MAX_IVL=365;
+function nextIvl(c, g){
+  const v=c.ivl||0, e=c.ease||2.5;
+  if(g==='again') return 1;
+  if(g==='hard')  return v===0?2:Math.max(v+1,Math.round(v*1.2));
+  if(g==='good')  return v===0?4:Math.max(v+2,Math.round(v*e));
+  return v===0?21:Math.max(21,Math.round(v*e*1.3));
+}
+const fmtIvl = d => d<30 ? d+'d' : d<365 ? (d/30).toFixed(1).replace('.0','')+'mo' : (d/365).toFixed(1).replace('.0','')+'y';
 const keyOf = it => it.deck+':'+it.id;
 const card = it => srs[keyOf(it)];
 const isNew = it => !card(it);
 const isDue = it => { const c=card(it); return !!c && c.due <= Date.now(); };
 function preview(it, g){
   const c = card(it) || {ivl:0, ease:2.5};
-  if (g==='again') return '10m';
-  let ivl = g==='hard' ? Math.max(1, Math.round(c.ivl*1.2)) : g==='good' ? (c.ivl===0?1:c.ivl===1?3:Math.round(c.ivl*c.ease)) : (c.ivl===0?4:Math.round(c.ivl*c.ease*1.3));
-  return ivl<30 ? ivl+'d' : (ivl/30).toFixed(1).replace('.0','')+'mo';
+  return fmtIvl(Math.min(MAX_IVL, nextIvl(c,g)));
 }
 function grade(it, g){
   const k=keyOf(it), c = srs[k] || {ivl:0, ease:2.5, reps:0, lapses:0};
-  if (g==='again'){ c.lapses=(c.lapses||0)+(c.reps?1:0); c.ivl=0; c.ease=Math.max(1.3,c.ease-0.2); c.due=Date.now()+10*MIN; }
+  const ni = Math.min(MAX_IVL, nextIvl(c,g));
+  if (g==='again'){ c.lapses=(c.lapses||0)+(c.reps?1:0); c.ease=Math.max(1.3,c.ease-0.2); c.ivl=0; }
   else {
-    if (g==='hard'){ c.ivl=Math.max(1,Math.round(c.ivl*1.2)); c.ease=Math.max(1.3,c.ease-0.15); }
-    if (g==='good'){ c.ivl = c.ivl===0?1 : c.ivl===1?3 : Math.round(c.ivl*c.ease); }
-    if (g==='easy'){ c.ivl = c.ivl===0?4 : Math.round(c.ivl*c.ease*1.3); c.ease=Math.min(3.0,c.ease+0.15); }
-    const fuzz = c.ivl>2 ? Math.round(c.ivl*0.05*(Math.random()*2-1)) : 0;
-    c.due = startOfDay(Date.now()+(c.ivl+fuzz)*DAY);
+    if (g==='hard') c.ease=Math.max(1.3,c.ease-0.15);
+    if (g==='easy') c.ease=Math.min(3.0,c.ease+0.15);
+    c.ivl=ni;
   }
+  const fuzz = ni>3 ? Math.round(ni*0.05*(Math.random()*2-1)) : 0;
+  c.due = startOfDay(Date.now()+(ni+fuzz)*DAY);
   c.reps=(c.reps||0)+1; c.last=Date.now(); srs[k]=c; LS.set(K.srs, srs);
   bump(g!=='again');
 }
-// An error in a production exercise pulls the card back into today's queue
-function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,1); c.due=Date.now(); LS.set(K.srs,srs); }
+// An error in a production exercise brings the card back tomorrow
+function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,2); c.due=startOfDay(Date.now()+DAY); LS.set(K.srs,srs); }
 function startOfDay(ts){ const d=new Date(ts); d.setHours(4,0,0,0); return d.getTime(); }
 function bump(ok){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].rev++; if(ok) log[t].ok++; LS.set(K.log,log); }
 function newToday(deck){ return Object.entries(srs).filter(([k,c])=>k.startsWith(deck+':') && c.reps===1 && c.last && today(new Date(c.last))===today()).length; }
@@ -516,8 +554,8 @@ function render(){
   afterRender();
 }
 actions.back = () => {
-  if (st.view==='session' && st.S && st.S.step!=='summary'){ if(!st.S.confirmExit){ st.S.confirmExit=true; toast('Tap back again to leave. Progress so far is saved.'); return; } }
-  st.S=null; speechSynthesis?.cancel(); go(st.view==='deck'||st.view==='settings'?'home':'deck');
+  if (st.view==='session' && st.S && st.S.step!=='summary') return openExit();
+  closeExit(); st.S=null; speechSynthesis?.cancel(); go(st.view==='deck'||st.view==='settings'?'home':'deck');
 };
 actions.say = d => speak(d.t);
 actions.unveil = (d,el) => el.classList.toggle('veil');
@@ -579,7 +617,7 @@ function vDeck(){
     ['spell','t-sand','Recall','RU → type EN'],['pairs','t-mint','Quick pairs','Connect 6 pairs']
   ] : [
     ['match','t-blue','Match','Recognise meaning'],['pairs','t-peach','Quick pairs','Connect 6 pairs'],
-    ['spell','t-sand','Recall','RU → type EN'],['scramble','t-purple','Scramble','Rebuild word order']
+    ['spell','t-sand','Recall','RU → type EN'],['scramble','t-purple','Scramble','Rebuild an example sentence']
   ];
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
@@ -615,15 +653,16 @@ function reviewQueue(){
   const fresh=shuffle(p.filter(isNew)).slice(0,Math.max(0,cfg.newPerDay-newToday(st.deck)));
   return [...due, ...fresh];
 }
-function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), done:0, confirmExit:false }, o); st.S.step=st.S.steps[0]; go('session'); }
+function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), skipped:new Set(), done:0, practised:0 }, o); st.S.step=st.S.steps[0]; go('session'); }
 actions.lesson = () => {
   const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
-  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','spell','summary'];
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','spell','summary'];
   newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
 };
 actions.flash = () => { const q=reviewQueue(); if(!q.length) return toast('All caught up for today.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
 actions.drill = d => {
   let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
+  if(d.k==='scramble' && st.deck==='voc'){ const w=p.filter(i=>i.examples?.length); if(w.length) p=w; }
   if(!p.length) return toast('Nothing to practise in this filter.');
   // weakest first: due, then low ease, then random
   const w = it => { const c=card(it); return !c?1.5 : (c.due<=Date.now()?0:1) + c.ease/3; };
@@ -645,10 +684,10 @@ function nextStep(){
 }
 const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && st.S.step==='cloze' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
-function advance(){ const S=st.S; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
+function advance(){ const S=st.S; S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
-const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`].filter(Boolean).join('');
+const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
 const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
@@ -718,20 +757,41 @@ actions.pick = (d, el) => {
 // 8d. Scramble (word order)
 function vScramble(){
   const S=st.S, it=cur();
-  if(!S.sub){ const w=it.en.trim().split(/\s+/).map((t,i)=>({t,i})); let p=shuffle(w); if(w.length>1&&p.every((x,k)=>x.i===k)) p=p.reverse(); S.sub={pool:p, pick:[], target:w.map(x=>x.t).join(' ')}; }
-  return `<div class="card"><div class="trans" style="color:var(--fg)">${esc(it.ru)}</div>${it.note?`<p class="hint" style="margin:6px 0 0">${esc(it.note)}</p>`:''}
-  <div class="zone" style="margin:16px 0 12px">${S.sub.pick.length?S.sub.pick.map((w,k)=>`<button class="tok" data-act="unpick" data-k="${k}">${esc(w.t)}</button>`).join(''):'<span class="hint" style="margin:auto">Tap words to build the phrase</span>'}</div>
-  <div class="row" style="gap:8px">${S.sub.pool.map((w,k)=>`<button class="tok pool" data-act="tok" data-k="${k}">${esc(w.t)}</button>`).join('')}</div>
+  if(!S.sub){ const ex=it.deck==='voc'&&it.examples?.length ? it.examples[Math.floor(Math.random()*it.examples.length)] : null; S.sub=buildScramble(ex||it.en, ex?it.en:null); }
+  const ctx=S.sub.chunk;
+  return `<div class="card">${ctx?`<div class="hint" style="margin-bottom:4px">Put the example in order</div><div class="phrase" style="font-size:1.35rem">${esc(it.en)}</div><div class="muted" style="margin-top:2px">${esc(it.ru)}</div>`
+    :`<div class="trans" style="color:var(--fg)">${esc(it.ru)}</div>${it.note?`<p class="hint" style="margin:6px 0 0">${esc(it.note)}</p>`:''}`}
+  <div class="zone" style="margin:16px 0 12px">${S.sub.pick.length?S.sub.pick.map((w,k)=>`<button class="tok ${w.key?'key':''}" data-act="unpick" data-k="${k}">${esc(w.t)}</button>`).join(''):`<span class="hint" style="margin:auto">Tap words to build the ${ctx?'sentence':'phrase'}</span>`}</div>
+  <div class="row" style="gap:8px">${S.sub.pool.map((w,k)=>`<button class="tok pool ${w.key?'key':''}" data-act="tok" data-k="${k}">${esc(w.t)}</button>`).join('')}</div>
   <div id="fb" style="margin-top:12px"></div>
-  <div class="actions"><button class="btn ghost" data-act="reveal" style="flex:0 0 auto">Show</button><button class="btn" data-act="checkScr" ${S.sub.pool.length?'disabled':''}>Check</button></div></div>`;
+  <div class="actions"><button class="btn ghost" data-act="reveal" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="checkScr" ${S.sub.pool.length?'disabled':''}>Check</button></div></div>`;
 }
 actions.tok = d => { const s=st.S.sub; s.pick.push(s.pool.splice(+d.k,1)[0]); render(); };
 actions.unpick = d => { const s=st.S.sub; s.pool.push(s.pick.splice(+d.k,1)[0]); render(); };
 actions.checkScr = () => { const S=st.S, it=cur(), got=S.sub.pick.map(w=>w.t).join(' ');
-  if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok"><span class="ttl">Correct</span></div>'; speak(it.en); setTimeout(advance,900); }
+  if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok"><span class="ttl">Correct</span></div>'; speak(S.sub.target); setTimeout(advance,S.sub.chunk?1600:900); }
   else { S.misses.add(it); softLapse(it); buzz(); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(got,S.sub.target)}</div></div>`; } };
-actions.reveal = () => { const S=st.S, it=cur(); S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Correct order</span><div class="diff">${esc(it.en)}</div></div>`; speak(it.en);
-  setTimeout(()=>{ S.sub=null; render(); },2200); };
+actions.reveal = () => { const S=st.S, it=cur(), t=S.sub.target, ch=S.sub.chunk; S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Correct order</span><div class="diff">${ch?hl(t,ch):esc(t)}</div></div>`; speak(t);
+  setTimeout(()=>{ S.sub=buildScramble(t,ch); render(); },ch?3200:2200); };
+// Sentence → shuffled tiles. The chunk stays one highlighted tile so the drill is about its position in context.
+function buildScramble(text, chunk){
+  const target=text.trim().replace(/\s+/g,' ');
+  let toks=[];
+  const m = chunk && findChunk(target, chunk);
+  if(m){ const pre=target.slice(0,m.i).trim(), post=target.slice(m.i+m.len).trim();
+    toks=[...(pre?pre.split(' '):[]).map(t=>({t})), {t:target.substr(m.i,m.len),key:true}, ...(post?post.split(' '):[]).map(t=>({t}))]; }
+  else toks=target.split(' ').map(t=>({t}));
+  toks.forEach((x,i)=>x.i=i);
+  let p=shuffle(toks); if(toks.length>1&&p.every((x,k)=>x.i===k)) p=p.reverse();
+  return {pool:p, pick:[], target, chunk:chunk||null};
+}
+function findChunk(text, chunk){
+  const core=chunk.replace(/\(.*?\)|\b(sb|sth|smb|smth|someone|something)\b|[\/…]|\.\.\./gi,' ').trim().split(/\s+/).filter(w=>w.length>1);
+  if(!core.length) return null;
+  const re=new RegExp(core.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/(e|s|y|ed|ing)$/i,'').replace(/-/g,'[-\\s]?')+"[\\w'’-]*").join("(?:\\s+[\\w'’-]+){0,2}?\\s+"),'i');
+  const r=text.match(re); return r?{i:r.index,len:r[0].length}:null;
+}
+function hl(text, chunk){ const m=findChunk(text,chunk); return m?esc(text.slice(0,m.i))+'<mark>'+esc(text.substr(m.i,m.len))+'</mark>'+esc(text.slice(m.i+m.len)):esc(text); }
 
 // 8e. Dialogue read & cloze
 function fmtDialogue(text, mode){ // mode: 'show' | 'blank' | 'reveal'
@@ -748,7 +808,7 @@ function vCloze(){ const it=cur(); return `<div class="card"><div class="dlg not
   <p style="margin:14px 0 8px"><b>Meaning:</b> ${esc(it.ru)}</p>${it.note?`<p class="hint" style="margin:0 0 12px">${esc(it.note)}</p>`:''}
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the missing phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
-  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 
 // 8f. Recall (type the English)
 function vSpell(){ const it=cur(); const L=it.en.split(/\s+/).length;
@@ -756,7 +816,7 @@ function vSpell(){ const it=cur(); const L=it.en.split(/\s+/).length;
   <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(it.en.split(/\s+/)[0][0])}…”</p>
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="English phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
-  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
   const target = S.step==='cloze' ? expected(it) : it.en, r=check(v,target);
@@ -774,14 +834,14 @@ actions.giveup = () => { const S=st.S, it=cur(), target=S.step==='cloze'?expecte
 function vPairs(){
   const S=st.S;
   if(!S.sub){ const start=S.i, chunk=S.items.slice(start,start+6); S.sub={chunk, L:shuffle(chunk), R:shuffle(chunk), sel:null, done:[]}; }
-  const s=S.sub, c=(it,side)=>`<button class="pc ${side} ${s.done.includes(it)?'done':''} ${s.sel&&s.sel.it===it&&s.sel.side===side?'sel':''}" data-act="pair" data-side="${side}" data-k="${s.chunk.indexOf(it)}">${esc(side==='l'?it.en:it.ru)}</button>`;
+  const s=S.sub, c=(it,side)=>`<button class="pc ${side} ${s.done.includes(it)?'done':''} ${s.just===it?'just':''} ${s.sel&&s.sel.it===it&&s.sel.side===side?'sel':''}" data-act="pair" data-side="${side}" data-k="${s.chunk.indexOf(it)}">${esc(side==='l'?it.en:it.ru)}</button>`;
   return `<div class="pairs"><div>${s.L.map(i=>c(i,'l')).join('')}</div><div>${s.R.map(i=>c(i,'r')).join('')}</div></div>`;
 }
 actions.pair = (d, el) => {
   const S=st.S, s=S.sub, it=s.chunk[+d.k];
   if(!s.sel || s.sel.side===d.side){ s.sel = (s.sel&&s.sel.it===it&&s.sel.side===d.side)?null:{it,side:d.side}; if(d.side==='l'&&s.sel) speak(it.en); return render(); }
-  if(s.sel.it===it){ s.done.push(it); s.sel=null;
-    if(s.done.length===s.chunk.length){ S.i+=s.chunk.length; S.sub=null; render(); if(S.i>=S.items.length) setTimeout(nextStep,350); return; }
+  if(s.sel.it===it){ s.done.push(it); s.sel=null; s.just=it; buzz(12); setTimeout(()=>{ if(s.just===it){ s.just=null; document.querySelectorAll('.pc.just').forEach(e=>e.classList.remove('just')); } },700);
+    if(s.done.length===s.chunk.length){ S.i+=s.chunk.length; S.practised+=s.chunk.length; S.sub=null; render(); if(S.i>=S.items.length) setTimeout(nextStep,350); return; }
     return render(); }
   S.misses.add(it); S.misses.add(s.sel.it); buzz(); el.classList.add('err'); document.querySelector('.pc.sel')?.classList.add('err');
   setTimeout(()=>{ s.sel=null; render(); },380);
@@ -789,17 +849,18 @@ actions.pair = (d, el) => {
 
 // 8h. Summary
 function vSummary(){
-  bar(100); const S=st.S, m=[...S.misses];
-  const n=S.kind==='drill'?S.items.length:S.done;
+  bar(100); const S=st.S, m=[...S.misses].filter(x=>!S.skipped.has(x)), sk=[...S.skipped];
+  const n=S.kind==='drill'?Math.max(0,S.practised-sk.length):S.done; const rev=[...m,...sk];
   return `<div class="summary-hero" style="${m.length?'background:var(--primary-soft)':''}">
     <div class="n">${n}</div><h2 style="margin:10px 0 4px;font-size:1.25rem">${S.kind==='drill'?'items practised':'cards reviewed'}</h2>
-    <p class="muted" style="margin:0">${m.length?`${m.length} to revisit below`:'Clean run, no mistakes'}</p></div>
+    <p class="muted" style="margin:0">${S.early?'Finished early. ':''}${m.length?`${m.length} missed`:'No mistakes'}${sk.length?`, ${sk.length} skipped`:''}</p></div>
+  ${sk.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Skipped</div>${sk.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
   ${m.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Missed</div>${m.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
   <div class="actions" style="flex-direction:column">
-    ${m.length?`<button class="btn" data-act="retry">Retry mistakes (type them)</button>`:''}
-    <button class="btn ${m.length?'ghost':''}" data-act="back">Back to deck</button></div>`;
+    ${rev.length?`<button class="btn" data-act="retry">Retry missed and skipped (${rev.length})</button>`:''}
+    <button class="btn ${rev.length?'ghost':''}" data-act="back">Back to deck</button></div>`;
 }
-actions.retry = () => { const m=shuffle([...st.S.misses]); newSession({kind:'drill', items:m, steps:['spell','summary']}); };
+actions.retry = () => { const m=shuffle([...new Set([...st.S.misses,...st.S.skipped])]); newSession({kind:'drill', items:m, steps:['spell','summary']}); };
 
 // ---------- 9. Dictionary ----------
 function vDict(){
@@ -880,6 +941,29 @@ document.addEventListener('keydown', e => {
   else if(S.step==='match' && '1234'.includes(e.key)){ const b=document.querySelectorAll('.opt')[+e.key-1]; if(b&&!b.disabled) actions.pick({n:+e.key-1}, b); }
   else if((S.step==='learn'||S.step==='dialogue') && (e.key==='Enter'||e.code==='Space')){ e.preventDefault(); advance(); }
 });
+
+// ---------- Skip & exit ----------
+actions.skipItem = () => { const S=st.S, it=cur(); if(!it||S.sub?.locked) return; S.skipped.add(it); advance(); };
+function openExit(){
+  if($('#exitSheet')) return closeExit();
+  const S=st.S, rest=S.steps.filter(x=>x!=='summary'), k=rest.indexOf(S.step), hasNext=k>-1&&k<rest.length-1;
+  const el=document.createElement('div'); el.id='exitSheet'; el.className='sheet-wrap';
+  el.innerHTML=`<div class="sheet-bg" data-act="closeExit"></div><div class="sheet" role="dialog" aria-label="Session options">
+    <h3>Pause ${stepLabel[S.step].toLowerCase()}</h3><p class="hint" style="margin:4px 0 16px">Reviews you already graded are saved.</p>
+    <div class="stack" style="gap:10px">
+      ${hasNext?`<button class="btn ghost" data-act="skipStep"><span style="display:flex;flex-direction:column;line-height:1.25">Skip this exercise<small class="muted" style="font-weight:500">Next: ${stepLabel[rest[k+1]]}</small></span></button>`:''}
+      <button class="btn ghost" data-act="finishNow">Finish and see summary</button>
+      <button class="btn ghost" data-act="quitNow" style="color:var(--muted)">Leave without summary</button>
+      <button class="btn" data-act="closeExit">Keep going</button>
+    </div></div>`;
+  document.body.appendChild(el); el.querySelector('[data-act="closeExit"].btn').focus();
+}
+function closeExit(){ $('#exitSheet')?.remove(); }
+actions.closeExit = closeExit;
+actions.skipStep = () => { closeExit(); speechSynthesis?.cancel(); nextStep(); };
+actions.finishNow = () => { closeExit(); speechSynthesis?.cancel(); const S=st.S; S.early=true; S.step='summary'; S.i=0; S.sub=null; render(); window.scrollTo(0,0); };
+actions.quitNow = () => { closeExit(); st.S=null; speechSynthesis?.cancel(); go('deck'); };
+document.addEventListener('keydown', e => { if(e.key==='Escape' && st.view==='session' && st.S && st.S.step!=='summary'){ e.preventDefault(); openExit(); } });
 
 render();
 </script>
