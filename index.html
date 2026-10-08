@@ -350,6 +350,11 @@ textarea#ans{font-family:var(--serif);font-size:1.12rem;line-height:1.45}
 .bullet-actions .bno{background:transparent;color:var(--fg);border:1.5px solid var(--fg)}
 .bullet-actions .byes{background:var(--fg);color:var(--bg)}
 body.bul .progress{display:none}
+
+.pc-say{float:right;margin:-4px -4px 4px 8px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);background:var(--surface)}
+.pc-say svg{width:15px;height:15px}
+.skip-ex{display:block;margin-top:6px;margin-left:auto;border:1px solid var(--fg);background:transparent;border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:600}
+body.sess .actions .audio{width:54px;height:54px}
 </style>
 </head>
 <body>
@@ -546,7 +551,7 @@ function preview(it, g){
   return fmtIvl(Math.min(MAX_IVL, nextIvl(c,g)));
 }
 function grade(it, g){
-  const k=keyOf(it), c = srs[k] || {ivl:0, ease:2.5, reps:0, lapses:0};
+  const k=keyOf(it), c = srs[k] || {ivl:0, ease:2.5, reps:0, lapses:0, src:st.S?.kind==='flash'?'cards':'lesson'};
   const ni = Math.min(MAX_IVL, nextIvl(c,g));
   if (g==='again'){ c.lapses=(c.lapses||0)+(c.reps?1:0); c.ease=Math.max(1.3,c.ease-0.2); c.ivl=0; }
   else {
@@ -563,7 +568,7 @@ function grade(it, g){
 function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,2); c.due=startOfDay(Date.now()+DAY); LS.set(K.srs,srs); }
 function startOfDay(ts){ const d=new Date(ts); d.setHours(4,0,0,0); return d.getTime(); }
 function bump(ok){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].rev++; if(ok) log[t].ok++; LS.set(K.log,log); }
-function newToday(deck){ return Object.entries(srs).filter(([k,c])=>k.startsWith(deck+':') && c.reps===1 && c.last && today(new Date(c.last))===today()).length; }
+function newToday(deck){ return Object.entries(srs).filter(([k,c])=>k.startsWith(deck+':') && c.reps===1 && c.src!=='cards' && c.last && today(new Date(c.last))===today()).length; }
 function streak(){ let s=0, d=new Date(); if(!log[today(d)]) d.setDate(d.getDate()-1); while(log[today(d)]){ s++; d.setDate(d.getDate()-1);} return s; }
 function status(it){
   const c=card(it); if(!c) return '<span class="pill new">New</span>';
@@ -673,7 +678,7 @@ function vDeck(){
       <p style="opacity:.8;font-size:.88rem;margin:8px 0 0">Review cards, then drill the ones you missed: ${isP?'match → scramble → fill the gap':'match → pairs → scramble → write → recall'}.</p>
       <div class="actions">
         <button class="btn" style="background:var(--yellow);color:#24222E" data-act="lesson" ${due+newLeft?'':'disabled'}>Start lesson</button>
-        <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${due+newLeft?'':'disabled'}>Cards only</button>
+        <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${p.length?'':'disabled'}>Cards</button>
       </div>
     </div>
     <div class="eyebrow">Free practice · ${p.length} items</div>
@@ -694,13 +699,19 @@ function reviewQueue(){
   const fresh=shuffle(p.filter(isNew)).slice(0,Math.max(0,cfg.newPerDay-newToday(st.deck)));
   return [...due, ...fresh];
 }
+// Cards mode: no daily cap. Due first, then every new card, then the rest by soonest due date.
+function cardsQueue(){
+  const p=pool(), due=reviewQueue().filter(isDue), fresh=shuffle(p.filter(isNew));
+  const rest=p.filter(i=>!isNew(i)&&!isDue(i)).sort((a,b)=>card(a).due-card(b).due);
+  return [...due, ...fresh, ...rest];
+}
 function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), skipped:new Set(), done:0, practised:0 }, o); st.S.step=st.S.steps[0]; go('session'); }
 actions.lesson = () => {
   const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
-  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','sentence','spell','summary'];
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','spell','summary'];
   newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
 };
-actions.flash = () => { const q=reviewQueue(); if(!q.length) return toast('All caught up for today.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
+actions.flash = () => { const q=cardsQueue(); if(!q.length) return toast('No cards in this filter.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
 actions.drill = d => {
   if(d.k==='bullet') return startBullet();
   let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
@@ -728,14 +739,15 @@ function nextStep(){
 }
 const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx') && st.S.kind!=='drill' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
-function advance(){ const S=st.S; S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
+function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].prac=(log[t].prac||0)+1; LS.set(K.log,log); }
+function advance(){ const S=st.S; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
 const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
 const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', scrambleEx:'Scramble sentence' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
-  return `<div class="sess-head"><div><div class="step">${stepLabel[S.step]}</div>${stepN.length>1?`<div class="dots" style="margin-top:6px" aria-label="Step ${k+1} of ${stepN.length}">${stepN.map((_,j)=>`<i class="${j<k?'on':j===k?'cur':''}"></i>`).join('')}</div>`:''}</div><span class="cnt">${Math.min(S.i+1,L.length)} of ${L.length}</span></div>`; }
+  return `<div class="sess-head"><div><div class="step">${stepLabel[S.step]}</div>${stepN.length>1?`<div class="dots" style="margin-top:6px" aria-label="Step ${k+1} of ${stepN.length}">${stepN.map((_,j)=>`<i class="${j<k?'on':j===k?'cur':''}"></i>`).join('')}</div>`:''}</div><div style="text-align:right"><span class="cnt">${Math.min(S.i+1,L.length)} of ${L.length}</span>${S.kind==='lesson'&&S.i===0&&S.step!=='sort'&&k<stepN.length-1?`<button class="skip-ex" data-act="skipStep">Skip exercise</button>`:''}</div></div>`; }
 
 function vSession(){
   const S=st.S; if(!S) return '';
@@ -758,11 +770,10 @@ function vSort(){
         <div class="trans" style="font-size:1.35rem">${esc(back(it))}</div>${notes(it)}
         <div class="row" style="justify-content:flex-end;margin-top:auto">${audioBtn(it.en)}</div></div>
     </div></div>
-  <div id="grades" ${S.flipped?'':'hidden'}><div class="grades">${gb('again','Again',1)}${gb('hard','Hard',2)}${gb('good','Good',3)}${gb('easy','Easy',4)}</div>
-  ${S.kind==='lesson'?`<p class="hint" style="margin-top:10px">Again and Hard go into the practice set (${S.items.length}/${cfg.lessonSize}).</p>`:''}</div>
-  <div id="flipHint" ${S.flipped?'hidden':''} class="actions"><button class="btn soft" data-act="flip">Show answer</button></div>`;
+  <div id="grades"><div class="grades">${gb('again','Again',1)}${gb('hard','Hard',2)}${gb('good','Good',3)}${gb('easy','Easy',4)}</div>
+  <p class="hint" style="margin-top:10px">${S.flipped?'':'Know it already? Grade without flipping. '}${S.kind==='lesson'?`Again and Hard go into the practice set (${S.items.length}/${cfg.lessonSize}).`:'Tap the card to see the answer.'}</p></div>`;
 }
-actions.flip = () => { const S=st.S; const f=$('#flip'); if(!f) return; f.classList.toggle('on'); if(!S.flipped){ S.flipped=true; $('#grades').hidden=false; $('#flipHint').hidden=true; if(cfg.autoSpeak && cfg.dir==='ru-en') speak(cur().en);} };
+actions.flip = () => { const S=st.S; const f=$('#flip'); if(!f) return; f.classList.toggle('on'); if(!S.flipped){ S.flipped=true; if(cfg.autoSpeak && cfg.dir==='ru-en') speak(cur().en);} };
 actions.grade = d => {
   const S=st.S; if(S.busy) return; S.busy=true;
   const f=$('#flip'); if(f && !matchMedia('(prefers-reduced-motion: reduce)').matches){ f.classList.add(d.g==='again'||d.g==='hard'?'out-l':'out-r'); setTimeout(()=>{S.busy=false;doGrade(d);},260); } else { S.busy=false; doGrade(d); }
@@ -814,9 +825,9 @@ function vScramble(){
 actions.tok = d => { const s=st.S.sub; s.pick.push(s.pool.splice(+d.k,1)[0]); render(); if(!s.pool.length) actions.checkScr(); };
 actions.unpick = d => { const s=st.S.sub; s.pool.push(s.pick.splice(+d.k,1)[0]); render(); };
 actions.checkScr = () => { const S=st.S, it=cur(), got=S.sub.pick.map(w=>w.t).join(' ');
-  if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok"><span class="ttl">Correct</span></div>'; speak(S.sub.target); setTimeout(advance,S.sub.chunk?1600:900); }
+  if(norm(got)===norm(S.sub.target)){ $('#fb').innerHTML='<div class="fb ok"><span class="ttl">Correct</span></div>'; if(cfg.autoSpeak) speak(S.sub.target); setTimeout(advance,S.sub.chunk?1600:900); }
   else { S.misses.add(it); softLapse(it); buzz(); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(got,S.sub.target)}</div></div>`; } };
-actions.reveal = () => { const S=st.S, it=cur(), t=S.sub.target, ch=S.sub.chunk; S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Correct order</span><div class="diff">${ch?hl(t,ch):esc(t)}</div></div>`; speak(t);
+actions.reveal = () => { const S=st.S, it=cur(), t=S.sub.target, ch=S.sub.chunk; S.misses.add(it); softLapse(it); $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Correct order</span><div class="diff">${ch?hl(t,ch):esc(t)}</div></div>`; if(cfg.autoSpeak) speak(t);
   setTimeout(()=>{ S.sub=buildScramble(t,ch); render(); },ch?3200:2200); };
 // Sentence → shuffled tiles. The chunk stays one highlighted tile so the drill is about its position in context.
 function buildScramble(text, chunk){
@@ -853,7 +864,7 @@ function vCloze(){ const it=cur(); return `<div class="card"><div class="dlg not
   <p style="margin:14px 0 8px"><b>Meaning:</b> ${esc(it.ru)}</p>${it.note?`<p class="hint" style="margin:0 0 12px">${esc(it.note)}</p>`:''}
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the missing phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
-  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+  <div class="actions">${audioBtn(expected(it))}<button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 
 // 8f2. Write the sentence (Duolingo-style dictation of a full example)
 function vSentence(){
@@ -878,7 +889,7 @@ function vSpell(){ const it=cur(), core=stripBr(it.en)||it.en, L=core.split(/\s+
   <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(core[0])}…”${opt?' · [brackets] optional':''}</p>
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="English phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
-  <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+  <div class="actions">${audioBtn(it.en)}<button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
 actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
   const full=typeTarget(it), r=check(v,full), target=bestTarget(v,full);
@@ -887,23 +898,23 @@ actions.typeCheck = () => {
   S.sub=Object.assign(S.sub||{},{locked:true}); inp.disabled=true;
   $('#fb').innerHTML = r==='exact' ? `<div class="fb ok"><span class="ttl">Correct</span>${S.step==='cloze'?`<div class="dlg" style="margin-top:8px">${fmtDialogue(blankByPhrase(it),'show')}</div>`:''}</div>`
                                     : `<div class="fb warn"><span class="ttl">Accepted, watch the spelling</span><div class="diff">${diff(v,target)}</div></div>`;
-  speak(target); setTimeout(advance, S.step==='cloze'?2200:r==='exact'?(S.step==='sentence'?1300:700):2000);
+  if(cfg.autoSpeak) speak(target); setTimeout(advance, S.step==='cloze'?2200:r==='exact'?(S.step==='sentence'?1300:700):2000);
 };
 const typeTarget = it => st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
 actions.giveup = () => { const S=st.S, it=cur(), target=typeTarget(it); if(S.sub?.locked) return; S.misses.add(it); softLapse(it);
-  $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${showBr(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; speak(target); $('#ans').value=''; $('#ans').focus(); };
+  $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${showBr(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; if(cfg.autoSpeak) speak(target); $('#ans').value=''; $('#ans').focus(); };
 
 // 8g. Quick pairs (boards of up to 6)
 function vPairs(){
   const S=st.S;
   if(!S.sub){ const start=S.i, chunk=S.items.slice(start,start+6); S.sub={chunk, L:shuffle(chunk), R:shuffle(chunk), sel:null, done:[]}; }
-  const s=S.sub, c=(it,side)=>`<button class="pc ${side} ${s.done.includes(it)?'done':''} ${s.just===it?'just':''} ${s.sel&&s.sel.it===it&&s.sel.side===side?'sel':''}" data-act="pair" data-side="${side}" data-k="${s.chunk.indexOf(it)}">${esc(side==='l'?it.en:it.ru)}</button>`;
+  const s=S.sub, c=(it,side)=>`<button class="pc ${side} ${s.done.includes(it)?'done':''} ${s.just===it?'just':''} ${s.sel&&s.sel.it===it&&s.sel.side===side?'sel':''}" data-act="pair" data-side="${side}" data-k="${s.chunk.indexOf(it)}">${esc(side==='l'?it.en:it.ru)}${side==='l'&&!s.done.includes(it)?`<span class="pc-say" data-act="say" data-t="${esc(it.en)}" role="button" aria-label="Play audio">${ICON.audio}</span>`:''}</button>`;
   return `<div class="pairs"><div>${s.L.map(i=>c(i,'l')).join('')}</div><div>${s.R.map(i=>c(i,'r')).join('')}</div></div>`;
 }
 actions.pair = (d, el) => {
   const S=st.S, s=S.sub, it=s.chunk[+d.k];
-  if(!s.sel || s.sel.side===d.side){ s.sel = (s.sel&&s.sel.it===it&&s.sel.side===d.side)?null:{it,side:d.side}; if(d.side==='l'&&s.sel) speak(it.en); return render(); }
-  if(s.sel.it===it){ s.done.push(it); s.sel=null; s.just=it; buzz(12); setTimeout(()=>{ if(s.just===it){ s.just=null; document.querySelectorAll('.pc.just').forEach(e=>e.classList.remove('just')); } },700);
+  if(!s.sel || s.sel.side===d.side){ s.sel = (s.sel&&s.sel.it===it&&s.sel.side===d.side)?null:{it,side:d.side}; return render(); }
+  if(s.sel.it===it){ s.done.push(it); s.sel=null; markActive(); s.just=it; buzz(12); setTimeout(()=>{ if(s.just===it){ s.just=null; document.querySelectorAll('.pc.just').forEach(e=>e.classList.remove('just')); } },700);
     if(s.done.length===s.chunk.length){ S.i+=s.chunk.length; S.practised+=s.chunk.length; S.sub=null; render(); if(S.i>=S.items.length) setTimeout(nextStep,350); return; }
     return render(); }
   S.misses.add(it); S.misses.add(s.sel.it); buzz(); el.classList.add('err'); document.querySelector('.pc.sel')?.classList.add('err');
@@ -1003,7 +1014,7 @@ function afterRender(){
 document.addEventListener('keydown', e => {
   if(st.view!=='session'||!st.S||e.target.matches('input,textarea')) return;
   const S=st.S;
-  if(S.step==='sort'){ if(e.code==='Space'){ e.preventDefault(); actions.flip(); } else if(S.flipped && '1234'.includes(e.key)) actions.grade({g:['again','hard','good','easy'][+e.key-1]}); }
+  if(S.step==='sort'){ if(e.code==='Space'){ e.preventDefault(); actions.flip(); } else if('1234'.includes(e.key)) actions.grade({g:['again','hard','good','easy'][+e.key-1]}); }
   else if(S.step==='match' && '1234'.includes(e.key)){ const b=document.querySelectorAll('.opt')[+e.key-1]; if(b&&!b.disabled) actions.pick({n:+e.key-1}, b); }
   else if((S.step==='learn'||S.step==='dialogue') && (e.key==='Enter'||e.code==='Space')){ e.preventDefault(); advance(); }
 });
@@ -1068,7 +1079,7 @@ function vBullet(){
 actions.bulletGo = () => { const b=st.S.b; b.end=Date.now()+BULLET_SEC*1000; bulletCard(); render(); startBulletTimer(); };
 actions.bulletAns = d => {
   const S=st.S, b=S.b; if(!b.end||Date.now()>b.end||b.lock) return;
-  const said=d.v==='1', right=said===b.cur.ok; b.total++;
+  const said=d.v==='1', right=said===b.cur.ok; b.total++; markActive();
   if(right){ b.score++; b.streak++; b.best=Math.max(b.best,b.streak); }
   else { b.streak=0; buzz(); if(!b.wrong.includes(b.cur.it)) b.wrong.push(b.cur.it); S.misses.add(b.cur.it); }
   const c=$('#bcard'); b.lock=true;
