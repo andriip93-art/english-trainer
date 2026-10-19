@@ -111,7 +111,8 @@ h3{font-size:1.02rem;font-weight:600;margin:0}
 .fs::after{content:'';position:absolute;right:12px;top:50%;width:6px;height:6px;border:solid currentColor;border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg);pointer-events:none;opacity:.7}
 .fs select{text-align:left;appearance:none;-webkit-appearance:none;width:100%;border:1px solid var(--line);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.86rem;font-weight:500;padding:8px 28px 8px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .fs.on{color:var(--bg)} .fs.on select{background:var(--fg);border-color:var(--fg)}
-.fs select option{color:initial;background:initial}
+/* the open list must not inherit the dark 'selected' pill: explicit page colors, both themes */
+.fs select option{color:var(--fg);background-color:var(--bg)}
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px}
 .seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-weight:600;font-size:.86rem;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
