@@ -526,6 +526,11 @@ const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive')
 const sameGroup = (a,b) => !!a.group && a.group===b.group;
 const siblings = it => it.group ? (data[it.deck]?.items||[]).filter(x=>x!==it && isLive(x) && x.group===it.group) : [];
 const synNote = it => { const sy=siblings(it); return sy.length?`<div class="note"><b>Same meaning</b>${sy.map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:''; };
+// "wrong -> right" in ru_trap; also accepts → and =>
+const trapParts = it => { const m=String(it.trap||'').split(/\s*(?:->|→|=>)\s*/); return m.length===2&&m[0]&&m[1]?{wrong:m[0],right:m[1]}:null; };
+const NEEDS = { syn:i=>siblings(i).length>0, reg:i=>!!i.register, trap:i=>!!trapParts(i) };
+const REGS = ['Exec-safe','Neutral','Informal','Caution'];
+const REG_HINT = { 'Exec-safe':'Fine with the board or investors', 'Neutral':'Normal business talk', 'Informal':'Colleagues you know well', 'Caution':'Rude or easy to misfire' };
 const regPill = it => it.register && it.register!=='Neutral' ? `<span class="pill ${it.register==='Caution'?'due':''}">${esc(it.register)}</span>` : '';
 const CAT_DESC = {
   'Clarification':'Clarifying details and softly requesting elaboration without losing authority.',
@@ -705,6 +710,8 @@ function vDeck(){
     ['match','t-blue','Match','Recognise meaning'],['pairs','t-peach','Quick pairs','Connect 6 pairs'],
     ['scramble','t-purple','Scramble chunk','Rebuild the chunk'],['scrambleEx','t-rose','Scramble sentence','Rebuild an example',p.filter(i=>i.examples?.length).length],
     ['spell','t-sand','Recall','RU → type EN'],['sentence','t-blue','Write the sentence','Listen and type an example',p.filter(i=>i.examples?.length).length],
+    ['syn','t-mint','Synonyms','Pick the same meaning',p.filter(NEEDS.syn).length],['reg','t-peach','Board-ready?','Choose the register',p.filter(NEEDS.reg).length],
+    ['trap','t-sand','RU traps','Fix the calque',p.filter(NEEDS.trap).length],
     ['bullet','t-rose wide bullet-tile','Bullet','60 seconds · right or wrong? · best '+bestBullet(st.deck)]
   ];
   return `<div class="stack">
@@ -724,6 +731,7 @@ function vDeck(){
         <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${p.length?'':'disabled'}>Cards</button>
       </div>
     </div>
+    ${coverage(p)}
     <div class="eyebrow">Free practice · ${p.length} items</div>
     <div class="grid2">${ex.map(([k,t,n,s,cnt])=>`<button class="tile ${t}" data-act="drill" data-k="${k}" ${cnt===0?'disabled style="opacity:.45"':''}><h3>${n}</h3><small>${s}${cnt!==undefined?` · ${cnt}`:''}</small></button>`).join('')}</div>
     <button class="deck" data-act="dict" style="padding:14px 18px"><div class="meta"><h3>Dictionary</h3><small class="muted">Search, listen, see progress per item</small></div><span class="pill">${p.length}</span></button>
@@ -739,6 +747,19 @@ function domainChips(items){
   return `<div class="chips">${['all',...doms].map(t=>`<button class="chip ${st.dom===t?'on':''}" data-act="dom" data-v="${esc(t)}">${t==='all'?'All domains':esc(t)} <span class="muted">${t==='all'?items.length:items.filter(i=>i.domain===t).length}</span></button>`).join('')}</div>`;
 }
 actions.scope = d => { cfg.scope=d.s; LS.set(K.cfg,cfg); render(); };
+// Progress by type for the current filter: seen and mature (interval 21d+) shares
+function coverage(p){
+  const types=[...new Set(p.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
+  if(!types.length) return '';
+  const row=t=>{ const g=p.filter(i=>i.type===t), seen=g.filter(i=>!isNew(i)).length, mat=g.filter(i=>(card(i)?.ivl||0)>=21).length, n=g.length;
+    return `<div style="display:grid;grid-template-columns:minmax(0,9.5em) 1fr auto;gap:10px;align-items:center;font-size:.85rem">
+      <span>${esc(t)}</span>
+      <span style="position:relative;height:8px;border-radius:4px;background:var(--line);overflow:hidden">
+        <i style="position:absolute;inset:0 auto 0 0;width:${seen/n*100}%;background:color-mix(in srgb,var(--primary) 35%,transparent)"></i>
+        <i style="position:absolute;inset:0 auto 0 0;width:${mat/n*100}%;background:var(--primary)"></i></span>
+      <span class="muted" style="font-variant-numeric:tabular-nums">${mat}/${n}</span></div>`; };
+  return `<div class="card stack" style="gap:8px"><div class="row" style="justify-content:space-between"><span class="eyebrow">Progress by type</span><span class="hint">mature / total · light = seen</span></div>${types.map(row).join('')}</div>`;
+}
 function typeChips(items){
   const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
   if(!types.length) return '';
@@ -769,7 +790,7 @@ function cardsQueue(){
 function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), skipped:new Set(), done:0, practised:0 }, o); st.S.step=st.S.steps[0]; go('session'); }
 actions.lesson = () => {
   const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
-  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','spell','summary'];
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','syn','pairs','scramble','spell','trap','summary'];
   newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
 };
 actions.flash = () => { const q=cardsQueue(); if(!q.length) return toast('No cards in this filter.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
@@ -777,7 +798,8 @@ actions.drill = d => {
   if(d.k==='bullet') return startBullet();
   let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
   if(d.k==='sentence'||d.k==='scrambleEx') p=p.filter(i=>i.examples?.length);
-  if(!p.length) return toast('Nothing to practise in this filter.');
+  if(NEEDS[d.k]) p=p.filter(NEEDS[d.k]);
+  if(!p.length) return toast(d.k==='trap'?'No RU traps yet. Fill the ru_trap column as you catch calques.':'Nothing to practise in this filter.');
   // weakest first: due, then low ease, then random
   const w = it => { const c=card(it); return !c?1.5 : (c.due<=Date.now()?0:1) + c.ease/3; };
   const items = shuffle(p).sort((a,b)=>w(a)-w(b)).slice(0, d.k==='pairs'?6:10);
@@ -791,21 +813,23 @@ function nextStep(){
     if(!S.items.length){ idx=S.steps.length-1; break; }
     if(s==='cloze' && !S.items.some(i=>i.dialogue)){ idx++; continue; }
     if((s==='sentence'||s==='scrambleEx') && !S.items.some(i=>i.examples?.length)){ idx++; continue; }
+    if(NEEDS[s] && !S.items.some(NEEDS[s])){ idx++; continue; }
     break;
   }
   S.step=S.steps[Math.min(idx,S.steps.length-1)]; S.i=0; S.sub=null;
   if(S.step==='cloze') S.list=S.items.filter(i=>i.dialogue);
   if(S.step==='sentence'||S.step==='scrambleEx') S.list=S.items.filter(i=>i.examples?.length);
+  if(NEEDS[S.step]) S.list=S.items.filter(NEEDS[S.step]);
   render(); window.scrollTo(0,0);
 }
-const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx') && st.S.kind!=='drill' ? st.S.list : st.S.items);
+const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx'||NEEDS[st.S.step]) && st.S.kind!=='drill' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
 function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].prac=(log[t].prac||0)+1; LS.set(K.log,log); }
-function advance(){ const S=st.S; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
+function advance(){ const S=st.S; if(!S||st.view!=='session') return; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
 const notes = it => [synNote(it), it.trap&&`<div class="note"><b>RU trap</b>${esc(it.trap)}</div>`, it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
-const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', scrambleEx:'Scramble sentence' };
+const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', syn:'Synonyms', reg:'Board-ready?', trap:'RU trap', scrambleEx:'Scramble sentence' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
   return `<div class="sess-head"><div><div class="step">${stepLabel[S.step]}</div>${stepN.length>1?`<div class="dots" style="margin-top:6px" aria-label="Step ${k+1} of ${stepN.length}">${stepN.map((_,j)=>`<i class="${j<k?'on':j===k?'cur':''}"></i>`).join('')}</div>`:''}</div><div style="text-align:right"><span class="cnt">${Math.min(S.i+1,L.length)} of ${L.length}</span>${S.kind==='lesson'&&S.i===0&&S.step!=='sort'&&k<stepN.length-1?`<button class="skip-ex" data-act="skipStep">Skip exercise</button>`:''}</div></div>`; }
@@ -815,7 +839,7 @@ function vSession(){
   if(S.step==='summary') return S.kind==='bullet' ? vBulletSummary() : vSummary();
   if(S.step==='bullet') return vBullet();
   if(!list().length){ setTimeout(nextStep); return ''; }
-  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, scrambleEx:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs, sentence:vSentence })[S.step]();
+  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, scrambleEx:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs, sentence:vSentence, syn:vSyn, reg:vReg, trap:vTrap })[S.step]();
 }
 
 // 8a. Flashcard review with 4-grade SRS
@@ -944,6 +968,52 @@ function vSentence(){
   <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`;
 }
 
+// 8i. Synonyms (group_id): pick the phrase with the same meaning
+function vSyn(){
+  const S=st.S, it=cur();
+  if(!S.sub){ const right=shuffle(siblings(it))[0];
+    const others=shuffle(pool().filter(x=>x!==it&&!sameGroup(x,it)&&x.en!==right.en&&(x.type===it.type||!it.type))).slice(0,3);
+    S.sub={right, opts:shuffle([right,...others])}; }
+  return `<div class="card"><div class="hint" style="margin-bottom:4px">Same meaning as</div>
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${showBr(it.en)}</div>${audioBtn(it.en)}</div>
+  <div class="muted" style="margin-top:2px">${esc(it.ru)}</div>
+  <div class="stack" style="margin-top:18px;gap:10px">${S.sub.opts.map((o,n)=>`<button class="opt" data-act="synPick" data-n="${n}"><span class="k">${n+1}</span><span>${showBr(o.en)}</span></button>`).join('')}</div>
+  <div id="fb" style="margin-top:12px"></div></div>`;
+}
+actions.synPick = (d, el) => {
+  const S=st.S, it=cur(), o=S.sub.opts[+d.n];
+  if(o===S.sub.right){ el.classList.add('right'); buzz(12); document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    $('#fb').innerHTML=`<div class="fb ok"><span class="ttl">Correct</span><div class="hint">${siblings(it).map(x=>showBr(x.en)).join(' · ')}</div></div>`; if(cfg.autoSpeak) speak(o.en); setTimeout(advance,1100); }
+  else { el.classList.add('wrong','shake'); buzz(); el.disabled=true; S.misses.add(it); softLapse(it); }
+};
+
+// 8j. Board-ready? (register): choose where the phrase is safe to use
+function vReg(){
+  const it=cur();
+  return `<div class="card"><div class="hint" style="margin-bottom:4px">Where can you say this?</div>
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${showBr(it.en)}</div>${audioBtn(it.en)}</div>
+  <div class="muted" style="margin-top:2px">${esc(it.ru)}</div>
+  <div class="stack" style="margin-top:18px;gap:10px">${REGS.map((r,n)=>`<button class="opt" data-act="regPick" data-r="${r}"><span class="k">${n+1}</span><span><b>${r}</b><br><small class="muted">${REG_HINT[r]}</small></span></button>`).join('')}</div>
+  <div id="fb" style="margin-top:12px"></div></div>`;
+}
+actions.regPick = (d, el) => {
+  const S=st.S, it=cur(); if(S.sub?.done) return;
+  const ok=d.r===it.register; S.sub={done:true};
+  document.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; if(b.dataset.r===it.register) b.classList.add('right'); });
+  if(!ok){ el.classList.add('wrong','shake'); buzz(); S.misses.add(it); softLapse(it); } else buzz(12);
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':'warn'}"><span class="ttl">${ok?'Correct':'It is '+esc(it.register)}</span>${it.note?`<div class="hint" style="margin-top:4px">${esc(it.note)}</div>`:''}</div>
+    <div class="actions"><button class="btn" data-act="next">Continue</button></div>`;
+};
+
+// 8k. RU trap (ru_trap "wrong -> right"): see the calque, type the native form
+function vTrap(){ const it=cur(), t=trapParts(it);
+  return `<div class="card"><div class="hint" style="margin-bottom:6px">Russian speakers often say</div>
+  <div class="phrase" style="text-decoration:line-through;text-decoration-color:var(--bad);opacity:.8">${esc(t.wrong)}</div>
+  <p class="hint" style="margin:10px 0 4px">Native form · card: <b>${showBr(it.en)}</b> · ${esc(it.ru)}</p>
+  <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the correct form"></form>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions">${audioBtn(t.right)}<button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+
 // 8f. Recall (type the English)
 function vSpell(){ const it=cur(), core=stripBr(it.en)||it.en, L=core.split(/\s+/).length, opt=/\[/.test(it.en);
   return `<div class="card"><div class="trans" style="font-size:1.3rem;color:var(--fg)">${esc(it.ru)}</div>
@@ -963,7 +1033,7 @@ actions.typeCheck = () => {
                                     : `<div class="fb warn"><span class="ttl">Accepted, watch the spelling</span><div class="diff">${diff(v,target)}</div></div>`;
   if(cfg.autoSpeak) speak(target); setTimeout(advance, S.step==='cloze'?2200:r==='exact'?(S.step==='sentence'?1300:700):2000);
 };
-const typeTarget = it => st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
+const typeTarget = it => st.S.step==='trap' ? trapParts(it).right : st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
 actions.giveup = () => { const S=st.S, it=cur(), target=typeTarget(it); if(S.sub?.locked) return; S.misses.add(it); softLapse(it);
   $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${showBr(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; if(cfg.autoSpeak) speak(target); $('#ans').value=''; $('#ans').focus(); };
 
