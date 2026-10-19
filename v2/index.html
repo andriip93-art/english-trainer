@@ -507,7 +507,7 @@ function parseVoc(t){
   const col=(...names)=>h.findIndex(x=>names.includes(x));
   const C={ id:col('id'), en:col('en','english','phrase'), ru:col('ru','russian','translation'), list:col('list','category'),
             note:col('explanation','meaning'), ex:col('examples','example'), ctx:col('context','topic'),
-            status:col('status'), type:col('type'), register:col('register'), domain:col('domain'), group:col('group_id','group'), trap:col('ru_trap'), orig:col('en_original') };
+            status:col('status'), type:col('type'), register:col('register'), domain:col('domain'), group:col('group_id','group'), trap:col('ru_trap') };
   const header = C.en>-1 || C.ru>-1; if(C.en===-1) C.en=0; if(C.ru===-1) C.ru=1;
   const v=(c,k)=>C[k]>-1?(c[C[k]]||'').trim():'';
   const rename = n => /1/.test(n)?'Hard Business':/2/.test(n)?'Workflow':/3/.test(n)?'Vibe & Idioms':n;
@@ -515,7 +515,7 @@ function parseVoc(t){
     deck:'voc', id:C.id>-1?v(c,'id'):String(i+1), en:v(c,'en'), ru:v(c,'ru'),
     cat: rename(v(c,'list')||'Main List'), note:v(c,'note'), examples:splitExamples([v(c,'ex')]), example:v(c,'ex'),
     ctx:v(c,'ctx'), dialogue:'',
-    status:v(c,'status')||'Active', type:v(c,'type'), register:v(c,'register'), domain:v(c,'domain'), group:v(c,'group'), trap:v(c,'trap'), orig:v(c,'orig')
+    status:v(c,'status')||'Active', type:v(c,'type'), register:v(c,'register'), domain:v(c,'domain'), group:v(c,'group'), trap:v(c,'trap')
   }));
 }
 // ---- v2 helpers: status, type priority, synonym groups ----
@@ -1001,12 +1001,12 @@ actions.retry = () => { const m=shuffle([...new Set([...st.S.misses,...st.S.skip
 
 // ---------- 9. Dictionary ----------
 function vDict(){
-  const q=norm(st.q), p=pool().filter(w=>!q||norm([w.en,w.ru,w.note,w.type,w.domain,w.orig].join(' ')).includes(q));
+  const q=norm(st.q), p=pool().filter(w=>!q||norm([w.en,w.ru,w.note,w.type,w.domain].join(' ')).includes(q));
   return `<div class="stack"><input type="search" id="search" placeholder="Search EN, RU or notes" value="${esc(st.q)}">
   <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">${p.length} items</span><button class="btn ghost small" data-act="copyDict">Copy list</button></div>
   <div class="card" style="padding-block:4px">${p.length?p.map(w=>`<div class="dict-row"><div class="meta"><b>${esc(w.en)}</b><div class="muted">${esc(w.ru)}</div>
     <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span>${w.type?`<span class="pill">${esc(w.type)}</span>`:''}${w.domain?`<span class="pill">${esc(w.domain)}</span>`:''}${regPill(w)}${w.status==='Passive'?'<span class="pill">Passive</span>':''}</div>
-    ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${w.orig?`<div class="hint">Previously saved as: ${esc(w.orig)}</div>`:''}${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
+    ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
     </div>${audioBtn(w.en)}</div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
 }
 actions.copyDict = () => { const q=norm(st.q); copy(pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q)).map(w=>`${w.en} - ${w.ru}${w.note?` [${w.note}]`:''}`).join('\n'), 'List copied'); };
