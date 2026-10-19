@@ -592,12 +592,15 @@ function fmtAgo(ts){ const d=Math.round((Date.now()-ts)/DAY); return d<=0?'today
 // Widened for a large, growing library (days):
 //   again → 1d · hard → 2d, then ×1.2 · good → 4d, then ×ease · easy → 21d, then ×ease×1.3 · cap 365d
 const MAX_IVL=365;
+// First-answer intervals in days, editable in Settings. Later reviews still grow from the card's own interval and ease.
+const IVL0 = { again:1, hard:2, good:4, easy:21 };
+const ivl0 = g => { const v=Number((cfg.ivl||{})[g]); return Number.isFinite(v)&&v>=0 ? Math.min(MAX_IVL,Math.round(v)) : IVL0[g]; };
 function nextIvl(c, g){
   const v=c.ivl||0, e=c.ease||2.5;
-  if(g==='again') return 1;
-  if(g==='hard')  return v===0?2:Math.max(v+1,Math.round(v*1.2));
-  if(g==='good')  return v===0?4:Math.max(v+2,Math.round(v*e));
-  return v===0?21:Math.max(21,Math.round(v*e*1.3));
+  if(g==='again') return ivl0('again');
+  if(g==='hard')  return v===0?ivl0('hard'):Math.max(v+1,Math.round(v*1.2));
+  if(g==='good')  return v===0?ivl0('good'):Math.max(v+2,Math.round(v*e));
+  return v===0?ivl0('easy'):Math.max(ivl0('easy'),Math.round(v*e*1.3));
 }
 const fmtIvl = d => d<30 ? d+'d' : d<365 ? (d/30).toFixed(1).replace('.0','')+'mo' : (d/365).toFixed(1).replace('.0','')+'y';
 const keyOf = it => it.deck+':'+it.id;
@@ -1119,6 +1122,11 @@ function vSettings(){
   return `<div class="stack">
   <div class="card stack"><h3>Practice</h3>
     <div><div class="eyebrow" style="margin-bottom:6px">Card direction</div>${seg('dir',[['en-ru','EN → RU'],['ru-en','RU → EN']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Days until next review</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">${[['again','Again'],['hard','Hard'],['good','Good'],['easy','Easy']].map(([k,l])=>`<label class="grade ${k}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;cursor:default">${l}
+        <input type="number" inputmode="numeric" min="0" max="365" step="1" data-ivl="${k}" value="${ivl0(k)}" style="width:100%;max-width:5em;text-align:center;padding:6px 4px;font:inherit;font-variant-numeric:tabular-nums"></label>`).join('')}</div>
+      <p class="hint" style="margin:6px 0 0">Used the first time you grade a card and for Again. After that intervals grow from the card's own history. 0 = today.</p>
+      <button class="btn ghost small" data-act="ivlReset" style="margin-top:6px">Default 1 · 2 · 4 · 21</button></div>
     <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Register: Caution phrases in practice</div>${seg('hideCaution',[[true,'Hide'],[false,'Show']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
@@ -1145,6 +1153,10 @@ function vSettings(){
   </div>`;
 }
 actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
+document.addEventListener('change', e => { const f=e.target.closest('input[data-ivl]'); if(!f) return;
+  const v=Math.round(Number(f.value)); if(!Number.isFinite(v)||v<0||v>365){ toast('Use a whole number from 0 to 365'); f.value=ivl0(f.dataset.ivl); return; }
+  cfg.ivl={...IVL0,...(cfg.ivl||{}),[f.dataset.ivl]:v}; LS.set(K.cfg,cfg); toast(`${f.dataset.ivl[0].toUpperCase()+f.dataset.ivl.slice(1)}: ${v} day${v===1?'':'s'}`); });
+actions.ivlReset = () => { cfg.ivl={...IVL0}; LS.set(K.cfg,cfg); render(); toast('Intervals reset'); };
 actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
 actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; cfg.driveKey=$('#drvK').value.trim(); LS.set(K.cfg,cfg); toast('Loading…');
   const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
