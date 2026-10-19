@@ -324,6 +324,24 @@ body.sess #fb .fb{border-radius:6px 6px 0 0;padding:16px 18px;box-shadow:0 -10px
 .sheet h3{font-family:var(--serif);font-weight:700;font-size:1.3rem}
 .sheet .btn{flex:none;width:100%;flex-wrap:wrap}
 @keyframes fade{from{opacity:0}}
+/* Native clips (YouGlish) */
+.clip-btn{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 16px 0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:.86rem;font-weight:600;white-space:nowrap;flex-shrink:0;transition:background .15s,transform .1s}
+.clip-btn svg{width:18px;height:18px;color:var(--primary)}
+.clip-btn:hover{background:var(--surface-2)} .clip-btn:active{transform:scale(.96)}
+.clip-btn.sm{height:36px;padding:0 12px 0 9px;font-size:.8rem} .clip-btn.sm svg{width:15px;height:15px}
+.media-row{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.sheet.clips{max-width:720px;max-height:calc(100dvh - 24px);overflow:auto;padding-top:18px}
+.clips-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.clips-head .eyebrow{color:var(--primary)}
+.clips-q{font-family:var(--serif);font-size:clamp(1.25rem,5vw,1.6rem);font-weight:500;line-height:1.25;margin-top:4px;text-wrap:balance}
+.clips-stage{position:relative;margin-top:14px;min-height:260px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);overflow:hidden}
+.clips-stage .spin{position:absolute;inset:0;margin:auto}
+.clips-empty{padding:28px 18px;text-align:center}
+.clips-empty .phrase{font-size:1.1rem;margin:6px 0 10px}
+.clips-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:.78rem;color:var(--muted)}
+.clips-foot a{color:inherit}
+.clips-foot .yg-link{color:var(--fg);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
+.seg.mini{padding:2px;border-radius:10px} .seg.mini button{padding:5px 10px;font-size:.78rem}
 @media (min-width:640px){.sheet-wrap{align-items:center}.sheet{border-radius:6px}}
 body.sess .actions .btn.ghost{padding-inline:16px}
 body.sess .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
@@ -415,7 +433,7 @@ const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
   LS.set('bet3.seeded', true);
 })();
 
-let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
+let cfg = Object.assign({ ygAccent:'us', sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
 const OLD_VOC = [V1_VOC, 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing'];
 if (!cfg.sources || OLD_VOC.includes(cfg.sources.voc) || !cfg.sources.voc){ cfg.sources={...(cfg.sources||{}), voc:DEFAULT_SOURCES.voc}; LS.set(K.cfg, cfg); }
 let srs = LS.get(K.srs, {});
@@ -460,6 +478,64 @@ const ICON = {
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
 };
 function buzz(ms=30){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+// ---------- Native clips (YouGlish widget, loaded on first use) ----------
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>';
+const clipBtn = (t, sm) => `<button class="clip-btn ${sm?'sm':''}" data-act="clips" data-t="${esc(t)}" aria-label="Watch native speakers say this">${ICON_PLAY}${sm?'Clips':'Native clips'}</button>`;
+// "Keep [sb] in the loop (?)" -> "keep in the loop": slots, notes and punctuation are not spoken
+const ygQuery = t => String(t).replace(/\[[^\]]*\]|\([^)]*\)/g,' ').replace(/[^\p{L}\p{N}'’\- ]+/gu,' ').replace(/\s+/g,' ').trim().toLowerCase();
+const YG_ACCENTS = [['us','US'],['uk','UK'],['','All']];
+let ygReady = null;
+function loadYG(){
+  if(ygReady) return ygReady;
+  ygReady = new Promise((res, rej) => {
+    if(window.YG?.Widget) return res();
+    window.onYouglishAPIReady = () => res();
+    const sc=document.createElement('script'); sc.src='https://youglish.com/public/emb/widget.js'; sc.async=true;
+    sc.onerror=()=>{ ygReady=null; rej(new Error('offline')); };
+    document.head.appendChild(sc);
+    setTimeout(()=>{ if(!window.YG?.Widget){ ygReady=null; rej(new Error('timeout')); } }, 12000);
+  });
+  return ygReady;
+}
+function openClips(text){
+  closeClips();
+  const q=ygQuery(text), el=document.createElement('div');
+  el.id='clipSheet'; el.className='sheet-wrap';
+  el.innerHTML=`<div class="sheet-bg" data-act="closeClips"></div><div class="sheet clips" role="dialog" aria-label="Native clips">
+    <div class="clips-head"><div style="min-width:0"><div class="eyebrow">Native clips</div><div class="clips-q">${esc(text)}</div></div>
+      <button class="icon-btn" data-act="closeClips" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="row" style="justify-content:space-between;margin-top:10px;gap:8px"><span class="hint">Real speakers on YouTube, cued to the phrase</span>
+      <div class="seg mini" role="group" aria-label="Accent">${YG_ACCENTS.map(([v,l])=>`<button class="${(cfg.ygAccent??'us')===v?'on':''}" data-act="clipsAccent" data-v="${v}">${l}</button>`).join('')}</div></div>
+    <div class="clips-stage" id="clipStage"><div class="spin"></div></div>
+    <div class="clips-foot"><span>Powered by <a href="https://youglish.com" target="_blank" rel="noopener">YouGlish.com</a> · Videos from YouTube: <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">Terms</a> · <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy</a></span>
+      <a class="yg-link" href="https://youglish.com/pronounce/${encodeURIComponent(q)}/english${(cfg.ygAccent??'us')?'/'+(cfg.ygAccent??'us'):''}" target="_blank" rel="noopener">Open on YouGlish ↗</a></div>
+  </div>`;
+  el.dataset.q=q; el.dataset.t=text;
+  document.body.appendChild(el); try{ speechSynthesis.cancel(); }catch(e){}
+  runClips(q);
+}
+async function runClips(q){
+  const stage=$('#clipStage'); if(!stage) return;
+  try{ await loadYG(); }catch(e){ return clipsEmpty(q, 'Clips need an internet connection.'); }
+  if(!$('#clipStage')) return;
+  stage.innerHTML='<div id="ygWidget"></div>';
+  const w=Math.min(stage.clientWidth||640, 680);
+  st.yg = new YG.Widget('ygWidget', { width:w, autoStart:1, events:{
+    onFetchDone: ev => { if(!ev.totalResult) clipsEmpty(q); },
+    onError: () => clipsEmpty(q, 'YouGlish did not respond.')
+  }});
+  st.yg.fetch(q, 'english', cfg.ygAccent??'us');
+}
+function clipsEmpty(q, why){
+  const stage=$('#clipStage'); if(!stage) return;
+  const words=q.split(' '), core=words.length>=3?words.slice(1).join(' '):'';
+  stage.innerHTML=`<div class="clips-empty"><div class="hint">${esc(why||'No clips for the exact phrase.')}</div>
+    <div class="phrase">${esc(q)}</div>
+    <div class="row" style="justify-content:center;gap:8px">${core&&!why?`<button class="clip-btn sm" data-act="clipsTry" data-q="${esc(core)}">Try “${esc(core)}”</button>`:''}
+    ${(cfg.ygAccent??'us')&&!why?`<button class="clip-btn sm" data-act="clipsAccent" data-v="">All accents</button>`:''}</div></div>`;
+}
+function closeClips(){ const el=$('#clipSheet'); if(!el) return; try{ st.yg?.close?.(); }catch(e){} st.yg=null; el.remove(); }
+document.addEventListener('keydown', e => { if(e.key==='Escape' && $('#clipSheet')){ e.stopImmediatePropagation(); e.preventDefault(); closeClips(); } }, true);
 const audioBtn = t => `<button class="audio" data-act="say" data-t="${esc(t)}" aria-label="Play audio">${ICON.audio}</button>`;
 
 // text normalisation + typo tolerance
@@ -665,6 +741,11 @@ function status(it){
 const st = { view:'home', deck:null, cat:'all', type:'all', dom:'all', q:'', S:null };
 const pool = () => (data[st.deck]?.items||[]).filter(i=>inScope(i) && (st.cat==='all'||i.cat===st.cat) && (st.type==='all'||i.type===st.type) && (st.dom==='all'||i.domain===st.dom));
 const actions = {};
+actions.clips = d => openClips(d.t);
+actions.closeClips = closeClips;
+actions.clipsAccent = d => { cfg.ygAccent=d.v; LS.set(K.cfg,cfg); const t=$('#clipSheet')?.dataset.t; if(t) openClips(t); };
+actions.clipsTry = d => { const stage=$('#clipStage'); if(!stage) return; stage.innerHTML='<div class="spin"></div>'; runClips(d.q); };
+
 document.addEventListener('click', e => { const el=e.target.closest('[data-act]'); if(!el) return; const f=actions[el.dataset.act]; if(f){ e.preventDefault(); f(el.dataset, el, e); } });
 
 function go(view){ st.view=view; render(); window.scrollTo(0,0); }
@@ -911,7 +992,7 @@ function vSort(){
         <div class="row" style="justify-content:space-between"><span class="hint">Recall the meaning, then tap to flip <span class="kbd desk-only">Space</span></span>${isEn?audioBtn(it.en):''}</div></div>
       <div class="face back"><div class="phrase" style="font-size:1.15rem;color:var(--muted)">${esc(front(it))}</div>
         <div class="trans" style="font-size:1.35rem">${esc(back(it))}</div>${notes(it)}
-        <div class="row" style="justify-content:flex-end;margin-top:auto">${audioBtn(it.en)}</div></div>
+        <div class="media-row" style="margin-top:auto">${clipBtn(it.en)}${audioBtn(it.en)}</div></div>
     </div></div>
   <div id="grades"><div class="grades">${gb('again','Again',1)}${gb('hard','Hard',2)}${gb('good','Good',3)}${gb('easy','Easy',4)}</div>
   <p class="hint" style="margin-top:10px">${S.flipped?'':'Know it already? Grade without flipping. '}${S.kind==='lesson'?`Again and Hard go into the practice set (${S.items.length}/${cfg.lessonSize}).`:'Tap the card to see the answer.'}</p></div>`;
@@ -936,7 +1017,7 @@ function doGrade(d){
 // 8b. Memorise
 function vLearn(){ const it=cur(); return `<div class="card" style="background:var(--mint);border:0">
   <div class="phrase">${esc(it.en)}</div><div class="trans" style="margin:8px 0 14px;color:var(--fg)">${esc(it.ru)}</div>${notes(it)}
-  <div class="actions" style="align-items:center">${audioBtn(it.en)}<button class="btn" data-act="next">Continue</button></div></div>`; }
+  <div class="actions" style="align-items:center">${audioBtn(it.en)}${clipBtn(it.en,1)}<button class="btn" data-act="next">Continue</button></div></div>`; }
 actions.next = () => advance();
 
 // 8c. Multiple choice (meaning recognition)
@@ -1119,8 +1200,8 @@ function vSummary(){
   return `<div class="summary-hero" style="${m.length?'background:var(--primary-soft)':''}">
     <div class="n">${n}</div><h2 style="margin:10px 0 4px;font-size:1.25rem">${S.kind==='drill'?'items practised':'cards reviewed'}</h2>
     <p class="muted" style="margin:0">${S.early?'Finished early. ':''}${m.length?`${m.length} missed`:'No mistakes'}${sk.length?`, ${sk.length} skipped`:''}</p></div>
-  ${sk.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Skipped</div>${sk.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
-  ${m.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Missed</div>${m.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
+  ${sk.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Skipped</div>${sk.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${clipBtn(it.en,1)}${audioBtn(it.en)}</div>`).join('')}</div>`:''}
+  ${m.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Missed</div>${m.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${clipBtn(it.en,1)}${audioBtn(it.en)}</div>`).join('')}</div>`:''}
   <div class="actions" style="flex-direction:column">
     ${rev.length?`<button class="btn" data-act="retry">Retry missed and skipped (${rev.length})</button>`:''}
     <button class="btn ${rev.length?'ghost':''}" data-act="back">Back to deck</button></div>`;
@@ -1135,7 +1216,7 @@ function vDict(){
   <div class="card" style="padding-block:4px">${p.length?p.map(w=>`<div class="dict-row"><div class="meta"><b>${esc(w.en)}</b><div class="muted">${esc(w.ru)}</div>
     <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span>${w.type?`<span class="pill">${esc(w.type)}</span>`:''}${w.domain?`<span class="pill">${esc(w.domain)}</span>`:''}${regPill(w)}${w.status==='Passive'?'<span class="pill">Passive</span>':''}</div>
     ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
-    </div>${audioBtn(w.en)}</div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
+    </div><div class="media-row" style="flex-direction:column;align-self:flex-start">${audioBtn(w.en)}${clipBtn(w.en,1)}</div></div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
 }
 actions.copyDict = () => { const q=norm(st.q); copy(pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q)).map(w=>`${w.en} - ${w.ru}${w.note?` [${w.note}]`:''}`).join('\n'), 'List copied'); };
 function copy(text, msg){ (navigator.clipboard?.writeText(text)||Promise.reject()).then(()=>toast(msg)).catch(()=>{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy');toast(msg);}catch(e){toast('Copy blocked. Select the text manually.');} t.remove(); }); }
@@ -1153,6 +1234,7 @@ function vSettings(){
       <button class="btn ghost small" data-act="ivlReset" style="margin-top:6px">Default 1 · 2 · 4 · 21</button></div>
     <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Register: Caution phrases in practice</div>${seg('hideCaution',[[true,'Hide'],[false,'Show']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Native clips accent</div>${seg('ygAccent',[['us','US'],['uk','UK'],['','All']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Theme</div>${seg('theme',[['system','System'],['light','Light'],['dark','Dark']])}</div>
   </div>
@@ -1301,7 +1383,7 @@ function vBulletSummary(){
   return `<div class="summary-hero">
     <div class="n">${b.score}</div><h2 style="margin:10px 0 4px;font-size:1.25rem">correct in ${BULLET_SEC} seconds</h2>
     <p class="muted" style="margin:0">${rec?'New best. ':`Best ${Math.max(b.prevBest,b.score)}. `}${b.total} answered, ${acc}% accurate, longest run ${b.best}</p></div>
-  ${b.wrong.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Got wrong</div>${b.wrong.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${audioBtn(it.en)}</div>`).join('')}</div>`:''}
+  ${b.wrong.length?`<div class="card" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">Got wrong</div>${b.wrong.map(it=>`<div class="dict-row"><div class="meta"><b>${esc(it.en)}</b><div class="muted">${esc(it.ru)}</div></div>${clipBtn(it.en,1)}${audioBtn(it.en)}</div>`).join('')}</div>`:''}
   <div class="actions" style="flex-direction:column">
     <button class="btn" data-act="bulletAgain">Play again</button>
     ${b.wrong.length?`<button class="btn ghost" data-act="retry">Practise mistakes (type them)</button>`:''}
