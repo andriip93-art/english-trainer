@@ -102,6 +102,17 @@ h3{font-size:1.02rem;font-weight:600;margin:0}
 .chip .muted{font-variant-numeric:tabular-nums;margin-left:2px}
 .chip.on{background:var(--fg);color:var(--bg)}
 .chip.on .muted{color:inherit;opacity:.6}
+/* compact filter bar: three dropdown pills on one line */
+.chips.fit{display:grid;overflow:visible;margin-inline:0;padding-inline:0}
+.chips.fit .muted{display:none}
+.chips.fit .chip{padding:8px 4px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+.fbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fs{position:relative;color:var(--fg)}
+.fs::after{content:'';position:absolute;right:12px;top:50%;width:6px;height:6px;border:solid currentColor;border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg);pointer-events:none;opacity:.7}
+.fs select{text-align:left;appearance:none;-webkit-appearance:none;width:100%;border:1px solid var(--line);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.86rem;font-weight:500;padding:8px 28px 8px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.fs.on{color:var(--bg)} .fs.on select{background:var(--fg);border-color:var(--fg)}
+/* the open list must not inherit the dark 'selected' pill: explicit page colors, both themes */
+.fs select option{color:var(--fg);background-color:var(--bg)}
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px}
 .seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-weight:600;font-size:.86rem;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
@@ -370,7 +381,7 @@ body.sess .actions .audio{width:54px;height:54px}
 
 <script>
 /* ============================================================
-   Business English Trainer (offline edition)
+   Business English Trainer v2 (offline edition)
    - Data: two published Google Sheets (TSV). Cached in localStorage,
      so after one successful load the app works with no network.
    - Progress: SM-2 style spaced repetition, namespaced per deck.
@@ -380,8 +391,9 @@ body.sess .actions .audio{width:54px;height:54px}
 // ---------- 1. Config & storage ----------
 const DEFAULT_SOURCES = {
   phr: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv',
-  voc: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv'
+  voc: 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit?usp=drivesdk'
 };
+const V1_VOC = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv';
 const DECKS = {
   phr: { name:'Phrases & Functions', short:'Phrases', sub:'Mode 1 · meeting language, dialogues', tone:'t-mint', icoBg:'var(--primary-soft)', icoFg:'var(--primary)' },
   voc: { name:'Vocabulary & Chunks', short:'Vocabulary', sub:'Mode 2 · finance, workflow, idioms', tone:'t-peach', icoBg:'var(--peach)', icoFg:'var(--bad)' }
@@ -390,9 +402,22 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast('Could not save locally. Storage is full or blocked.'); } }
 };
-const K = { srs:'bet.srs.v2', data:'bet.data.v2', cfg:'bet.cfg.v2', log:'bet.log.v2' };
+const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
+// v2 lives on the same origin as v1, so it keeps its own keys. On first launch it copies v1 progress,
+// so reviews continue where they were. After that the two apps never write to each other's data.
+(function seedFromV1(){
+  if (LS.get('bet3.seeded', false)) return;
+  const s1=LS.get('bet.srs.v2', null), l1=LS.get('bet.log.v2', null), c1=LS.get('bet.cfg.v2', null);
+  if (s1 && !LS.get(K.srs, null)) LS.set(K.srs, s1);
+  if (l1 && !LS.get(K.log, null)) LS.set(K.log, l1);
+  if (c1 && !LS.get(K.cfg, null)){ const c={...c1}; delete c.newPerDay; LS.set(K.cfg, c); }
+  ['phr','voc'].forEach(d=>{ const b=LS.get('bet.bullet.'+d, 0); if(b) LS.set('bet3.bullet.'+d, b); });
+  LS.set('bet3.seeded', true);
+})();
 
-let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', newPerDay:10, lessonSize:7, autoSpeak:true, theme:'system' }, LS.get(K.cfg, {}));
+let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
+const OLD_VOC = [V1_VOC, 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing'];
+if (!cfg.sources || OLD_VOC.includes(cfg.sources.voc) || !cfg.sources.voc){ cfg.sources={...(cfg.sources||{}), voc:DEFAULT_SOURCES.voc}; LS.set(K.cfg, cfg); }
 let srs = LS.get(K.srs, {});
 let log = LS.get(K.log, {});        // { 'YYYY-MM-DD': {rev:n, ok:n} }
 let data = LS.get(K.data, { phr:null, voc:null }); // { items:[], at:ts }
@@ -466,7 +491,22 @@ function diff(input, target){
 }
 
 // ---------- 3. Parsing (same column logic as before) ----------
-function splitTSV(t){ return t.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t').map(c=>c.trim())); }
+function splitTSV(t){
+  const first=t.slice(0,t.search(/\r?\n/)>-1?t.search(/\r?\n/):t.length);
+  if(!first.includes('\t') && first.includes(',')) return splitCSV(t);
+  return t.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t').map(c=>c.trim()));
+}
+// RFC 4180 CSV: quoted fields may hold commas, "" and line breaks (flattened to spaces)
+function splitCSV(t){
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<t.length;i++){ const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=ch; continue; }
+    if(ch==='"') q=true; else if(ch===','){ row.push(cell); cell=''; }
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&t[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=ch; }
+  if(cell||row.length){ row.push(cell); rows.push(row); }
+  return rows.map(r=>r.map(c=>c.replace(/\s*\n\s*/g,' ').trim())).filter(r=>r.some(Boolean));
+}
 function parsePhr(t){
   const rows=splitTSV(t); if(!rows.length) return [];
   const h=rows[0].map(x=>x.toLowerCase()); const f=(p,d)=>{const i=h.findIndex(p);return i===-1?d:i;};
@@ -489,19 +529,36 @@ function splitExamples(cells){
 }
 function parseVoc(t){
   const rows=splitTSV(t); if(!rows.length) return [];
-  const h=rows[0].map(x=>x.toLowerCase()); const has=k=>x=>k.some(w=>x.includes(w));
-  let en=h.findIndex(has(['en','english','phrase','фраза','английский'])), ru=h.findIndex(has(['ru','russian','translation','перевод','русский']));
-  const ctx=h.findIndex(has(['context','topic','контекст','тема'])), list=h.findIndex(has(['list','category','список','категория','раздел'])),
-        id=h.findIndex(x=>x==='id'), ex=h.findIndex(has(['explanation','объяснение','значение','meaning']));
-  const exCols=h.map((x,i)=>/example|пример|sentence|usage/.test(x)?i:-1).filter(i=>i>-1);
-  const header = en>-1||ru>-1; if(en===-1) en=0; if(ru===-1) ru=1;
+  // Exact header names only. Substring matching would let new columns (ru_trap, frequency, usage...) hijack en/ru/examples.
+  const h=rows[0].map(x=>x.trim().toLowerCase());
+  const col=(...names)=>h.findIndex(x=>names.includes(x));
+  const C={ id:col('id'), en:col('en','english','phrase'), ru:col('ru','russian','translation'), list:col('list','category'),
+            note:col('explanation','meaning'), ex:col('examples','example'), ctx:col('context','topic'),
+            status:col('status'), type:col('type'), register:col('register'), domain:col('domain'), group:col('group_id','group'), trap:col('ru_trap') };
+  const header = C.en>-1 || C.ru>-1; if(C.en===-1) C.en=0; if(C.ru===-1) C.ru=1;
+  const v=(c,k)=>C[k]>-1?(c[C[k]]||'').trim():'';
   const rename = n => /1/.test(n)?'Hard Business':/2/.test(n)?'Workflow':/3/.test(n)?'Vibe & Idioms':n;
-  return rows.slice(header?1:0).filter(c=>c[en]&&c[ru]).map((c,i)=>({
-    deck:'voc', id:String((id>-1&&parseInt(c[id]))||i+1), en:c[en], ru:c[ru],
-    cat: rename(list>-1&&c[list]?c[list]:'Main List'), note:ex>-1?c[ex]||'':'', examples:splitExamples(exCols.map(j=>c[j]||'')), example:exCols.map(j=>c[j]||'').filter(Boolean).join(' / '),
-    ctx: ctx>-1?c[ctx]||'':'', dialogue:''
+  return rows.slice(header?1:0).filter(c=>v(c,'en')&&v(c,'ru')&&(C.id===-1||v(c,'id'))).map((c,i)=>({
+    deck:'voc', id:C.id>-1?v(c,'id'):String(i+1), en:v(c,'en'), ru:v(c,'ru'),
+    cat: rename(v(c,'list')||'Main List'), note:v(c,'note'), examples:splitExamples([v(c,'ex')]), example:v(c,'ex'),
+    ctx:v(c,'ctx'), dialogue:'',
+    status:v(c,'status')||'Active', type:v(c,'type'), register:v(c,'register'), domain:v(c,'domain'), group:v(c,'group'), trap:v(c,'trap')
   }));
 }
+// ---- v2 helpers: status, type priority, synonym groups ----
+const TYPE_RANK = { 'Collocation':0, 'Phrasal / expression':1, 'Discourse marker':1, 'Business idiom':2, 'Colloquial idiom':3 };
+const rank = it => TYPE_RANK[it.type] ?? 2;
+const isLive = it => it.status!=='Drop';                                        // Drop rows stay in the sheet but never show up
+const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive') && !(cfg.hideCaution && it.register==='Caution');
+const sameGroup = (a,b) => !!a.group && a.group===b.group;
+const siblings = it => it.group ? (data[it.deck]?.items||[]).filter(x=>x!==it && isLive(x) && x.group===it.group) : [];
+const synNote = it => { const sy=siblings(it); return sy.length?`<div class="note"><b>Same meaning</b>${sy.map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:''; };
+// "wrong -> right" in ru_trap; also accepts → and =>
+const trapParts = it => { const m=String(it.trap||'').split(/\s*(?:->|→|=>)\s*/); return m.length===2&&m[0]&&m[1]?{wrong:m[0],right:m[1]}:null; };
+const NEEDS = { syn:i=>siblings(i).length>0, reg:i=>!!i.register, trap:i=>!!trapParts(i) };
+const REGS = ['Exec-safe','Neutral','Informal','Caution'];
+const REG_HINT = { 'Exec-safe':'Fine with the board or investors', 'Neutral':'Normal business talk', 'Informal':'Colleagues you know well', 'Caution':'Rude or easy to misfire' };
+const regPill = it => it.register && it.register!=='Neutral' ? `<span class="pill ${it.register==='Caution'?'due':''}">${esc(it.register)}</span>` : '';
 const CAT_DESC = {
   'Clarification':'Clarifying details and softly requesting elaboration without losing authority.',
   'Polite Disagreement':'Politely disagreeing and diplomatically challenging a position.',
@@ -513,15 +570,40 @@ const CAT_DESC = {
   'Floor Management':'Taking the floor politely or handing it to others.'
 };
 
+// A Google Drive file link (…/file/d/<id>/view, open?id=<id>, uc?id=<id>) is turned into download URLs.
+// The Drive API route needs an API key from Settings; it is the CORS-safe fallback.
+function driveId(u){ const m=String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{20,})/) || String(u).match(/drive\.usercontent\.google\.com\/download\?(?:[^#]*&)?id=([\w-]{20,})/); return m?m[1]:null; }
+// Google Sheet edit/view link -> gviz CSV (CORS-enabled for link-shared sheets), then TSV export as fallback
+function sheetUrls(u){
+  const m=String(u).match(/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/); if(!m||/\/d\/e\//.test(u)) return null;
+  const g=(String(u).match(/[#&?]gid=(\d+)/)||[])[1], gid=g?`&gid=${g}`:'';
+  return [`https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv&headers=1${gid}`, `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=tsv${gid}`];
+}
+function sourceUrls(u){
+  const sh=sheetUrls(u); if(sh) return sh;
+  const id=driveId(u); if(!id) return [u];
+  const urls=[`https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`];
+  if(cfg.driveKey) urls.unshift(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${encodeURIComponent(cfg.driveKey)}`);
+  return urls;
+}
+async function fetchText(u){
+  let last;
+  for(const url of sourceUrls(u)){
+    try{
+      const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+      const t=await r.text(); if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('got a web page instead of TSV');
+      return t;
+    }catch(e){ last=e; }
+  }
+  throw new Error((driveId(u)?'Drive file not reachable from the browser. Add a Google API key in Settings or publish the data as a Google Sheet TSV. ':'')+(last?.message||''));
+}
 async function loadDeck(deck, {force=false}={}){
   const cached = data[deck];
-  if (cached && !force) return cached;
+  if (cached && !force && (!cached.src || cached.src===cfg.sources[deck])) return cached;
   try{
-    const r = await fetch(cfg.sources[deck], {cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const items = (deck==='phr'?parsePhr:parseVoc)(await r.text());
-    if(!items.length) throw new Error('The sheet returned no rows');
-    data[deck] = { items, at:Date.now() }; LS.set(K.data, data);
+    const items = (deck==='phr'?parsePhr:parseVoc)(await fetchText(cfg.sources[deck]));
+    if(!items.length) throw new Error('The source returned no rows');
+    data[deck] = { items, at:Date.now(), src:cfg.sources[deck] }; LS.set(K.data, data);
     return data[deck];
   }catch(e){
     if (cached){ toast('Offline. Using the copy saved '+fmtAgo(cached.at)+'.'); return cached; }
@@ -534,12 +616,15 @@ function fmtAgo(ts){ const d=Math.round((Date.now()-ts)/DAY); return d<=0?'today
 // Widened for a large, growing library (days):
 //   again → 1d · hard → 2d, then ×1.2 · good → 4d, then ×ease · easy → 21d, then ×ease×1.3 · cap 365d
 const MAX_IVL=365;
+// First-answer intervals in days, editable in Settings. Later reviews still grow from the card's own interval and ease.
+const IVL0 = { again:1, hard:2, good:4, easy:21 };
+const ivl0 = g => { const v=Number((cfg.ivl||{})[g]); return Number.isFinite(v)&&v>=0 ? Math.min(MAX_IVL,Math.round(v)) : IVL0[g]; };
 function nextIvl(c, g){
   const v=c.ivl||0, e=c.ease||2.5;
-  if(g==='again') return 1;
-  if(g==='hard')  return v===0?2:Math.max(v+1,Math.round(v*1.2));
-  if(g==='good')  return v===0?4:Math.max(v+2,Math.round(v*e));
-  return v===0?21:Math.max(21,Math.round(v*e*1.3));
+  if(g==='again') return ivl0('again');
+  if(g==='hard')  return v===0?ivl0('hard'):Math.max(v+1,Math.round(v*1.2));
+  if(g==='good')  return v===0?ivl0('good'):Math.max(v+2,Math.round(v*e));
+  return v===0?ivl0('easy'):Math.max(ivl0('easy'),Math.round(v*e*1.3));
 }
 const fmtIvl = d => d<30 ? d+'d' : d<365 ? (d/30).toFixed(1).replace('.0','')+'mo' : (d/365).toFixed(1).replace('.0','')+'y';
 const keyOf = it => it.deck+':'+it.id;
@@ -577,8 +662,8 @@ function status(it){
 }
 
 // ---------- 5. State & router ----------
-const st = { view:'home', deck:null, cat:'all', q:'', S:null };
-const pool = () => (data[st.deck]?.items||[]).filter(i=>st.cat==='all'||i.cat===st.cat);
+const st = { view:'home', deck:null, cat:'all', type:'all', dom:'all', q:'', S:null };
+const pool = () => (data[st.deck]?.items||[]).filter(i=>inScope(i) && (st.cat==='all'||i.cat===st.cat) && (st.type==='all'||i.type===st.type) && (st.dom==='all'||i.domain===st.dom));
 const actions = {};
 document.addEventListener('click', e => { const el=e.target.closest('[data-act]'); if(!el) return; const f=actions[el.dataset.act]; if(f){ e.preventDefault(); f(el.dataset, el, e); } });
 
@@ -606,10 +691,9 @@ actions.unveil = (d,el) => el.classList.toggle('veil');
 
 // ---------- 6. Home ----------
 function counts(deck){
-  const items=data[deck]?.items||[];
+  const items=(data[deck]?.items||[]).filter(inScope);
   const due=items.filter(isDue).length, fresh=items.filter(isNew).length;
-  const newLeft=Math.max(0,cfg.newPerDay-newToday(deck));
-  return { total:items.length, due, fresh, newLeft:Math.min(newLeft,fresh) };
+  return { total:items.length, due, fresh, newLeft:fresh };
 }
 function vHome(){
   const t=log[today()]||{rev:0,ok:0};
@@ -620,7 +704,7 @@ function vHome(){
       <div class="ico" style="background:${D.icoBg};color:${D.icoFg}">${k==='phr'?ICON.chat:ICON.book}</div>
       <div class="meta"><h3>${D.name}</h3><div class="muted" style="font-size:.85rem">${D.sub}</div>
       <div class="row" style="margin-top:8px;gap:6px">${loaded?`<span class="pill due">${c.due} due</span><span class="pill new">${c.newLeft} new</span><span class="pill">${c.total} total</span>`:'<span class="pill">Tap to load</span>'}</div></div></button>`; };
-  const all=[...(data.phr?.items||[]),...(data.voc?.items||[])];
+  const all=[...(data.phr?.items||[]),...(data.voc?.items||[])].filter(inScope);
   const pod = all.length ? (all.filter(isDue)[0] || all[Math.floor(Date.now()/DAY)%all.length]) : null;
   const dueAll=all.filter(isDue).length, goal=t.rev+dueAll, pct=goal?t.rev/goal:0, C=2*Math.PI*27;
   const dt=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
@@ -644,15 +728,15 @@ function vHome(){
   </div>`;
 }
 actions.openDeck = async d => {
-  st.deck=d.d; st.cat='all';
+  st.deck=d.d; st.cat='all'; st.type='all'; st.dom='all';
   if(!data[d.d]){ go('loading'); try{ await loadDeck(d.d); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); } }
   go('deck');
 };
 
 // ---------- 7. Deck dashboard ----------
 function vDeck(){
-  const D=DECKS[st.deck], items=data[st.deck].items, cats=[...new Set(items.map(i=>i.cat))];
-  const p=pool(), due=p.filter(isDue).length, fresh=p.filter(isNew).length, newLeft=Math.min(fresh,Math.max(0,cfg.newPerDay-newToday(st.deck)));
+  const D=DECKS[st.deck], items=data[st.deck].items.filter(inScope), cats=[...new Set(items.map(i=>i.cat))];
+  const p=pool(), due=p.filter(isDue).length, fresh=p.filter(isNew).length, newLeft=fresh;
   const withDlg=p.filter(i=>i.dialogue).length, isP=st.deck==='phr';
   const desc = CAT_DESC[st.cat];
   const ex = isP ? [
@@ -663,17 +747,20 @@ function vDeck(){
     ['match','t-blue','Match','Recognise meaning'],['pairs','t-peach','Quick pairs','Connect 6 pairs'],
     ['scramble','t-purple','Scramble chunk','Rebuild the chunk'],['scrambleEx','t-rose','Scramble sentence','Rebuild an example',p.filter(i=>i.examples?.length).length],
     ['spell','t-sand','Recall','RU → type EN'],['sentence','t-blue','Write the sentence','Listen and type an example',p.filter(i=>i.examples?.length).length],
+    ['syn','t-mint','Synonyms','Pick the same meaning',p.filter(NEEDS.syn).length],['reg','t-peach','Board-ready?','Choose the register',p.filter(NEEDS.reg).length],
+    ['trap','t-sand','RU traps','Fix the calque',p.filter(NEEDS.trap).length],
     ['bullet','t-rose wide bullet-tile','Bullet','60 seconds · right or wrong? · best '+bestBullet(st.deck)]
   ];
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
-    <div class="chips">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(c)} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
+    <div class="chips ${cats.length<=3?'fit':''}" style="${cats.length<=3?`grid-template-columns:repeat(${cats.length+1},minmax(0,1fr))`:''}">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(short(c))} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
+    ${filterBar(items)}
     ${desc?`<div class="note">${esc(desc)}</div>`:''}
     <div class="hero">
       <div class="lbl">Daily lesson</div>
       <div class="row" style="gap:18px;margin:8px 0 4px">
         <div><div style="font-family:var(--serif);font-size:2.4rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">${due}</div><small style="opacity:.75">due</small></div>
-        <div><div style="font-family:var(--serif);font-size:2.4rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">${newLeft}</div><small style="opacity:.75">new today</small></div>
+        <div><div style="font-family:var(--serif);font-size:2.4rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">${newLeft}</div><small style="opacity:.75">new</small></div>
       </div>
       <p style="opacity:.8;font-size:.88rem;margin:8px 0 0">Review cards, then drill the ones you missed: ${isP?'match → scramble → fill the gap':'match → pairs → scramble → write → recall'}.</p>
       <div class="actions">
@@ -681,6 +768,7 @@ function vDeck(){
         <button class="btn" style="background:transparent;border:1px solid currentColor;color:inherit;flex:0 0 auto" data-act="flash" ${p.length?'':'disabled'}>Cards</button>
       </div>
     </div>
+    ${coverage(p)}
     <div class="eyebrow">Free practice · ${p.length} items</div>
     <div class="grid2">${ex.map(([k,t,n,s,cnt])=>`<button class="tile ${t}" data-act="drill" data-k="${k}" ${cnt===0?'disabled style="opacity:.45"':''}><h3>${n}</h3><small>${s}${cnt!==undefined?` · ${cnt}`:''}</small></button>`).join('')}</div>
     <button class="deck" data-act="dict" style="padding:14px 18px"><div class="meta"><h3>Dictionary</h3><small class="muted">Search, listen, see progress per item</small></div><span class="pill">${p.length}</span></button>
@@ -688,6 +776,58 @@ function vDeck(){
   </div>`;
 }
 actions.cat = d => { st.cat=d.c; render(); };
+actions.type = d => { st.type=d.t; render(); };
+actions.dom = d => { st.dom=d.v; render(); };
+function domainChips(items){
+  const doms=[...new Set(items.map(i=>i.domain).filter(Boolean))].sort((a,b)=>items.filter(i=>i.domain===b).length-items.filter(i=>i.domain===a).length);
+  if(doms.length<2) return '';
+  return `<div class="chips">${['all',...doms].map(t=>`<button class="chip ${st.dom===t?'on':''}" data-act="dom" data-v="${esc(t)}">${t==='all'?'All domains':esc(t)} <span class="muted">${t==='all'?items.length:items.filter(i=>i.domain===t).length}</span></button>`).join('')}</div>`;
+}
+actions.scope = d => { cfg.scope=d.s; LS.set(K.cfg,cfg); render(); };
+// Progress by type for the current filter: seen and mature (interval 21d+) shares
+function coverage(p){
+  const types=[...new Set(p.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
+  if(!types.length) return '';
+  const row=t=>{ const g=p.filter(i=>i.type===t), seen=g.filter(i=>!isNew(i)).length, mat=g.filter(i=>(card(i)?.ivl||0)>=21).length, n=g.length;
+    return `<div style="display:grid;grid-template-columns:minmax(0,9.5em) 1fr auto;gap:10px;align-items:center;font-size:.85rem">
+      <span>${esc(t)}</span>
+      <span style="position:relative;height:8px;border-radius:4px;background:var(--line);overflow:hidden">
+        <i style="position:absolute;inset:0 auto 0 0;width:${seen/n*100}%;background:color-mix(in srgb,var(--primary) 35%,transparent)"></i>
+        <i style="position:absolute;inset:0 auto 0 0;width:${mat/n*100}%;background:var(--primary)"></i></span>
+      <span class="muted" style="font-variant-numeric:tabular-nums">${mat}/${n}</span></div>`; };
+  return `<div class="card stack" style="gap:8px"><div class="row" style="justify-content:space-between"><span class="eyebrow">Progress by type</span><span class="hint">mature / total · light = seen</span></div>${types.map(row).join('')}</div>`;
+}
+const SHORT = { 'Phrasal / expression':'Phrasal', 'Discourse marker':'Discourse', 'Business idiom':'Biz idiom', 'Colloquial idiom':'Colloquial',
+  'Finance & Markets':'Finance', 'Meetings & Communication':'Meetings', 'Operations & Execution':'Operations', 'People & Leadership':'People',
+  'Negotiation & Deals':'Negotiation', 'Hard Business':'Business', 'Vibe & Idioms':'Idioms', 'Analysis & Thinking':'Analysis', 'Risk & Crisis':'Risk & crisis' };
+const short = t => SHORT[t] || t;
+// Type, domain and scope as three dropdown pills in one row (replaces three chip rows)
+function filterBar(items){
+  items=items.filter(i=>st.cat==='all'||i.cat===st.cat);   // counts follow the selected list
+  const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
+  const doms=[...new Set(items.map(i=>i.domain).filter(Boolean))].sort((a,b)=>items.filter(i=>i.domain===b).length-items.filter(i=>i.domain===a).length);
+  const all=(data[st.deck]?.items||[]).filter(isLive).filter(i=>!(cfg.hideCaution&&i.register==='Caution')), pas=all.filter(i=>i.status==='Passive').length;
+  const sel=(key,cur,first,opts)=>`<label class="fs ${cur!=='all'&&key!=='scope'||key==='scope'&&cur==='all'?'on':''}"><select data-filter="${key}" aria-label="${key}">
+    <option value="all" ${cur==='all'&&key!=='scope'?'selected':''}>${first}</option>${opts.map(([v,l])=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`;
+  const parts=[];
+  if(types.length) parts.push(sel('type',st.type,'Type',types.map(t=>[t,`${short(t)} ${items.filter(i=>i.type===t).length}`])));
+  if(doms.length>1) parts.push(sel('dom',st.dom,'Domain',doms.map(t=>[t,`${short(t)} ${items.filter(i=>i.domain===t).length}`])));
+  if(pas) parts.push(`<label class="fs ${cfg.scope==='all'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${cfg.scope!=='all'?'selected':''}>Active</option><option value="all" ${cfg.scope==='all'?'selected':''}>+ Passive</option></select></label>`);
+  return parts.length?`<div class="fbar" style="grid-template-columns:repeat(${parts.length},minmax(0,1fr))">${parts.join('')}</div>`:'';
+}
+document.addEventListener('change', e => { const f=e.target.closest('select[data-filter]'); if(!f) return;
+  if(f.dataset.filter==='type') st.type=f.value; else if(f.dataset.filter==='dom') st.dom=f.value; else { cfg.scope=f.value; LS.set(K.cfg,cfg); }
+  render(); });
+function typeChips(items){
+  const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
+  if(!types.length) return '';
+  return `<div class="chips">${['all',...types].map(t=>`<button class="chip ${st.type===t?'on':''}" data-act="type" data-t="${esc(t)}">${t==='all'?'All types':esc(t)} <span class="muted">${t==='all'?items.length:items.filter(i=>i.type===t).length}</span></button>`).join('')}</div>`;
+}
+function scopeChips(){
+  const all=(data[st.deck]?.items||[]).filter(isLive), pas=all.filter(i=>i.status==='Passive').length;
+  if(!pas) return '';
+  return `<div class="chips">${[['active','Active only',all.length-pas],['all','Active + passive',all.length]].map(([k,l,n])=>`<button class="chip ${cfg.scope===k?'on':''}" data-act="scope" data-s="${k}">${l} <span class="muted">${n}</span></button>`).join('')}</div>`;
+}
 actions.dict = () => { st.q=''; go('dict'); };
 actions.refresh = async () => { toast('Refreshing…'); try{ await loadDeck(st.deck,{force:true}); toast('Updated: '+data[st.deck].items.length+' items'); render(); }catch(e){ toast('Refresh failed: '+e.message); } };
 
@@ -696,19 +836,19 @@ actions.refresh = async () => { toast('Refreshing…'); try{ await loadDeck(st.d
 function reviewQueue(){
   const p=pool(), now=Date.now();
   const due=p.filter(isDue).sort((a,b)=>{const A=card(a),B=card(b); return (A.ivl===0?0:1)-(B.ivl===0?0:1) || A.ease-B.ease || A.due-B.due;});
-  const fresh=shuffle(p.filter(isNew)).slice(0,Math.max(0,cfg.newPerDay-newToday(st.deck)));
+  const fresh=shuffle(p.filter(isNew)).sort((a,b)=>rank(a)-rank(b));   // no daily cap; collocations first
   return [...due, ...fresh];
 }
 // Cards mode: no daily cap. Due first, then every new card, then the rest by soonest due date.
 function cardsQueue(){
-  const p=pool(), due=reviewQueue().filter(isDue), fresh=shuffle(p.filter(isNew));
+  const p=pool(), due=reviewQueue().filter(isDue), fresh=shuffle(p.filter(isNew)).sort((a,b)=>rank(a)-rank(b));
   const rest=p.filter(i=>!isNew(i)&&!isDue(i)).sort((a,b)=>card(a).due-card(b).due);
   return [...due, ...fresh, ...rest];
 }
 function newSession(o){ st.S=Object.assign({ i:0, misses:new Set(), skipped:new Set(), done:0, practised:0 }, o); st.S.step=st.S.steps[0]; go('session'); }
 actions.lesson = () => {
   const q=reviewQueue(); if(!q.length) return toast('All caught up for today.');
-  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','pairs','scramble','spell','summary'];
+  const steps = st.deck==='phr' ? ['sort','learn','match','scramble','cloze','summary'] : ['sort','learn','match','syn','pairs','scramble','spell','trap','summary'];
   newSession({ kind:'lesson', queue:q, items:[], hard:[], steps });
 };
 actions.flash = () => { const q=cardsQueue(); if(!q.length) return toast('No cards in this filter.'); newSession({ kind:'flash', queue:q, items:[], hard:[], steps:['sort','summary'] }); };
@@ -716,7 +856,8 @@ actions.drill = d => {
   if(d.k==='bullet') return startBullet();
   let p=pool(); if(d.k==='dialogue'||d.k==='cloze') p=p.filter(i=>i.dialogue);
   if(d.k==='sentence'||d.k==='scrambleEx') p=p.filter(i=>i.examples?.length);
-  if(!p.length) return toast('Nothing to practise in this filter.');
+  if(NEEDS[d.k]) p=p.filter(NEEDS[d.k]);
+  if(!p.length) return toast(d.k==='trap'?'No RU traps yet. Fill the ru_trap column as you catch calques.':'Nothing to practise in this filter.');
   // weakest first: due, then low ease, then random
   const w = it => { const c=card(it); return !c?1.5 : (c.due<=Date.now()?0:1) + c.ease/3; };
   const items = shuffle(p).sort((a,b)=>w(a)-w(b)).slice(0, d.k==='pairs'?6:10);
@@ -730,21 +871,23 @@ function nextStep(){
     if(!S.items.length){ idx=S.steps.length-1; break; }
     if(s==='cloze' && !S.items.some(i=>i.dialogue)){ idx++; continue; }
     if((s==='sentence'||s==='scrambleEx') && !S.items.some(i=>i.examples?.length)){ idx++; continue; }
+    if(NEEDS[s] && !S.items.some(NEEDS[s])){ idx++; continue; }
     break;
   }
   S.step=S.steps[Math.min(idx,S.steps.length-1)]; S.i=0; S.sub=null;
   if(S.step==='cloze') S.list=S.items.filter(i=>i.dialogue);
   if(S.step==='sentence'||S.step==='scrambleEx') S.list=S.items.filter(i=>i.examples?.length);
+  if(NEEDS[S.step]) S.list=S.items.filter(NEEDS[S.step]);
   render(); window.scrollTo(0,0);
 }
-const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx') && st.S.kind!=='drill' ? st.S.list : st.S.items);
+const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx'||NEEDS[st.S.step]) && st.S.kind!=='drill' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
 function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].prac=(log[t].prac||0)+1; LS.set(K.log,log); }
-function advance(){ const S=st.S; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
+function advance(){ const S=st.S; if(!S||st.view!=='session') return; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
-const notes = it => [it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
-const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', scrambleEx:'Scramble sentence' };
+const notes = it => [synNote(it), it.trap&&`<div class="note"><b>RU trap</b>${esc(it.trap)}</div>`, it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
+const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', syn:'Synonyms', reg:'Board-ready?', trap:'RU trap', scrambleEx:'Scramble sentence' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
   return `<div class="sess-head"><div><div class="step">${stepLabel[S.step]}</div>${stepN.length>1?`<div class="dots" style="margin-top:6px" aria-label="Step ${k+1} of ${stepN.length}">${stepN.map((_,j)=>`<i class="${j<k?'on':j===k?'cur':''}"></i>`).join('')}</div>`:''}</div><div style="text-align:right"><span class="cnt">${Math.min(S.i+1,L.length)} of ${L.length}</span>${S.kind==='lesson'&&S.i===0&&S.step!=='sort'&&k<stepN.length-1?`<button class="skip-ex" data-act="skipStep">Skip exercise</button>`:''}</div></div>`; }
@@ -754,7 +897,7 @@ function vSession(){
   if(S.step==='summary') return S.kind==='bullet' ? vBulletSummary() : vSummary();
   if(S.step==='bullet') return vBullet();
   if(!list().length){ setTimeout(nextStep); return ''; }
-  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, scrambleEx:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs, sentence:vSentence })[S.step]();
+  return head() + ({ sort:vSort, learn:vLearn, match:vMatch, scramble:vScramble, scrambleEx:vScramble, cloze:vCloze, dialogue:vDialogue, spell:vSpell, pairs:vPairs, sentence:vSentence, syn:vSyn, reg:vReg, trap:vTrap })[S.step]();
 }
 
 // 8a. Flashcard review with 4-grade SRS
@@ -763,7 +906,7 @@ function vSort(){
   const gb=(g,l,n)=>`<button class="grade ${g}" data-act="grade" data-g="${g}">${l}<small>${preview(it,g)} <span class="kbd desk-only">${n}</span></small></button>`;
   return `<div class="flip" id="flip" data-act="flip">
     <div class="flip-in">
-      <div class="face"><div class="row" style="justify-content:space-between">${status(it)}<span class="pill">${esc(it.cat)}</span></div>
+      <div class="face"><div class="row" style="justify-content:space-between">${status(it)}<span class="row" style="gap:6px">${regPill(it)}<span class="pill">${esc(it.cat)}</span></span></div>
         <div class="phrase" style="flex:1;display:flex;align-items:center">${esc(front(it))}</div>
         <div class="row" style="justify-content:space-between"><span class="hint">Recall the meaning, then tap to flip <span class="kbd desk-only">Space</span></span>${isEn?audioBtn(it.en):''}</div></div>
       <div class="face back"><div class="phrase" style="font-size:1.15rem;color:var(--muted)">${esc(front(it))}</div>
@@ -799,7 +942,7 @@ actions.next = () => advance();
 // 8c. Multiple choice (meaning recognition)
 function vMatch(){
   const S=st.S, it=cur();
-  if(!S.sub){ const all=data[st.deck].items.filter(x=>x.id!==it.id&&back(x)!==back(it)); const same=all.filter(x=>x.cat===it.cat);
+  if(!S.sub){ const all=data[st.deck].items.filter(x=>x.id!==it.id&&back(x)!==back(it)&&isLive(x)&&!sameGroup(x,it)); const same=all.filter(x=>x.cat===it.cat);
     const d=shuffle(same.length>=3?same:all).slice(0,3); S.sub={opts:shuffle([it,...d]), tries:0}; }
   return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${esc(front(it))}</div>${cfg.dir==='en-ru'?audioBtn(it.en):''}</div>
   <div class="stack" style="margin-top:18px;gap:10px">${S.sub.opts.map((o,n)=>`<button class="opt" data-act="pick" data-n="${n}"><span class="k">${n+1}</span><span>${esc(back(o))}</span></button>`).join('')}</div></div>`;
@@ -842,9 +985,9 @@ function buildScramble(text, chunk){
   return {pool:p, pick:[], target, chunk:chunk||null};
 }
 function findChunk(text, chunk){
-  const core=chunk.replace(/\(.*?\)|\b(sb|sth|smb|smth|someone|something)\b|[\/…]|\.\.\./gi,' ').trim().split(/\s+/).filter(w=>w.length>1);
+  const core=chunk.replace(/\[[^\]]*\]|\(.*?\)|\b(sb|sth|smb|smth|someone|something)\b|[\/…]|\.\.\./gi,' ').trim().split(/\s+/).filter(w=>w.length>1);
   if(!core.length) return null;
-  const re=new RegExp(core.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/(e|s|y|ed|ing)$/i,'').replace(/-/g,'[-\\s]?')+"[\\w'’-]*").join("(?:\\s+[\\w'’-]+){0,2}?\\s+"),'i');
+  const re=new RegExp(core.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/(e|s|y|ed|ing)$/i,'').replace(/-/g,'[-\\s]?')+"[\\w'’-]*").join("(?:\\s+[\\w'’-]+){0,4}?\\s+"),'i');
   const r=text.match(re); return r?{i:r.index,len:r[0].length}:null;
 }
 function hl(text, chunk){ const m=findChunk(text,chunk); return m?esc(text.slice(0,m.i))+'<mark>'+esc(text.substr(m.i,m.len))+'</mark>'+esc(text.slice(m.i+m.len)):esc(text); }
@@ -883,6 +1026,52 @@ function vSentence(){
   <div class="actions"><button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`;
 }
 
+// 8i. Synonyms (group_id): pick the phrase with the same meaning
+function vSyn(){
+  const S=st.S, it=cur();
+  if(!S.sub){ const right=shuffle(siblings(it))[0];
+    const others=shuffle(pool().filter(x=>x!==it&&!sameGroup(x,it)&&x.en!==right.en&&(x.type===it.type||!it.type))).slice(0,3);
+    S.sub={right, opts:shuffle([right,...others])}; }
+  return `<div class="card"><div class="hint" style="margin-bottom:4px">Same meaning as</div>
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${showBr(it.en)}</div>${audioBtn(it.en)}</div>
+  <div class="muted" style="margin-top:2px">${esc(it.ru)}</div>
+  <div class="stack" style="margin-top:18px;gap:10px">${S.sub.opts.map((o,n)=>`<button class="opt" data-act="synPick" data-n="${n}"><span class="k">${n+1}</span><span>${showBr(o.en)}</span></button>`).join('')}</div>
+  <div id="fb" style="margin-top:12px"></div></div>`;
+}
+actions.synPick = (d, el) => {
+  const S=st.S, it=cur(), o=S.sub.opts[+d.n];
+  if(o===S.sub.right){ el.classList.add('right'); buzz(12); document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    $('#fb').innerHTML=`<div class="fb ok"><span class="ttl">Correct</span><div class="hint">${siblings(it).map(x=>showBr(x.en)).join(' · ')}</div></div>`; if(cfg.autoSpeak) speak(o.en); setTimeout(advance,1100); }
+  else { el.classList.add('wrong','shake'); buzz(); el.disabled=true; S.misses.add(it); softLapse(it); }
+};
+
+// 8j. Board-ready? (register): choose where the phrase is safe to use
+function vReg(){
+  const it=cur();
+  return `<div class="card"><div class="hint" style="margin-bottom:4px">Where can you say this?</div>
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="phrase">${showBr(it.en)}</div>${audioBtn(it.en)}</div>
+  <div class="muted" style="margin-top:2px">${esc(it.ru)}</div>
+  <div class="stack" style="margin-top:18px;gap:10px">${REGS.map((r,n)=>`<button class="opt" data-act="regPick" data-r="${r}"><span class="k">${n+1}</span><span><b>${r}</b><br><small class="muted">${REG_HINT[r]}</small></span></button>`).join('')}</div>
+  <div id="fb" style="margin-top:12px"></div></div>`;
+}
+actions.regPick = (d, el) => {
+  const S=st.S, it=cur(); if(S.sub?.done) return;
+  const ok=d.r===it.register; S.sub={done:true};
+  document.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; if(b.dataset.r===it.register) b.classList.add('right'); });
+  if(!ok){ el.classList.add('wrong','shake'); buzz(); S.misses.add(it); softLapse(it); } else buzz(12);
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':'warn'}"><span class="ttl">${ok?'Correct':'It is '+esc(it.register)}</span>${it.note?`<div class="hint" style="margin-top:4px">${esc(it.note)}</div>`:''}</div>
+    <div class="actions"><button class="btn" data-act="next">Continue</button></div>`;
+};
+
+// 8k. RU trap (ru_trap "wrong -> right"): see the calque, type the native form
+function vTrap(){ const it=cur(), t=trapParts(it);
+  return `<div class="card"><div class="hint" style="margin-bottom:6px">Russian speakers often say</div>
+  <div class="phrase" style="text-decoration:line-through;text-decoration-color:var(--bad);opacity:.8">${esc(t.wrong)}</div>
+  <p class="hint" style="margin:10px 0 4px">Native form · card: <b>${showBr(it.en)}</b> · ${esc(it.ru)}</p>
+  <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the correct form"></form>
+  <div id="fb" style="margin-top:12px"></div>
+  <div class="actions">${audioBtn(t.right)}<button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
+
 // 8f. Recall (type the English)
 function vSpell(){ const it=cur(), core=stripBr(it.en)||it.en, L=core.split(/\s+/).length, opt=/\[/.test(it.en);
   return `<div class="card"><div class="trans" style="font-size:1.3rem;color:var(--fg)">${esc(it.ru)}</div>
@@ -894,13 +1083,15 @@ actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
   const full=typeTarget(it), r=check(v,full), target=bestTarget(v,full);
   if(S.sub?.locked) return;
-  if(r==='wrong'){ S.misses.add(it); softLapse(it); buzz(); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(v,target)}</div><div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
+  if(r==='wrong' && S.step==='spell'){ const syn=siblings(it).find(x=>check(v,x.en)!=='wrong');
+    if(syn){ $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Synonym: ${esc(syn.en)}</span><div class="hint" style="margin-top:4px">Right meaning. This card asks for <b>${showBr(it.en)}</b>. Type it to continue.</div></div>`; inp.value=''; inp.focus(); return; } }
+  if(r==='wrong'){ S.misses.add(it); softLapse(it); buzz(); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(v,target)}</div>${it.trap?`<div class="hint" style="margin-top:6px"><b>RU trap:</b> ${esc(it.trap)}</div>`:''}<div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
   S.sub=Object.assign(S.sub||{},{locked:true}); inp.disabled=true;
   $('#fb').innerHTML = r==='exact' ? `<div class="fb ok"><span class="ttl">Correct</span>${S.step==='cloze'?`<div class="dlg" style="margin-top:8px">${fmtDialogue(blankByPhrase(it),'show')}</div>`:''}</div>`
                                     : `<div class="fb warn"><span class="ttl">Accepted, watch the spelling</span><div class="diff">${diff(v,target)}</div></div>`;
   if(cfg.autoSpeak) speak(target); setTimeout(advance, S.step==='cloze'?2200:r==='exact'?(S.step==='sentence'?1300:700):2000);
 };
-const typeTarget = it => st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
+const typeTarget = it => st.S.step==='trap' ? trapParts(it).right : st.S.step==='cloze' ? expected(it) : st.S.step==='sentence' ? st.S.sub.target : it.en;
 actions.giveup = () => { const S=st.S, it=cur(), target=typeTarget(it); if(S.sub?.locked) return; S.misses.add(it); softLapse(it);
   $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Answer</span><div class="diff">${showBr(target)}</div><div class="hint" style="margin-top:4px">Type it once to lock it in.</div></div>`; if(cfg.autoSpeak) speak(target); $('#ans').value=''; $('#ans').focus(); };
 
@@ -938,11 +1129,11 @@ actions.retry = () => { const m=shuffle([...new Set([...st.S.misses,...st.S.skip
 
 // ---------- 9. Dictionary ----------
 function vDict(){
-  const q=norm(st.q), p=pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q));
+  const q=norm(st.q), p=pool().filter(w=>!q||norm([w.en,w.ru,w.note,w.type,w.domain].join(' ')).includes(q));
   return `<div class="stack"><input type="search" id="search" placeholder="Search EN, RU or notes" value="${esc(st.q)}">
   <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">${p.length} items</span><button class="btn ghost small" data-act="copyDict">Copy list</button></div>
   <div class="card" style="padding-block:4px">${p.length?p.map(w=>`<div class="dict-row"><div class="meta"><b>${esc(w.en)}</b><div class="muted">${esc(w.ru)}</div>
-    <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span></div>
+    <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span>${w.type?`<span class="pill">${esc(w.type)}</span>`:''}${w.domain?`<span class="pill">${esc(w.domain)}</span>`:''}${regPill(w)}${w.status==='Passive'?'<span class="pill">Passive</span>':''}</div>
     ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
     </div>${audioBtn(w.en)}</div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
 }
@@ -955,14 +1146,20 @@ function vSettings(){
   return `<div class="stack">
   <div class="card stack"><h3>Practice</h3>
     <div><div class="eyebrow" style="margin-bottom:6px">Card direction</div>${seg('dir',[['en-ru','EN → RU'],['ru-en','RU → EN']])}</div>
-    <div><div class="eyebrow" style="margin-bottom:6px">New cards per day, per deck</div>${seg('newPerDay',[[5,'5'],[10,'10'],[15,'15'],[25,'25']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Days until next review</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">${[['again','Again'],['hard','Hard'],['good','Good'],['easy','Easy']].map(([k,l])=>`<label class="grade ${k}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;cursor:default">${l}
+        <input type="number" inputmode="numeric" min="0" max="365" step="1" data-ivl="${k}" value="${ivl0(k)}" style="width:100%;max-width:5em;text-align:center;padding:6px 4px;font:inherit;font-variant-numeric:tabular-nums"></label>`).join('')}</div>
+      <p class="hint" style="margin:6px 0 0">Used the first time you grade a card and for Again. After that intervals grow from the card's own history. 0 = today.</p>
+      <button class="btn ghost small" data-act="ivlReset" style="margin-top:6px">Default 1 · 2 · 4 · 21</button></div>
     <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Register: Caution phrases in practice</div>${seg('hideCaution',[[true,'Hide'],[false,'Show']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Theme</div>${seg('theme',[['system','System'],['light','Light'],['dark','Dark']])}</div>
   </div>
   <div class="card stack"><h3>Data sources</h3><p class="hint" style="margin:0">Google Sheets published as TSV (File → Share → Publish to web → TSV).</p>
     <label class="eyebrow" for="srcP">Phrases sheet</label><input type="url" id="srcP" value="${esc(cfg.sources.phr)}">
-    <label class="eyebrow" for="srcV">Vocabulary sheet</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
+    <label class="eyebrow" for="srcV">Vocabulary (Google Sheet link, published TSV or Drive .tsv)</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
+    <label class="eyebrow" for="drvK">Google API key, only if the Drive link does not load</label><input type="text" id="drvK" autocomplete="off" spellcheck="false" placeholder="AIza…" value="${esc(cfg.driveKey||'')}">
     <div class="row"><button class="btn small" data-act="saveSrc">Save and reload both</button><button class="btn ghost small" data-act="resetSrc">Defaults</button></div>
     <details><summary class="hint" style="cursor:pointer">No network? Paste TSV or pick a file</summary><div class="stack" style="margin-top:10px">
       ${seg('importDeck',[['phr','Phrases'],['voc','Vocabulary']])}
@@ -980,10 +1177,14 @@ function vSettings(){
   </div>`;
 }
 actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
+document.addEventListener('change', e => { const f=e.target.closest('input[data-ivl]'); if(!f) return;
+  const v=Math.round(Number(f.value)); if(!Number.isFinite(v)||v<0||v>365){ toast('Use a whole number from 0 to 365'); f.value=ivl0(f.dataset.ivl); return; }
+  cfg.ivl={...IVL0,...(cfg.ivl||{}),[f.dataset.ivl]:v}; LS.set(K.cfg,cfg); toast(`${f.dataset.ivl[0].toUpperCase()+f.dataset.ivl.slice(1)}: ${v} day${v===1?'':'s'}`); });
+actions.ivlReset = () => { cfg.ivl={...IVL0}; LS.set(K.cfg,cfg); render(); toast('Intervals reset'); };
 actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
-actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; LS.set(K.cfg,cfg); toast('Loading…');
+actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; cfg.driveKey=$('#drvK').value.trim(); LS.set(K.cfg,cfg); toast('Loading…');
   const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
-  toast(r.every(x=>x.status==='fulfilled')?'Both sheets loaded.':'One sheet failed. Check the link is published as TSV.'); };
+  const bad=r.map((x,k)=>x.status==='rejected'?['Phrases','Vocabulary'][k]+': '+x.reason.message:'').filter(Boolean); toast(bad.length?bad.join(' | '):'Both sources loaded.'); };
 actions.resetSrc = () => { cfg.sources={...DEFAULT_SOURCES}; LS.set(K.cfg,cfg); render(); };
 function importText(text){ const d=cfg.importDeck||'phr', items=(d==='phr'?parsePhr:parseVoc)(text.includes('\t')?text:text.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,'\t').replace(/"/g,''));
   if(!items.length) return toast('No rows found. Include the header row.'); data[d]={items,at:Date.now()}; LS.set(K.data,data); toast(`Imported ${items.length} ${DECKS[d].short.toLowerCase()} items`); }
@@ -1044,7 +1245,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape' && st.view==='se
 
 // ---------- Bullet: 60-second right/wrong sprint (Vocabulary only, not part of the lesson) ----------
 const BULLET_SEC=60;
-const bestBullet = d => LS.get('bet.bullet.'+d, 0);
+const bestBullet = d => LS.get('bet3.bullet.'+d, 0);
 function startBullet(){
   const p=pool(); if(p.length<2) return toast('Bullet needs at least 2 chunks in this filter.');
   newSession({ kind:'bullet', items:[], steps:['bullet','summary'], b:{ deck:shuffle(p), k:0, score:0, total:0, streak:0, best:0, wrong:[], end:0 } });
@@ -1053,7 +1254,7 @@ function bulletCard(){
   const b=st.S.b, all=pool(); if(b.k>=b.deck.length){ b.deck=shuffle(b.deck); b.k=0; }
   const it=b.deck[b.k++], truth=Math.random()<.5;
   let shown=it.ru;
-  if(!truth){ const same=all.filter(x=>x!==it&&x.ru!==it.ru&&x.cat===it.cat), others=same.length?same:all.filter(x=>x!==it&&x.ru!==it.ru); if(others.length) shown=others[Math.floor(Math.random()*others.length)].ru; }
+  if(!truth){ const same=all.filter(x=>x!==it&&x.ru!==it.ru&&!sameGroup(x,it)&&x.cat===it.cat), others=same.length?same:all.filter(x=>x!==it&&x.ru!==it.ru&&!sameGroup(x,it)); if(others.length) shown=others[Math.floor(Math.random()*others.length)].ru; }
   b.cur={it, shown, ok:shown===it.ru};
 }
 function vBullet(){
@@ -1094,7 +1295,7 @@ function startBulletTimer(){ stopBulletTimer(); st.bTimer=setInterval(()=>{
   if(ms<=0){ stopBulletTimer(); finishBullet(); }
 },200); }
 function stopBulletTimer(){ if(st.bTimer){ clearInterval(st.bTimer); st.bTimer=null; } }
-function finishBullet(){ const S=st.S, b=S.b; b.prevBest=bestBullet(st.deck); if(b.score>b.prevBest) LS.set('bet.bullet.'+st.deck,b.score); S.step='summary'; render(); window.scrollTo(0,0); }
+function finishBullet(){ const S=st.S, b=S.b; b.prevBest=bestBullet(st.deck); if(b.score>b.prevBest) LS.set('bet3.bullet.'+st.deck,b.score); S.step='summary'; render(); window.scrollTo(0,0); }
 function vBulletSummary(){
   bar(100); const b=st.S.b, acc=b.total?Math.round(b.score/b.total*100):0, rec=b.score>b.prevBest&&b.score>0;
   return `<div class="summary-hero">
