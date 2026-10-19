@@ -380,8 +380,9 @@ body.sess .actions .audio{width:54px;height:54px}
 // ---------- 1. Config & storage ----------
 const DEFAULT_SOURCES = {
   phr: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv',
-  voc: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv'
+  voc: 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing'
 };
+const V1_VOC = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv';
 const DECKS = {
   phr: { name:'Phrases & Functions', short:'Phrases', sub:'Mode 1 · meeting language, dialogues', tone:'t-mint', icoBg:'var(--primary-soft)', icoFg:'var(--primary)' },
   voc: { name:'Vocabulary & Chunks', short:'Vocabulary', sub:'Mode 2 · finance, workflow, idioms', tone:'t-peach', icoBg:'var(--peach)', icoFg:'var(--bad)' }
@@ -403,7 +404,8 @@ const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
   LS.set('bet3.seeded', true);
 })();
 
-let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', lessonSize:7, autoSpeak:true, theme:'system' }, LS.get(K.cfg, {}));
+let cfg = Object.assign({ sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
+if (!cfg.sources || cfg.sources.voc===V1_VOC || !cfg.sources.voc){ cfg.sources={...(cfg.sources||{}), voc:DEFAULT_SOURCES.voc}; LS.set(K.cfg, cfg); }
 let srs = LS.get(K.srs, {});
 let log = LS.get(K.log, {});        // { 'YYYY-MM-DD': {rev:n, ok:n} }
 let data = LS.get(K.data, { phr:null, voc:null }); // { items:[], at:ts }
@@ -505,7 +507,7 @@ function parseVoc(t){
   const col=(...names)=>h.findIndex(x=>names.includes(x));
   const C={ id:col('id'), en:col('en','english','phrase'), ru:col('ru','russian','translation'), list:col('list','category'),
             note:col('explanation','meaning'), ex:col('examples','example'), ctx:col('context','topic'),
-            status:col('status'), type:col('type'), register:col('register'), domain:col('domain'), group:col('group_id','group'), trap:col('ru_trap') };
+            status:col('status'), type:col('type'), register:col('register'), domain:col('domain'), group:col('group_id','group'), trap:col('ru_trap'), orig:col('en_original') };
   const header = C.en>-1 || C.ru>-1; if(C.en===-1) C.en=0; if(C.ru===-1) C.ru=1;
   const v=(c,k)=>C[k]>-1?(c[C[k]]||'').trim():'';
   const rename = n => /1/.test(n)?'Hard Business':/2/.test(n)?'Workflow':/3/.test(n)?'Vibe & Idioms':n;
@@ -513,16 +515,17 @@ function parseVoc(t){
     deck:'voc', id:C.id>-1?v(c,'id'):String(i+1), en:v(c,'en'), ru:v(c,'ru'),
     cat: rename(v(c,'list')||'Main List'), note:v(c,'note'), examples:splitExamples([v(c,'ex')]), example:v(c,'ex'),
     ctx:v(c,'ctx'), dialogue:'',
-    status:v(c,'status')||'Active', type:v(c,'type'), register:v(c,'register'), domain:v(c,'domain'), group:v(c,'group'), trap:v(c,'trap')
+    status:v(c,'status')||'Active', type:v(c,'type'), register:v(c,'register'), domain:v(c,'domain'), group:v(c,'group'), trap:v(c,'trap'), orig:v(c,'orig')
   }));
 }
 // ---- v2 helpers: status, type priority, synonym groups ----
 const TYPE_RANK = { 'Collocation':0, 'Phrasal / expression':1, 'Discourse marker':1, 'Business idiom':2, 'Colloquial idiom':3 };
 const rank = it => TYPE_RANK[it.type] ?? 2;
 const isLive = it => it.status!=='Drop';                                        // Drop rows stay in the sheet but never show up
-const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive');
+const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive') && !(cfg.hideCaution && it.register==='Caution');
 const sameGroup = (a,b) => !!a.group && a.group===b.group;
 const siblings = it => it.group ? (data[it.deck]?.items||[]).filter(x=>x!==it && isLive(x) && x.group===it.group) : [];
+const synNote = it => { const sy=siblings(it); return sy.length?`<div class="note"><b>Same meaning</b>${sy.map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:''; };
 const regPill = it => it.register && it.register!=='Neutral' ? `<span class="pill ${it.register==='Caution'?'due':''}">${esc(it.register)}</span>` : '';
 const CAT_DESC = {
   'Clarification':'Clarifying details and softly requesting elaboration without losing authority.',
@@ -535,15 +538,33 @@ const CAT_DESC = {
   'Floor Management':'Taking the floor politely or handing it to others.'
 };
 
+// A Google Drive file link (…/file/d/<id>/view, open?id=<id>, uc?id=<id>) is turned into download URLs.
+// The Drive API route needs an API key from Settings; it is the CORS-safe fallback.
+function driveId(u){ const m=String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{20,})/) || String(u).match(/drive\.usercontent\.google\.com\/download\?(?:[^#]*&)?id=([\w-]{20,})/); return m?m[1]:null; }
+function sourceUrls(u){
+  const id=driveId(u); if(!id) return [u];
+  const urls=[`https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`];
+  if(cfg.driveKey) urls.unshift(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${encodeURIComponent(cfg.driveKey)}`);
+  return urls;
+}
+async function fetchText(u){
+  let last;
+  for(const url of sourceUrls(u)){
+    try{
+      const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+      const t=await r.text(); if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('got a web page instead of TSV');
+      return t;
+    }catch(e){ last=e; }
+  }
+  throw new Error((driveId(u)?'Drive file not reachable from the browser. Add a Google API key in Settings or publish the data as a Google Sheet TSV. ':'')+(last?.message||''));
+}
 async function loadDeck(deck, {force=false}={}){
   const cached = data[deck];
-  if (cached && !force) return cached;
+  if (cached && !force && (!cached.src || cached.src===cfg.sources[deck])) return cached;
   try{
-    const r = await fetch(cfg.sources[deck], {cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const items = (deck==='phr'?parsePhr:parseVoc)(await r.text());
-    if(!items.length) throw new Error('The sheet returned no rows');
-    data[deck] = { items, at:Date.now() }; LS.set(K.data, data);
+    const items = (deck==='phr'?parsePhr:parseVoc)(await fetchText(cfg.sources[deck]));
+    if(!items.length) throw new Error('The source returned no rows');
+    data[deck] = { items, at:Date.now(), src:cfg.sources[deck] }; LS.set(K.data, data);
     return data[deck];
   }catch(e){
     if (cached){ toast('Offline. Using the copy saved '+fmtAgo(cached.at)+'.'); return cached; }
@@ -599,8 +620,8 @@ function status(it){
 }
 
 // ---------- 5. State & router ----------
-const st = { view:'home', deck:null, cat:'all', type:'all', q:'', S:null };
-const pool = () => (data[st.deck]?.items||[]).filter(i=>inScope(i) && (st.cat==='all'||i.cat===st.cat) && (st.type==='all'||i.type===st.type));
+const st = { view:'home', deck:null, cat:'all', type:'all', dom:'all', q:'', S:null };
+const pool = () => (data[st.deck]?.items||[]).filter(i=>inScope(i) && (st.cat==='all'||i.cat===st.cat) && (st.type==='all'||i.type===st.type) && (st.dom==='all'||i.domain===st.dom));
 const actions = {};
 document.addEventListener('click', e => { const el=e.target.closest('[data-act]'); if(!el) return; const f=actions[el.dataset.act]; if(f){ e.preventDefault(); f(el.dataset, el, e); } });
 
@@ -665,7 +686,7 @@ function vHome(){
   </div>`;
 }
 actions.openDeck = async d => {
-  st.deck=d.d; st.cat='all'; st.type='all';
+  st.deck=d.d; st.cat='all'; st.type='all'; st.dom='all';
   if(!data[d.d]){ go('loading'); try{ await loadDeck(d.d); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); } }
   go('deck');
 };
@@ -689,7 +710,7 @@ function vDeck(){
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
     <div class="chips">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(c)} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
-    ${typeChips(items)}${scopeChips()}
+    ${typeChips(items)}${domainChips(items)}${scopeChips()}
     ${desc?`<div class="note">${esc(desc)}</div>`:''}
     <div class="hero">
       <div class="lbl">Daily lesson</div>
@@ -711,6 +732,12 @@ function vDeck(){
 }
 actions.cat = d => { st.cat=d.c; render(); };
 actions.type = d => { st.type=d.t; render(); };
+actions.dom = d => { st.dom=d.v; render(); };
+function domainChips(items){
+  const doms=[...new Set(items.map(i=>i.domain).filter(Boolean))].sort((a,b)=>items.filter(i=>i.domain===b).length-items.filter(i=>i.domain===a).length);
+  if(doms.length<2) return '';
+  return `<div class="chips">${['all',...doms].map(t=>`<button class="chip ${st.dom===t?'on':''}" data-act="dom" data-v="${esc(t)}">${t==='all'?'All domains':esc(t)} <span class="muted">${t==='all'?items.length:items.filter(i=>i.domain===t).length}</span></button>`).join('')}</div>`;
+}
 actions.scope = d => { cfg.scope=d.s; LS.set(K.cfg,cfg); render(); };
 function typeChips(items){
   const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
@@ -777,7 +804,7 @@ function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t
 function advance(){ const S=st.S; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
-const notes = it => [it.trap&&`<div class="note"><b>RU trap</b>${esc(it.trap)}</div>`, it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
+const notes = it => [synNote(it), it.trap&&`<div class="note"><b>RU trap</b>${esc(it.trap)}</div>`, it.note&&`<div class="note"><b>${it.deck==='phr'?'Strategic intent':'Explanation'}</b>${esc(it.note)}</div>`, (it.examples?.length?`<div class="note"><b>${it.examples.length>1?'Examples':'Example'}</b>${it.examples.map(x=>`<div style="font-family:var(--serif);margin-top:4px">${hl(x,it.en)}</div>`).join('')}</div>`:it.example&&`<div class="note"><b>Example</b><em>${esc(it.example)}</em></div>`)].filter(Boolean).join('');
 const stepLabel = { sort:'Review', learn:'Memorise', match:'Match', scramble:'Scramble', cloze:'Fill the gap', dialogue:'Dialogue', spell:'Recall', pairs:'Quick pairs', sentence:'Write the sentence', scrambleEx:'Scramble sentence' };
 function head(){ const S=st.S, L=list(), stepN=S.steps.filter(s=>s!=='summary'), k=stepN.indexOf(S.step);
   const frac = S.kind==='drill'||S.kind==='flash' ? S.i/L.length : (k+S.i/Math.max(1,L.length))/stepN.length; bar(frac*100);
@@ -974,12 +1001,12 @@ actions.retry = () => { const m=shuffle([...new Set([...st.S.misses,...st.S.skip
 
 // ---------- 9. Dictionary ----------
 function vDict(){
-  const q=norm(st.q), p=pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q));
+  const q=norm(st.q), p=pool().filter(w=>!q||norm([w.en,w.ru,w.note,w.type,w.domain,w.orig].join(' ')).includes(q));
   return `<div class="stack"><input type="search" id="search" placeholder="Search EN, RU or notes" value="${esc(st.q)}">
   <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">${p.length} items</span><button class="btn ghost small" data-act="copyDict">Copy list</button></div>
   <div class="card" style="padding-block:4px">${p.length?p.map(w=>`<div class="dict-row"><div class="meta"><b>${esc(w.en)}</b><div class="muted">${esc(w.ru)}</div>
-    <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span>${w.type?`<span class="pill">${esc(w.type)}</span>`:''}${regPill(w)}${w.status==='Passive'?'<span class="pill">Passive</span>':''}</div>
-    ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
+    <div class="row" style="gap:6px;margin-top:6px">${status(w)}<span class="pill">${esc(w.cat)}</span>${w.type?`<span class="pill">${esc(w.type)}</span>`:''}${w.domain?`<span class="pill">${esc(w.domain)}</span>`:''}${regPill(w)}${w.status==='Passive'?'<span class="pill">Passive</span>':''}</div>
+    ${w.note||w.example||w.dialogue?`<details><summary>Details</summary><div class="stack" style="gap:8px;margin-top:8px">${w.orig?`<div class="hint">Previously saved as: ${esc(w.orig)}</div>`:''}${notes(w)}${w.dialogue?`<div class="note dlg">${fmtDialogue(blankByPhrase(w),'show')}</div>`:''}</div></details>`:''}
     </div>${audioBtn(w.en)}</div>`).join(''):'<p class="muted" style="text-align:center">No matches.</p>'}</div></div>`;
 }
 actions.copyDict = () => { const q=norm(st.q); copy(pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q)).map(w=>`${w.en} - ${w.ru}${w.note?` [${w.note}]`:''}`).join('\n'), 'List copied'); };
@@ -992,12 +1019,14 @@ function vSettings(){
   <div class="card stack"><h3>Practice</h3>
     <div><div class="eyebrow" style="margin-bottom:6px">Card direction</div>${seg('dir',[['en-ru','EN → RU'],['ru-en','RU → EN']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Register: Caution phrases in practice</div>${seg('hideCaution',[[true,'Hide'],[false,'Show']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Theme</div>${seg('theme',[['system','System'],['light','Light'],['dark','Dark']])}</div>
   </div>
   <div class="card stack"><h3>Data sources</h3><p class="hint" style="margin:0">Google Sheets published as TSV (File → Share → Publish to web → TSV).</p>
     <label class="eyebrow" for="srcP">Phrases sheet</label><input type="url" id="srcP" value="${esc(cfg.sources.phr)}">
-    <label class="eyebrow" for="srcV">Vocabulary sheet</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
+    <label class="eyebrow" for="srcV">Vocabulary (Google Sheet TSV or Google Drive .tsv link)</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
+    <label class="eyebrow" for="drvK">Google API key, only if the Drive link does not load</label><input type="text" id="drvK" autocomplete="off" spellcheck="false" placeholder="AIza…" value="${esc(cfg.driveKey||'')}">
     <div class="row"><button class="btn small" data-act="saveSrc">Save and reload both</button><button class="btn ghost small" data-act="resetSrc">Defaults</button></div>
     <details><summary class="hint" style="cursor:pointer">No network? Paste TSV or pick a file</summary><div class="stack" style="margin-top:10px">
       ${seg('importDeck',[['phr','Phrases'],['voc','Vocabulary']])}
@@ -1016,9 +1045,9 @@ function vSettings(){
 }
 actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
 actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
-actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; LS.set(K.cfg,cfg); toast('Loading…');
+actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; cfg.driveKey=$('#drvK').value.trim(); LS.set(K.cfg,cfg); toast('Loading…');
   const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
-  toast(r.every(x=>x.status==='fulfilled')?'Both sheets loaded.':'One sheet failed. Check the link is published as TSV.'); };
+  const bad=r.map((x,k)=>x.status==='rejected'?['Phrases','Vocabulary'][k]+': '+x.reason.message:'').filter(Boolean); toast(bad.length?bad.join(' | '):'Both sources loaded.'); };
 actions.resetSrc = () => { cfg.sources={...DEFAULT_SOURCES}; LS.set(K.cfg,cfg); render(); };
 function importText(text){ const d=cfg.importDeck||'phr', items=(d==='phr'?parsePhr:parseVoc)(text.includes('\t')?text:text.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,'\t').replace(/"/g,''));
   if(!items.length) return toast('No rows found. Include the header row.'); data[d]={items,at:Date.now()}; LS.set(K.data,data); toast(`Imported ${items.length} ${DECKS[d].short.toLowerCase()} items`); }
