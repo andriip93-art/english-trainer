@@ -102,6 +102,16 @@ h3{font-size:1.02rem;font-weight:600;margin:0}
 .chip .muted{font-variant-numeric:tabular-nums;margin-left:2px}
 .chip.on{background:var(--fg);color:var(--bg)}
 .chip.on .muted{color:inherit;opacity:.6}
+/* compact filter bar: three dropdown pills on one line */
+.chips.fit{display:grid;overflow:visible;margin-inline:0;padding-inline:0}
+.chips.fit .muted{display:none}
+.chips.fit .chip{padding:8px 4px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+.fbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fs{position:relative;color:var(--fg)}
+.fs::after{content:'';position:absolute;right:12px;top:50%;width:6px;height:6px;border:solid currentColor;border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg);pointer-events:none;opacity:.7}
+.fs select{text-align:left;appearance:none;-webkit-appearance:none;width:100%;border:1px solid var(--line);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.86rem;font-weight:500;padding:8px 28px 8px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.fs.on{color:var(--bg)} .fs.on select{background:var(--fg);border-color:var(--fg)}
+.fs select option{color:initial;background:initial}
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px}
 .seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-weight:600;font-size:.86rem;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
@@ -716,8 +726,8 @@ function vDeck(){
   ];
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
-    <div class="chips">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(c)} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
-    ${typeChips(items)}${domainChips(items)}${scopeChips()}
+    <div class="chips ${cats.length<=3?'fit':''}" style="${cats.length<=3?`grid-template-columns:repeat(${cats.length+1},minmax(0,1fr))`:''}">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(short(c))} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
+    ${filterBar(items)}
     ${desc?`<div class="note">${esc(desc)}</div>`:''}
     <div class="hero">
       <div class="lbl">Daily lesson</div>
@@ -760,6 +770,27 @@ function coverage(p){
       <span class="muted" style="font-variant-numeric:tabular-nums">${mat}/${n}</span></div>`; };
   return `<div class="card stack" style="gap:8px"><div class="row" style="justify-content:space-between"><span class="eyebrow">Progress by type</span><span class="hint">mature / total · light = seen</span></div>${types.map(row).join('')}</div>`;
 }
+const SHORT = { 'Phrasal / expression':'Phrasal', 'Discourse marker':'Discourse', 'Business idiom':'Biz idiom', 'Colloquial idiom':'Colloquial',
+  'Finance & Markets':'Finance', 'Meetings & Communication':'Meetings', 'Operations & Execution':'Operations', 'People & Leadership':'People',
+  'Negotiation & Deals':'Negotiation', 'Hard Business':'Business', 'Vibe & Idioms':'Idioms', 'Analysis & Thinking':'Analysis', 'Risk & Crisis':'Risk & crisis' };
+const short = t => SHORT[t] || t;
+// Type, domain and scope as three dropdown pills in one row (replaces three chip rows)
+function filterBar(items){
+  items=items.filter(i=>st.cat==='all'||i.cat===st.cat);   // counts follow the selected list
+  const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
+  const doms=[...new Set(items.map(i=>i.domain).filter(Boolean))].sort((a,b)=>items.filter(i=>i.domain===b).length-items.filter(i=>i.domain===a).length);
+  const all=(data[st.deck]?.items||[]).filter(isLive).filter(i=>!(cfg.hideCaution&&i.register==='Caution')), pas=all.filter(i=>i.status==='Passive').length;
+  const sel=(key,cur,first,opts)=>`<label class="fs ${cur!=='all'&&key!=='scope'||key==='scope'&&cur==='all'?'on':''}"><select data-filter="${key}" aria-label="${key}">
+    <option value="all" ${cur==='all'&&key!=='scope'?'selected':''}>${first}</option>${opts.map(([v,l])=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`;
+  const parts=[];
+  if(types.length) parts.push(sel('type',st.type,'Type',types.map(t=>[t,`${short(t)} ${items.filter(i=>i.type===t).length}`])));
+  if(doms.length>1) parts.push(sel('dom',st.dom,'Domain',doms.map(t=>[t,`${short(t)} ${items.filter(i=>i.domain===t).length}`])));
+  if(pas) parts.push(`<label class="fs ${cfg.scope==='all'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${cfg.scope!=='all'?'selected':''}>Active</option><option value="all" ${cfg.scope==='all'?'selected':''}>+ Passive</option></select></label>`);
+  return parts.length?`<div class="fbar" style="grid-template-columns:repeat(${parts.length},minmax(0,1fr))">${parts.join('')}</div>`:'';
+}
+document.addEventListener('change', e => { const f=e.target.closest('select[data-filter]'); if(!f) return;
+  if(f.dataset.filter==='type') st.type=f.value; else if(f.dataset.filter==='dom') st.dom=f.value; else { cfg.scope=f.value; LS.set(K.cfg,cfg); }
+  render(); });
 function typeChips(items){
   const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
   if(!types.length) return '';
