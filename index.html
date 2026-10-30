@@ -385,7 +385,7 @@ body.bul .progress{display:none}
 .skip-ex{display:block;margin-top:6px;margin-left:auto;border:1px solid var(--fg);background:transparent;border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:600}
 body.sess .actions .audio{width:54px;height:54px}
 </style>
-<script>window.SYNC_CFG = { url:'', anonKey:'' }; /* fill in from Supabase -> Project Settings -> API (see README) */</script>
+<script>window.SYNC_CFG = { clientId:'' }; /* Google OAuth Client ID, see README: Cloud sync */</script>
 </head>
 <body>
 <div class="topbar">
@@ -1264,7 +1264,7 @@ function vSettings(){
 }
 function vSync(){
   const Y=window.Sync; if(!Y?.enabled) return `<div class="card stack"><h3>Cloud sync</h3><p class="hint" style="margin:0">Not configured. See README, section Cloud sync.</p></div>`;
-  const label={ 'signed-out':'Not signed in', idle:'Signed in', syncing:'Syncing…', synced:'Synced '+(Y.last?new Date(Y.last).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''), offline:'Offline. Changes will sync when you are back online.', error:'Sync error: '+esc(Y.error||'') }[Y.status]||'';
+  const label={ 'signed-out':'Not signed in', idle:'Signed in', syncing:'Syncing…', synced:'Synced '+(Y.last?new Date(Y.last).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''), offline:'Offline. Changes will sync when you are back online.', reconnect:'Google session expired. Tap Sync now to reconnect.', error:'Sync error: '+esc(Y.error||'') }[Y.status]||'';
   return `<div class="card stack"><h3>Cloud sync</h3>
     <p class="hint" style="margin:0">${Y.user?esc(Y.user.email||'')+'<br>':''}${label}</p>
     <div class="row">${Y.user?`<button class="btn small" data-act="syncNow">Sync now</button><button class="btn ghost small" data-act="syncOut">Sign out</button>`:`<button class="btn small" data-act="syncIn">Sign in with Google</button>`}</div></div>`; }
