@@ -418,8 +418,10 @@ const DECKS = {
 };
 const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast('Could not save locally. Storage is full or blocked.'); } }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast('Could not save locally. Storage is full or blocked.'); }
+    if (SYNCED_KEYS.has(k)) window.Sync?.schedule?.(); }
 };
+const SYNCED_KEYS = new Set(['bet3.srs','bet3.log','bet3.bullet.phr','bet3.bullet.voc','bet3.wiped']);
 const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
 // v2 lives on the same origin as v1, so it keeps its own keys. On first launch it copies v1 progress,
 // so reviews continue where they were. After that the two apps never write to each other's data.
@@ -1248,6 +1250,7 @@ function vSettings(){
       <textarea id="tsv" rows="4" placeholder="Paste rows copied from the sheet (with header)"></textarea>
       <div class="row"><button class="btn small" data-act="importTsv">Import pasted</button><label class="btn ghost small" for="tsvFile">Choose .tsv / .csv</label><input type="file" id="tsvFile" accept=".tsv,.txt,.csv" hidden></div></div></details>
   </div>
+  ${vSync()}
   <div class="card stack"><h3>Move progress between devices</h3>
     <p class="hint" style="margin:0">Progress is stored on each device. Copy the code on one device and paste it on the other. Newer reviews win per card.</p>
     <div class="row"><button class="btn small" data-act="exportP">Copy progress code</button><button class="btn ghost small" data-act="downloadP">Download backup</button></div>
@@ -1258,6 +1261,16 @@ function vSettings(){
     <button class="btn ghost small" data-act="wipe" style="color:var(--bad)">${st.wipeArm?'Tap again to erase all progress':'Erase all progress'}</button></div>
   </div>`;
 }
+function vSync(){
+  const Y=window.Sync; if(!Y?.enabled) return '';
+  const label={ 'signed-out':'Not connected', idle:'Connected', syncing:'Syncing…', synced:'Synced '+(Y.last?new Date(Y.last).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''), offline:'Offline. Changes will sync when you are back online.', error:'Sync error: '+esc(Y.error||'') }[Y.status]||'';
+  return `<div class="card stack"><h3>Cloud sync</h3>
+    <p class="hint" style="margin:0">${label}</p>
+    ${Y.user?`<div class="row"><button class="btn small" data-act="syncNow">Sync now</button><button class="btn ghost small" data-act="syncOut">Disconnect</button></div>`
+    :`<textarea id="syncCode" rows="2" placeholder="Paste your sync code (web app URL#secret)"></textarea><div class="row"><button class="btn small" data-act="syncIn">Connect</button></div>`}</div>`; }
+actions.syncIn = () => window.Sync?.connect($('#syncCode').value);
+actions.syncOut = () => window.Sync?.signOut();
+actions.syncNow = () => window.Sync?.now();
 actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
 document.addEventListener('change', e => { const f=e.target.closest('input[data-ivl]'); if(!f) return;
   const v=Math.round(Number(f.value)); if(!Number.isFinite(v)||v<0||v>365){ toast('Use a whole number from 0 to 365'); f.value=ivl0(f.dataset.ivl); return; }
@@ -1271,15 +1284,29 @@ actions.resetSrc = () => { cfg.sources={...DEFAULT_SOURCES}; LS.set(K.cfg,cfg); 
 function importText(text){ const d=cfg.importDeck||'phr', items=(d==='phr'?parsePhr:parseVoc)(text.includes('\t')?text:text.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,'\t').replace(/"/g,''));
   if(!items.length) return toast('No rows found. Include the header row.'); data[d]={items,at:Date.now()}; LS.set(K.data,data); toast(`Imported ${items.length} ${DECKS[d].short.toLowerCase()} items`); }
 actions.importTsv = () => importText($('#tsv').value);
-const progressBlob = () => JSON.stringify({v:2, at:Date.now(), srs, log});
+// Full syncable state. Same shape for backup files and the cloud.
+const getState = () => ({v:3, srs, log, bullet:{phr:LS.get('bet3.bullet.phr',0), voc:LS.get('bet3.bullet.voc',0)}, wipedAt:LS.get('bet3.wiped',0)});
+const progressBlob = () => JSON.stringify(getState());
+// Merge never loses data from either side: newer review wins per card, daily counters take the max,
+// best scores take the max. 'Erase all progress' sets wipedAt, so erased cards do not come back from another device.
+function mergeState(p){
+  let n=0; const w=Math.max(LS.get('bet3.wiped',0), p.wipedAt||0);
+  if (w > LS.get('bet3.wiped',0)) LS.set('bet3.wiped', w);
+  if (w) { Object.keys(srs).forEach(k=>{ if((srs[k].last||0)<=w) delete srs[k]; });
+    const cut=today(new Date(w)); Object.keys(log).forEach(d=>{ if(d<cut) delete log[d]; }); }
+  Object.entries(p.srs||{}).forEach(([k,c])=>{ if(w && (c.last||0)<=w) return; if(!srs[k] || (c.last||0)>(srs[k].last||0)){ srs[k]=c; n++; } });
+  Object.entries(p.log||{}).forEach(([d,v])=>{ if(w && d<today(new Date(w))) return; const m=log[d]=log[d]||{rev:0,ok:0,new:0}; ['rev','ok','new','prac'].forEach(f=>{ if((v[f]||0)>(m[f]||0)) m[f]=v[f]; }); });
+  ['phr','voc'].forEach(d=>{ const b=(p.bullet||{})[d]||0; if(b>LS.get('bet3.bullet.'+d,0)) LS.set('bet3.bullet.'+d,b); });
+  LS.set(K.srs,srs); LS.set(K.log,log); return n; }
 actions.exportP = () => copy(progressBlob(), 'Progress code copied');
 actions.downloadP = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([progressBlob()],{type:'application/json'})); a.download=`business-english-progress-${today()}.json`; a.click(); toast('Backup saved'); };
-function mergeProgress(text){ try{ const p=JSON.parse(text); let n=0;
-  Object.entries(p.srs||{}).forEach(([k,c])=>{ if(!srs[k] || (c.last||0)>(srs[k].last||0)){ srs[k]=c; n++; } });
-  Object.entries(p.log||{}).forEach(([d,v])=>{ const m=log[d]; if(!m||v.rev>m.rev) log[d]=v; });
-  LS.set(K.srs,srs); LS.set(K.log,log); toast(`Merged: ${n} cards updated`); render(); }catch(e){ toast('That code is not valid progress data.'); } }
+function mergeProgress(text){ try{ const n=mergeState(JSON.parse(text)); toast(`Merged: ${n} cards updated`); render(); }catch(e){ toast('That code is not valid progress data.'); } }
 actions.importP = () => mergeProgress($('#imp').value.trim());
-actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs={}; log={}; LS.set(K.srs,srs); LS.set(K.log,log); st.wipeArm=false; toast('Progress erased'); render(); };
+actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs={}; log={}; LS.set(K.srs,srs); LS.set(K.log,log); LS.set('bet3.wiped',Date.now()); st.wipeArm=false; toast('Progress erased'); render(); };
+
+// bridge for sync.js
+window.__app = { getState, mergeState,
+  onStatus(){ if(st.view==='session') return; if(st.view==='settings' && document.activeElement?.tagName==='TEXTAREA') return; render(); } };
 
 // ---------- 11. Wiring after each render ----------
 function afterRender(){
@@ -1398,5 +1425,6 @@ let bx=null; document.addEventListener('touchstart', e => { if(st.S?.step==='bul
 document.addEventListener('touchend', e => { if(bx===null) return; const dx=e.changedTouches[0].clientX-bx; bx=null; if(Math.abs(dx)>50) actions.bulletAns({v:dx>0?'1':'0'}); });
 render();
 </script>
+<script src="sync.js"></script>
 </body>
 </html>
