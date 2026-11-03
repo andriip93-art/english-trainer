@@ -718,13 +718,13 @@ function grade(it, g){
   }
   const fuzz = ni>3 ? Math.round(ni*0.05*(Math.random()*2-1)) : 0;
   c.due = startOfDay(Date.now()+(ni+fuzz)*DAY);
-  c.reps=(c.reps||0)+1; c.last=Date.now(); srs[k]=c; LS.set(K.srs, srs);
-  bump(g!=='again');
+  c.reps=(c.reps||0)+1; c.last=Date.now(); c.u=c.last; srs[k]=c; LS.set(K.srs, srs);
+  bump(g!=='again'); queueSync();
 }
 // An error in a production exercise brings the card back tomorrow
-function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,2); c.due=startOfDay(Date.now()+DAY); LS.set(K.srs,srs); }
+function softLapse(it){ const k=keyOf(it), c=srs[k]; if(!c) return; c.ease=Math.max(1.3,c.ease-0.1); c.ivl=Math.min(c.ivl,2); c.due=startOfDay(Date.now()+DAY); c.u=Date.now(); LS.set(K.srs,srs); queueSync(); }
 function startOfDay(ts){ const d=new Date(ts); d.setHours(4,0,0,0); return d.getTime(); }
-function bump(ok){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].rev++; if(ok) log[t].ok++; LS.set(K.log,log); }
+function bump(ok){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].rev++; if(ok) log[t].ok++; LS.set(K.log,log); queueSync(); }
 function newToday(deck){ return Object.entries(srs).filter(([k,c])=>k.startsWith(deck+':') && c.reps===1 && c.src!=='cards' && c.last && today(new Date(c.last))===today()).length; }
 function streak(){ let s=0, d=new Date(); if(!log[today(d)]) d.setDate(d.getDate()-1); while(log[today(d)]){ s++; d.setDate(d.getDate()-1);} return s; }
 function status(it){
@@ -959,7 +959,7 @@ function nextStep(){
 }
 const list = () => st.S.step==='sort' ? st.S.queue : (st.S.list && (st.S.step==='cloze'||st.S.step==='sentence'||st.S.step==='scrambleEx'||NEEDS[st.S.step]) && st.S.kind!=='drill' ? st.S.list : st.S.items);
 const cur = () => list()[st.S.i];
-function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].prac=(log[t].prac||0)+1; LS.set(K.log,log); }
+function markActive(){ const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t].prac=(log[t].prac||0)+1; LS.set(K.log,log); queueSync(); }
 function advance(){ const S=st.S; if(!S||st.view!=='session') return; markActive(); S.practised++; S.i++; S.sub=null; if(S.i>=list().length) nextStep(); else { render(); } }
 const front = it => cfg.dir==='en-ru' ? it.en : it.ru;
 const back  = it => cfg.dir==='en-ru' ? it.ru : it.en;
@@ -1217,6 +1217,70 @@ function vDict(){
 actions.copyDict = () => { const q=norm(st.q); copy(pool().filter(w=>!q||norm(w.en+' '+w.ru+' '+w.note).includes(q)).map(w=>`${w.en} - ${w.ru}${w.note?` [${w.note}]`:''}`).join('\n'), 'List copied'); };
 function copy(text, msg){ (navigator.clipboard?.writeText(text)||Promise.reject()).then(()=>toast(msg)).catch(()=>{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy');toast(msg);}catch(e){toast('Copy blocked. Select the text manually.');} t.remove(); }); }
 
+// ---------- Sync: progress shared across devices (Google Apps Script web app, tab "Progress" in vocabulary_v2) ----------
+// Offline-first: the browser copy stays the working copy. Changes are pushed a few seconds after each answer,
+// and everything newer from other devices is pulled on open, on return to the tab and on reconnect.
+// ---- SYNC START
+const SYNC_CFG_KEYS = ['ivl','ivlVer','dir','scope','hideCaution','lessonSize','autoSpeak','ygAccent'];
+const SK = 'bet3.sync';                                   // { at, sv, ok, when, cards, msg }
+const syncInfo = () => LS.get(SK, {at:0, sv:0});
+const syncOn = () => !!(cfg.syncUrl && cfg.syncToken);
+const cardU = c => (c && (c.u||c.last)) || 0;
+let syncBusy=false, syncTimer=null, syncAgain=false;
+function touchCfg(){ cfg.u=Date.now(); LS.set(K.cfg,cfg); queueSync(); }
+function queueSync(ms=4000){ if(!syncOn()) return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow({silent:true}),ms); }
+async function syncPost(body){
+  const res=await fetch(cfg.syncUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:cfg.syncToken,...body})});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  let out; try{ out=await res.json(); }catch(e){ throw new Error('The sync URL did not answer with data. Use the /exec link of a web app deployed for Anyone.'); }
+  if(out.error) throw new Error(out.error);
+  return out;
+}
+async function syncNow({silent=false, full=false}={}){
+  if(!syncOn()){ if(!silent) toast('Add the sync URL and token first'); return false; }
+  if(syncBusy){ syncAgain=true; return false; }
+  syncBusy=true; const started=Date.now(), info=syncInfo(), prev=full?0:(info.at||0);
+  try{
+    const items=[];
+    for(const [k,c] of Object.entries(srs)) if(cardU(c)>prev) items.push({k:'c|'+k, j:JSON.stringify(c), u:cardU(c)});
+    const since=prev?today(new Date(prev-DAY)):'';
+    for(const [d,v] of Object.entries(log)) if(!since||d>=since) items.push({k:'l|'+d, j:JSON.stringify(v), u:started});
+    if((cfg.u||0)>prev) items.push({k:'g', j:JSON.stringify(Object.fromEntries(SYNC_CFG_KEYS.filter(x=>cfg[x]!==undefined).map(x=>[x,cfg[x]]))), u:cfg.u});
+    const out=await syncPost({action:'sync', items, since:full?0:(info.sv||0)});
+    let n=0;
+    for(const r of out.rows||[]){
+      let v; try{ v=JSON.parse(r.j); }catch(e){ continue; }
+      if(r.k.startsWith('c|')){ const k=r.k.slice(2); if(!srs[k] || r.u>cardU(srs[k])){ srs[k]=v; n++; } }
+      else if(r.k.startsWith('l|')){ const d=r.k.slice(2), l=log[d]||{}, m={...l}; for(const f of Object.keys(v)) m[f]=Math.max(m[f]||0, v[f]||0);
+        if(JSON.stringify(m)!==JSON.stringify(l)){ log[d]=m; n++; } }
+      else if(r.k==='g' && r.u>(cfg.u||0)){ SYNC_CFG_KEYS.forEach(x=>{ if(v[x]!==undefined) cfg[x]=v[x]; }); cfg.u=r.u; n++; }
+    }
+    LS.set(K.srs,srs); LS.set(K.log,log); LS.set(K.cfg,cfg);
+    LS.set(SK,{at:started, sv:out.now, ok:true, when:Date.now(), cards:Object.keys(srs).length, msg:''});
+    if(n && typeof render==='function' && st.view!=='session') render();
+    if(!silent) toast(n?`Synced: ${n} update${n===1?'':'s'} received`:'Synced. Everything is up to date.');
+    return true;
+  }catch(e){
+    LS.set(SK,{...syncInfo(), ok:false, when:Date.now(), msg:e.message});
+    if(!silent) toast('Sync failed: '+e.message);
+    return false;
+  }finally{
+    syncBusy=false; if(syncAgain){ syncAgain=false; queueSync(1500); }
+  }
+}
+async function syncWipe(){ if(!syncOn()) return; try{ await syncPost({action:'wipe'}); LS.set(SK,{at:0,sv:0,ok:true,when:Date.now(),cards:0,msg:''}); }catch(e){ toast('Erased here, but not on the server: '+e.message); } }
+// ---- SYNC END
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible') queueSync(500); });
+window.addEventListener('online', () => queueSync(500));
+function syncLine(){ const i=syncInfo(); if(!syncOn()) return 'Not connected. Progress stays in this browser only.';
+  if(i.ok===false) return `Last attempt failed: ${esc(i.msg||'')}. Progress is kept here and will be sent when it works.`;
+  return i.when?`Last synced ${new Date(i.when).toLocaleString()} · ${i.cards||Object.keys(srs).length} cards on the server`:'Connected. Not synced yet.'; }
+actions.saveSync = async () => { cfg.syncUrl=$('#syncU').value.trim(); cfg.syncToken=$('#syncT').value.trim(); LS.set(K.cfg,cfg);
+  if(!syncOn()){ toast('Sync turned off'); return render(); }
+  if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(cfg.syncUrl)){ toast('The URL should look like https://script.google.com/macros/s/.../exec'); return; }
+  toast('Connecting…'); const ok=await syncNow({full:true}); render(); };
+actions.syncNow = async () => { await syncNow({}); render(); };
+
 // ---------- 10. Settings, sync, import ----------
 function vSettings(){
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${cfg[k]==v?'on':''}" data-act="set" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
@@ -1248,6 +1312,11 @@ function vSettings(){
     <textarea id="imp" rows="3" placeholder="Paste a progress code here"></textarea>
     <div class="row"><button class="btn small" data-act="importP">Merge progress</button><label class="btn ghost small" for="impFile">Open backup file</label><input type="file" id="impFile" accept=".json" hidden></div>
   </div>
+  <div class="card stack"><h3>Sync across devices</h3><p class="hint" style="margin:0">Progress, intervals and practice settings are stored in the "Progress" tab of vocabulary_v2 through your Google Apps Script, so every device shows the same cards. Setup steps are in the repo README (apps-script/Code.gs).</p>
+    <label class="eyebrow" for="syncU">Apps Script web app URL (ends with /exec)</label><input type="url" id="syncU" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(cfg.syncUrl||'')}">
+    <label class="eyebrow" for="syncT">Token (the same as TOKEN in the script)</label><input type="password" id="syncT" autocomplete="off" spellcheck="false" value="${esc(cfg.syncToken||'')}">
+    <div class="row"><button class="btn small" data-act="saveSync">Save and sync</button><button class="btn ghost small" data-act="syncNow">Sync now</button></div>
+    <p class="hint" style="margin:0">${syncLine()}</p></div>
   <div class="card stack"><h3>Reset</h3><p class="hint" style="margin:0">${Object.keys(srs).length} cards tracked.</p>
     <button class="btn ghost small" data-act="wipe" style="color:var(--bad)">${st.wipeArm?'Tap again to erase all progress':'Erase all progress'}</button></div>
   </div>`;
@@ -1255,9 +1324,9 @@ function vSettings(){
 actions.settings = () => { if(st.view==='settings') return; st.prev=st.view==='session'?'deck':st.view; cfg.importDeck=cfg.importDeck||'phr'; st.wipeArm=false; go('settings'); };
 document.addEventListener('change', e => { const f=e.target.closest('input[data-ivl]'); if(!f) return;
   const v=Math.round(Number(f.value)); if(!Number.isFinite(v)||v<0||v>365){ toast('Use a whole number from 0 to 365'); f.value=ivl0(f.dataset.ivl); return; }
-  cfg.ivl={...IVL0,...(cfg.ivl||{}),[f.dataset.ivl]:v}; LS.set(K.cfg,cfg); toast(`${f.dataset.ivl[0].toUpperCase()+f.dataset.ivl.slice(1)}: ${v} day${v===1?'':'s'}`); });
-actions.ivlReset = () => { cfg.ivl={...IVL0}; LS.set(K.cfg,cfg); render(); toast('Intervals reset'); };
-actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
+  cfg.ivl={...IVL0,...(cfg.ivl||{}),[f.dataset.ivl]:v}; touchCfg(); toast(`${f.dataset.ivl[0].toUpperCase()+f.dataset.ivl.slice(1)}: ${v} day${v===1?'':'s'}`); });
+actions.ivlReset = () => { cfg.ivl={...IVL0}; touchCfg(); render(); toast('Intervals reset'); };
+actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; touchCfg(); applyTheme(); render(); };
 actions.saveSrc = async () => { const v=$('#srcS').value.trim(); if(!sheetId(v)){ toast('Paste a normal Google Sheet link (docs.google.com/spreadsheets/d/...)'); return; }
   cfg.sheet=v; LS.set(K.cfg,cfg); toast('Loading…');
   const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
@@ -1274,7 +1343,7 @@ function mergeProgress(text){ try{ const p=JSON.parse(text); let n=0;
   Object.entries(p.log||{}).forEach(([d,v])=>{ const m=log[d]; if(!m||v.rev>m.rev) log[d]=v; });
   LS.set(K.srs,srs); LS.set(K.log,log); toast(`Merged: ${n} cards updated`); render(); }catch(e){ toast('That code is not valid progress data.'); } }
 actions.importP = () => mergeProgress($('#imp').value.trim());
-actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs={}; log={}; LS.set(K.srs,srs); LS.set(K.log,log); st.wipeArm=false; toast('Progress erased'); render(); };
+actions.wipe = () => { if(!st.wipeArm){ st.wipeArm=true; return render(); } srs={}; log={}; LS.set(K.srs,srs); LS.set(K.log,log); st.wipeArm=false; toast('Progress erased'); render(); syncWipe(); };
 
 // ---------- 11. Wiring after each render ----------
 function afterRender(){
@@ -1392,6 +1461,7 @@ document.addEventListener('keydown', e => { if(st.S?.step!=='bullet'||st.view!==
 let bx=null; document.addEventListener('touchstart', e => { if(st.S?.step==='bullet' && e.target.closest('#bcard')) bx=e.touches[0].clientX; }, {passive:true});
 document.addEventListener('touchend', e => { if(bx===null) return; const dx=e.changedTouches[0].clientX-bx; bx=null; if(Math.abs(dx)>50) actions.bulletAns({v:dx>0?'1':'0'}); });
 render();
+if(syncOn()) syncNow({silent:true});
 </script>
 </body>
 </html>
