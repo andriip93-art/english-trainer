@@ -407,14 +407,10 @@ body.sess .actions .audio{width:54px;height:54px}
    ============================================================ */
 
 // ---------- 1. Config & storage ----------
-// Single library: Google Sheet vocabulary_v2, one tab per deck (gid picks the tab).
-const LIB = 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit';
-const DEFAULT_SOURCES = {
-  phr: LIB+'#gid=64343216',    // tab Eng_Phrases
-  voc: LIB+'#gid=2132440094'   // tab Eng_Chunks
-};
-const OLD_PHR = ['https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv'];
-const V1_VOC = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv';
+// ONE data source: the Google Sheet vocabulary_v2. Each deck is a tab, picked by tab name.
+const LIB_URL = 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit';
+const TABS = { phr:'Eng_Phrases', voc:'Eng_Chunks' };
+const TAB_GIDS = { phr:'64343216', voc:'2132440094' };   // used only as a fallback for the default sheet
 const DECKS = {
   phr: { name:'Phrases & Functions', short:'Phrases', sub:'Mode 1 · meeting language, dialogues', tone:'t-mint', icoBg:'var(--primary-soft)', icoFg:'var(--primary)' },
   voc: { name:'Vocabulary & Chunks', short:'Vocabulary', sub:'Mode 2 · finance, workflow, idioms', tone:'t-peach', icoBg:'var(--peach)', icoFg:'var(--bad)' }
@@ -436,12 +432,11 @@ const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
   LS.set('bet3.seeded', true);
 })();
 
-let cfg = Object.assign({ ygAccent:'us', sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
-const OLD_VOC = [V1_VOC, 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing', 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit?usp=drivesdk'];
-// Move saved settings off retired sources onto the vocabulary_v2 tabs (custom sources are left alone)
-if (!cfg.sources) cfg.sources={};
-if (OLD_VOC.includes(cfg.sources.voc) || !cfg.sources.voc){ cfg.sources.voc=DEFAULT_SOURCES.voc; LS.set(K.cfg, cfg); }
-if (OLD_PHR.includes(cfg.sources.phr) || !cfg.sources.phr){ cfg.sources.phr=DEFAULT_SOURCES.phr; LS.set(K.cfg, cfg); }
+let cfg = Object.assign({ ygAccent:'us', sheet:LIB_URL, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system' }, LS.get(K.cfg, {}));
+// Retire the old per-deck sources: only the single sheet link is used from now on.
+if (cfg.sources || cfg.driveKey || !cfg.sheet || /\/d\/e\//.test(cfg.sheet)){ delete cfg.sources; delete cfg.driveKey; if(!cfg.sheet || /\/d\/e\//.test(cfg.sheet)) cfg.sheet=LIB_URL; LS.set(K.cfg, cfg); }
+// Default first-answer intervals changed to 3 / 10 / 20 / 40 days: apply them once, then keep whatever the user sets.
+if (cfg.ivlVer!==2){ cfg.ivl={again:3,hard:10,good:20,easy:40}; cfg.ivlVer=2; LS.set(K.cfg, cfg); }
 let srs = LS.get(K.srs, {});
 let log = LS.get(K.log, {});        // { 'YYYY-MM-DD': {rev:n, ok:n} }
 let data = LS.get(K.data, { phr:null, voc:null }); // { items:[], at:ts }
@@ -652,40 +647,34 @@ const CAT_DESC = {
   'Floor Management':'Taking the floor politely or handing it to others.'
 };
 
-// A Google Drive file link (…/file/d/<id>/view, open?id=<id>, uc?id=<id>) is turned into download URLs.
-// The Drive API route needs an API key from Settings; it is the CORS-safe fallback.
-function driveId(u){ const m=String(u).match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{20,})/) || String(u).match(/drive\.usercontent\.google\.com\/download\?(?:[^#]*&)?id=([\w-]{20,})/); return m?m[1]:null; }
-// Google Sheet edit/view link -> gviz CSV (CORS-enabled for link-shared sheets), then TSV export as fallback
-function sheetUrls(u){
-  const m=String(u).match(/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/); if(!m||/\/d\/e\//.test(u)) return null;
-  const g=(String(u).match(/[#&?]gid=(\d+)/)||[])[1], gid=g?`&gid=${g}`:'';
-  return [`https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv&headers=1${gid}`, `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=tsv${gid}`];
-}
-function sourceUrls(u){
-  const sh=sheetUrls(u); if(sh) return sh;
-  const id=driveId(u); if(!id) return [u];
-  const urls=[`https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`];
-  if(cfg.driveKey) urls.unshift(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${encodeURIComponent(cfg.driveKey)}`);
+// Sheet link -> spreadsheet id. Published (/d/e/...) links are not supported: share the sheet by link instead.
+const sheetId = u => (String(u).match(/docs\.google\.com\/spreadsheets\/d\/(?!e\/)([\w-]{20,})/)||[])[1] || null;
+const srcKey = deck => (sheetId(cfg.sheet)||'?')+'|'+TABS[deck];
+function deckUrls(deck){
+  const id=sheetId(cfg.sheet); if(!id) return [];
+  const urls=[`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(TABS[deck])}`];
+  if(id===sheetId(LIB_URL)) urls.push(`https://docs.google.com/spreadsheets/d/${id}/export?format=tsv&gid=${TAB_GIDS[deck]}`);
   return urls;
 }
-async function fetchText(u){
+async function fetchDeckText(deck){
+  const urls=deckUrls(deck); if(!urls.length) throw new Error('Not a Google Sheet link');
   let last;
-  for(const url of sourceUrls(u)){
+  for(const url of urls){
     try{
       const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
-      const t=await r.text(); if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('got a web page instead of TSV');
+      const t=await r.text(); if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('got a web page instead of data. Share the sheet: Anyone with the link can view');
       return t;
     }catch(e){ last=e; }
   }
-  throw new Error((driveId(u)?'Drive file not reachable from the browser. Add a Google API key in Settings or publish the data as a Google Sheet TSV. ':'')+(last?.message||''));
+  throw new Error(`Tab ${TABS[deck]}: ${last?.message||'not reachable'}`);
 }
 async function loadDeck(deck, {force=false}={}){
   const cached = data[deck];
-  if (cached && !force && (!cached.src || cached.src===cfg.sources[deck])) return cached;
+  if (cached && !force && cached.src===srcKey(deck)) return cached;
   try{
-    const items = (deck==='phr'?parsePhr:parseVoc)(await fetchText(cfg.sources[deck]));
+    const items = (deck==='phr'?parsePhr:parseVoc)(await fetchDeckText(deck));
     if(!items.length) throw new Error('The source returned no rows');
-    data[deck] = { items, at:Date.now(), src:cfg.sources[deck] }; LS.set(K.data, data);
+    data[deck] = { items, at:Date.now(), src:srcKey(deck) }; LS.set(K.data, data);
     return data[deck];
   }catch(e){
     if (cached){ toast('Offline. Using the copy saved '+fmtAgo(cached.at)+'.'); return cached; }
@@ -699,7 +688,7 @@ function fmtAgo(ts){ const d=Math.round((Date.now()-ts)/DAY); return d<=0?'today
 //   again → 1d · hard → 2d, then ×1.2 · good → 4d, then ×ease · easy → 21d, then ×ease×1.3 · cap 365d
 const MAX_IVL=365;
 // First-answer intervals in days, editable in Settings. Later reviews still grow from the card's own interval and ease.
-const IVL0 = { again:1, hard:2, good:4, easy:21 };
+const IVL0 = { again:3, hard:10, good:20, easy:40 };
 const ivl0 = g => { const v=Number((cfg.ivl||{})[g]); return Number.isFinite(v)&&v>=0 ? Math.min(MAX_IVL,Math.round(v)) : IVL0[g]; };
 function nextIvl(c, g){
   const v=c.ivl||0, e=c.ease||2.5;
@@ -1237,18 +1226,16 @@ function vSettings(){
       <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">${[['again','Again'],['hard','Hard'],['good','Good'],['easy','Easy']].map(([k,l])=>`<label class="grade ${k}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;cursor:default">${l}
         <input type="number" inputmode="numeric" min="0" max="365" step="1" data-ivl="${k}" value="${ivl0(k)}" style="width:100%;max-width:5em;text-align:center;padding:6px 4px;font:inherit;font-variant-numeric:tabular-nums"></label>`).join('')}</div>
       <p class="hint" style="margin:6px 0 0">Used the first time you grade a card and for Again. After that intervals grow from the card's own history. 0 = today.</p>
-      <button class="btn ghost small" data-act="ivlReset" style="margin-top:6px">Default 1 · 2 · 4 · 21</button></div>
+      <button class="btn ghost small" data-act="ivlReset" style="margin-top:6px">Default 3 · 10 · 20 · 40</button></div>
     <div><div class="eyebrow" style="margin-bottom:6px">Lesson practice set</div>${seg('lessonSize',[[5,'5'],[7,'7'],[10,'10']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Register: Caution phrases in practice</div>${seg('hideCaution',[[true,'Hide'],[false,'Show']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Native clips accent</div>${seg('ygAccent',[['us','US'],['uk','UK'],['','All']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Auto-play audio</div>${seg('autoSpeak',[[true,'On'],[false,'Off']])}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Theme</div>${seg('theme',[['system','System'],['light','Light'],['dark','Dark']])}</div>
   </div>
-  <div class="card stack"><h3>Data sources</h3><p class="hint" style="margin:0">Google Sheets published as TSV (File → Share → Publish to web → TSV).</p>
-    <label class="eyebrow" for="srcP">Phrases sheet</label><input type="url" id="srcP" value="${esc(cfg.sources.phr)}">
-    <label class="eyebrow" for="srcV">Vocabulary (Google Sheet link, published TSV or Drive .tsv)</label><input type="url" id="srcV" value="${esc(cfg.sources.voc)}">
-    <label class="eyebrow" for="drvK">Google API key, only if the Drive link does not load</label><input type="text" id="drvK" autocomplete="off" spellcheck="false" placeholder="AIza…" value="${esc(cfg.driveKey||'')}">
-    <div class="row"><button class="btn small" data-act="saveSrc">Save and reload both</button><button class="btn ghost small" data-act="resetSrc">Defaults</button></div>
+  <div class="card stack"><h3>Data source</h3><p class="hint" style="margin:0">One Google Sheet (vocabulary_v2). Tab <b>Eng_Phrases</b> feeds Phrases &amp; Functions, tab <b>Eng_Chunks</b> feeds Vocabulary &amp; Chunks. The sheet must be shared as "Anyone with the link can view".</p>
+    <label class="eyebrow" for="srcS">Google Sheet link</label><input type="url" id="srcS" value="${esc(cfg.sheet)}">
+    <div class="row"><button class="btn small" data-act="saveSrc">Save and reload</button><button class="btn ghost small" data-act="resetSrc">Defaults</button></div>
     <details><summary class="hint" style="cursor:pointer">No network? Paste TSV or pick a file</summary><div class="stack" style="margin-top:10px">
       ${seg('importDeck',[['phr','Phrases'],['voc','Vocabulary']])}
       <textarea id="tsv" rows="4" placeholder="Paste rows copied from the sheet (with header)"></textarea>
@@ -1270,10 +1257,11 @@ document.addEventListener('change', e => { const f=e.target.closest('input[data-
   cfg.ivl={...IVL0,...(cfg.ivl||{}),[f.dataset.ivl]:v}; LS.set(K.cfg,cfg); toast(`${f.dataset.ivl[0].toUpperCase()+f.dataset.ivl.slice(1)}: ${v} day${v===1?'':'s'}`); });
 actions.ivlReset = () => { cfg.ivl={...IVL0}; LS.set(K.cfg,cfg); render(); toast('Intervals reset'); };
 actions.set = d => { let v=d.v; if(v==='true')v=true; else if(v==='false')v=false; else if(/^\d+$/.test(v))v=+v; cfg[d.k]=v; LS.set(K.cfg,cfg); applyTheme(); render(); };
-actions.saveSrc = async () => { cfg.sources={phr:$('#srcP').value.trim(),voc:$('#srcV').value.trim()}; cfg.driveKey=$('#drvK').value.trim(); LS.set(K.cfg,cfg); toast('Loading…');
+actions.saveSrc = async () => { const v=$('#srcS').value.trim(); if(!sheetId(v)){ toast('Paste a normal Google Sheet link (docs.google.com/spreadsheets/d/...)'); return; }
+  cfg.sheet=v; LS.set(K.cfg,cfg); toast('Loading…');
   const r=await Promise.allSettled([loadDeck('phr',{force:true}),loadDeck('voc',{force:true})]);
-  const bad=r.map((x,k)=>x.status==='rejected'?['Phrases','Vocabulary'][k]+': '+x.reason.message:'').filter(Boolean); toast(bad.length?bad.join(' | '):'Both sources loaded.'); };
-actions.resetSrc = () => { cfg.sources={...DEFAULT_SOURCES}; LS.set(K.cfg,cfg); render(); };
+  const bad=r.map((x,k)=>x.status==='rejected'?x.reason.message:'').filter(Boolean); toast(bad.length?bad.join(' | '):'Both tabs loaded.'); };
+actions.resetSrc = () => { cfg.sheet=LIB_URL; LS.set(K.cfg,cfg); render(); };
 function importText(text){ const d=cfg.importDeck||'phr', items=(d==='phr'?parsePhr:parseVoc)(text.includes('\t')?text:text.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,'\t').replace(/"/g,''));
   if(!items.length) return toast('No rows found. Include the header row.'); data[d]={items,at:Date.now()}; LS.set(K.data,data); toast(`Imported ${items.length} ${DECKS[d].short.toLowerCase()} items`); }
 actions.importTsv = () => importText($('#tsv').value);
