@@ -4,6 +4,9 @@ Business English Trainer, offline-first PWA.
 
 - `/` main app (formerly v2): one Google Sheet `vocabulary_v2`
   - tab `Eng_Phrases` (gid 64343216) -> Phrases & Functions (Mode 1)
+    columns: `#`, `Universal Phrase`, `Native Translation (RU)`, `Category`, `Strategic Intent (RU)`, `Dialogues`,
+    `Alternatives` (other ways to say it, separated by ` | `), `Status` (`Active` = core set, `Passive` = extended, `Drop` = hidden)
+  - tab `Eng_Phrases_archive` keeps the full original 694-phrase list (not read by the app)
   - tab `Eng_Chunks` (gid 2132440094) -> Vocabulary & Chunks (Mode 2)
   - the sheet must stay shared as "Anyone with the link can view"
 - `/v1/` archived first version, kept for reference

@@ -588,10 +588,15 @@ function parsePhr(t){
   const rows=splitTSV(t); if(!rows.length) return [];
   const h=rows[0].map(x=>x.toLowerCase()); const f=(p,d)=>{const i=h.findIndex(p);return i===-1?d:i;};
   const id=f(x=>x==='#',0), en=f(x=>x.includes('universal phrase'),1), ru=f(x=>x.includes('native translation'),2),
-        cat=f(x=>x.includes('category'),3), intent=f(x=>x.includes('strategic intent'),4), dl=f(x=>x.includes('dialogue'),-1);
+        cat=f(x=>x.includes('category'),3), intent=f(x=>x.includes('strategic intent'),4), dl=f(x=>x.includes('dialogue'),-1),
+        alt=f(x=>x.includes('alternative'),-1), stat=f(x=>x.trim()==='status',-1);
   return rows.slice(1).filter(c=>c[en]&&c[ru]).map((c,i)=>({
     deck:'phr', id:String(parseInt(c[id])||i+1), en:c[en], ru:c[ru], cat:c[cat]||'Uncategorized',
-    note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'').replace(/<br\s*\/?>/gi,'\n') : ''
+    note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'').replace(/<br\s*\/?>/gi,'\n') : '',
+    // Alternatives: other ways to say the same thing, separated by " | " in the sheet
+    alts: alt>-1 ? String(c[alt]||'').split(/\s*\|\s*/).map(x=>x.trim()).filter(Boolean) : [],
+    // Status: Active = core set (drilled by default), Passive = extended reserve, Drop = hidden
+    status: (stat>-1 && /^(active|passive|drop)$/i.test(c[stat]||'')) ? c[stat][0].toUpperCase()+c[stat].slice(1).toLowerCase() : 'Active'
   }));
 }
 // Examples may sit in two columns or together in one cell ("1) ... 2) ...", line breaks, " / ", or plain sentences)
@@ -629,7 +634,8 @@ const isLive = it => it.status!=='Drop';                                        
 const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive') && !(cfg.hideCaution && it.register==='Caution');
 const sameGroup = (a,b) => !!a.group && a.group===b.group;
 const siblings = it => it.group ? (data[it.deck]?.items||[]).filter(x=>x!==it && isLive(x) && x.group===it.group) : [];
-const synNote = it => { const sy=siblings(it); return sy.length?`<div class="note"><b>Same meaning</b>${sy.map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:''; };
+const synNote = it => [ siblings(it).length?`<div class="note"><b>Same meaning</b>${siblings(it).map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:'',
+  it.alts?.length?`<div class="note"><b>Also say</b>${it.alts.map(a=>`<div style="margin-top:3px">${esc(a)}</div>`).join('')}</div>`:'' ].join('');
 // "wrong -> right" in ru_trap; also accepts → and =>
 const trapParts = it => { const m=String(it.trap||'').split(/\s*(?:->|→|=>)\s*/); return m.length===2&&m[0]&&m[1]?{wrong:m[0],right:m[1]}:null; };
 const NEEDS = { syn:i=>siblings(i).length>0, reg:i=>!!i.register, trap:i=>!!trapParts(i) };
@@ -644,7 +650,13 @@ const CAT_DESC = {
   'Elaborating & Exemplifying':'Expanding an argument and giving concrete business examples.',
   'Returning to the point':'Steering the conversation back to the main topic.',
   'Conceding a point':'Making a strategic concession to move a negotiation forward.',
-  'Floor Management':'Taking the floor politely or handing it to others.'
+  'Floor Management':'Taking the floor politely or handing it to others.',
+  'Interrupting & Holding the Floor':'Cutting in politely, stopping a wrong point, keeping the floor and getting it back.',
+  'Buying Time':'Opening an answer with structure while you think. Your go-to under pressure.',
+  'Reframing & Structuring':'Saying it another way, splitting issues, putting numbers in context.',
+  'Emphasis & Risk':'Landing the key message and flagging risks without drama.',
+  'Steering the Conversation':'Stepping back, parking topics, closing loops, inviting views.',
+  'Getting Things Done':'Asking for input, sign-off and escalation; holding a line in negotiations.'
 };
 
 // Sheet link -> spreadsheet id. Published (/d/e/...) links are not supported: share the sheet by link instead.
@@ -876,7 +888,9 @@ function coverage(p){
 }
 const SHORT = { 'Phrasal / expression':'Phrasal', 'Discourse marker':'Discourse', 'Business idiom':'Biz idiom', 'Colloquial idiom':'Colloquial',
   'Finance & Markets':'Finance', 'Meetings & Communication':'Meetings', 'Operations & Execution':'Operations', 'People & Leadership':'People',
-  'Negotiation & Deals':'Negotiation', 'Hard Business':'Business', 'Vibe & Idioms':'Idioms', 'Analysis & Thinking':'Analysis', 'Risk & Crisis':'Risk & crisis' };
+  'Negotiation & Deals':'Negotiation', 'Hard Business':'Business', 'Vibe & Idioms':'Idioms', 'Analysis & Thinking':'Analysis', 'Risk & Crisis':'Risk & crisis',
+  'Interrupting & Holding the Floor':'Interrupting', 'Buying Time':'Buying time', 'Reframing & Structuring':'Reframing',
+  'Polite Disagreement':'Disagreeing', 'Emphasis & Risk':'Emphasis', 'Steering the Conversation':'Steering', 'Getting Things Done':'Getting it done' };
 const short = t => SHORT[t] || t;
 // Type, domain and scope as three dropdown pills in one row (replaces three chip rows)
 function filterBar(items){
@@ -889,7 +903,7 @@ function filterBar(items){
   const parts=[];
   if(types.length) parts.push(sel('type',st.type,'Type',types.map(t=>[t,`${short(t)} ${items.filter(i=>i.type===t).length}`])));
   if(doms.length>1) parts.push(sel('dom',st.dom,'Domain',doms.map(t=>[t,`${short(t)} ${items.filter(i=>i.domain===t).length}`])));
-  if(pas) parts.push(`<label class="fs ${cfg.scope==='all'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${cfg.scope!=='all'?'selected':''}>Active</option><option value="all" ${cfg.scope==='all'?'selected':''}>+ Passive</option></select></label>`);
+  if(pas) parts.push(`<label class="fs ${cfg.scope==='all'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${cfg.scope!=='all'?'selected':''}>${st.deck==='phr'?'Core':'Active'}</option><option value="all" ${cfg.scope==='all'?'selected':''}>${st.deck==='phr'?'+ Extended':'+ Passive'}</option></select></label>`);
   return parts.length?`<div class="fbar" style="grid-template-columns:repeat(${parts.length},minmax(0,1fr))">${parts.join('')}</div>`:'';
 }
 document.addEventListener('change', e => { const f=e.target.closest('select[data-filter]'); if(!f) return;
@@ -1160,7 +1174,7 @@ actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
   const full=typeTarget(it), r=check(v,full), target=bestTarget(v,full);
   if(S.sub?.locked) return;
-  if(r==='wrong' && S.step==='spell'){ const syn=siblings(it).find(x=>check(v,x.en)!=='wrong');
+  if(r==='wrong' && S.step==='spell'){ const syn=siblings(it).find(x=>check(v,x.en)!=='wrong') || (it.alts||[]).map(a=>({en:a})).find(x=>check(v,x.en.replace(/\.\.\.|…/g,'').trim())!=='wrong');
     if(syn){ $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Synonym: ${esc(syn.en)}</span><div class="hint" style="margin-top:4px">Right meaning. This card asks for <b>${showBr(it.en)}</b>. Type it to continue.</div></div>`; inp.value=''; inp.focus(); return; } }
   if(r==='wrong'){ S.misses.add(it); softLapse(it); buzz(); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(v,target)}</div>${it.trap?`<div class="hint" style="margin-top:6px"><b>RU trap:</b> ${esc(it.trap)}</div>`:''}<div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
   S.sub=Object.assign(S.sub||{},{locked:true}); inp.disabled=true;
