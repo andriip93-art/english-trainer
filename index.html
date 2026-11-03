@@ -584,7 +584,20 @@ function splitCSV(t){
   if(cell||row.length){ row.push(cell); rows.push(row); }
   return rows.map(r=>r.map(c=>c.replace(/\s*\n\s*/g,' ').trim())).filter(r=>r.some(Boolean));
 }
-function parsePhr(t){
+function parsePhr(t){ return expandAlts(parsePhrRows(t)); }
+// Each alternative becomes a card of its own: id "<main id>.a<n>", same meaning (RU), same list,
+// grouped with its main phrase so Synonyms, Recall and Match treat them as one family.
+function expandAlts(items){
+  const out=[];
+  items.forEach(m=>{
+    if(m.alts.length) m.group='p'+m.id;
+    out.push(m);
+    m.alts.forEach((a,n)=>out.push({ deck:'phr', id:m.id+'.a'+(n+1), en:a, ru:m.ru, cat:m.cat, note:m.note, example:'', dialogue:'',
+      alts:[], status:m.status==='Drop'?'Drop':'Alt', group:m.group, altOf:m.en }));
+  });
+  return out;
+}
+function parsePhrRows(t){
   const rows=splitTSV(t); if(!rows.length) return [];
   const h=rows[0].map(x=>x.toLowerCase()); const f=(p,d)=>{const i=h.findIndex(p);return i===-1?d:i;};
   const id=f(x=>x==='#',0), en=f(x=>x.includes('universal phrase'),1), ru=f(x=>x.includes('native translation'),2),
@@ -631,11 +644,11 @@ function parseVoc(t){
 const TYPE_RANK = { 'Collocation':0, 'Phrasal / expression':1, 'Discourse marker':1, 'Business idiom':2, 'Colloquial idiom':3 };
 const rank = it => TYPE_RANK[it.type] ?? 2;
 const isLive = it => it.status!=='Drop';                                        // Drop rows stay in the sheet but never show up
-const inScope = it => isLive(it) && (cfg.scope==='all' || it.status!=='Passive') && !(cfg.hideCaution && it.register==='Caution');
+const inScope = it => isLive(it) && (cfg.scope!=='active' || (it.status!=='Passive' && it.status!=='Alt')) && (it.status!=='Alt' || cfg.scope==='alts') && !(cfg.hideCaution && it.register==='Caution');
 const sameGroup = (a,b) => !!a.group && a.group===b.group;
 const siblings = it => it.group ? (data[it.deck]?.items||[]).filter(x=>x!==it && isLive(x) && x.group===it.group) : [];
-const synNote = it => [ siblings(it).length?`<div class="note"><b>Same meaning</b>${siblings(it).map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:'',
-  it.alts?.length?`<div class="note"><b>Also say</b>${it.alts.map(a=>`<div style="margin-top:3px">${esc(a)}</div>`).join('')}</div>`:'' ].join('');
+const synNote = it => [ siblings(it).filter(x=>x.en!==it.altOf).length?`<div class="note"><b>${it.deck==='phr'?'Also say':'Same meaning'}</b>${siblings(it).filter(x=>x.en!==it.altOf).map(x=>esc(x.en)+(x.status==='Passive'?' <span class="muted">(passive)</span>':'')).join(' · ')}</div>`:'',
+  it.altOf?`<div class="note"><b>Alternative to</b>${esc(it.altOf)}</div>`:'' ].join('');
 // "wrong -> right" in ru_trap; also accepts → and =>
 const trapParts = it => { const m=String(it.trap||'').split(/\s*(?:->|→|=>)\s*/); return m.length===2&&m[0]&&m[1]?{wrong:m[0],right:m[1]}:null; };
 const NEEDS = { syn:i=>siblings(i).length>0, reg:i=>!!i.register, trap:i=>!!trapParts(i) };
@@ -842,7 +855,8 @@ function vDeck(){
   ];
   return `<div class="stack">
     <div><div class="eyebrow">${esc(D.sub)}</div><h2 style="margin-top:4px">${esc(D.name)}</h2></div>
-    <div class="chips ${cats.length<=3?'fit':''}" style="${cats.length<=3?`grid-template-columns:repeat(${cats.length+1},minmax(0,1fr))`:''}">${['all',...cats].map(c=>`<button class="chip ${st.cat===c?'on':''}" data-act="cat" data-c="${esc(c)}">${c==='all'?'All':esc(short(c))} <span class="muted">${c==='all'?items.length:items.filter(i=>i.cat===c).length}</span></button>`).join('')}</div>
+    <label class="fs ${st.cat!=='all'?'on':''}" style="display:block"><select data-filter="cat" aria-label="topic">
+      <option value="all" ${st.cat==='all'?'selected':''}>All topics · ${items.length}</option>${cats.map(c=>`<option value="${esc(c)}" ${st.cat===c?'selected':''}>${esc(c)} · ${items.filter(i=>i.cat===c).length}</option>`).join('')}</select></label>
     ${filterBar(items)}
     ${desc?`<div class="note">${esc(desc)}</div>`:''}
     <div class="hero">
@@ -903,11 +917,15 @@ function filterBar(items){
   const parts=[];
   if(types.length) parts.push(sel('type',st.type,'Type',types.map(t=>[t,`${short(t)} ${items.filter(i=>i.type===t).length}`])));
   if(doms.length>1) parts.push(sel('dom',st.dom,'Domain',doms.map(t=>[t,`${short(t)} ${items.filter(i=>i.domain===t).length}`])));
-  if(pas) parts.push(`<label class="fs ${cfg.scope==='all'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${cfg.scope!=='all'?'selected':''}>${st.deck==='phr'?'Core':'Active'}</option><option value="all" ${cfg.scope==='all'?'selected':''}>${st.deck==='phr'?'+ Extended':'+ Passive'}</option></select></label>`);
+  const alts=all.filter(i=>i.status==='Alt').length, sc=cfg.scope;
+  if(st.deck==='phr' && (pas||alts)){
+    const n=k=>all.filter(i=>k==='active'?(i.status!=='Passive'&&i.status!=='Alt'):k==='all'?i.status!=='Alt':true).length;
+    parts.push(`<label class="fs ${sc!=='active'?'on':''}"><select data-filter="scope" aria-label="level">${[['active','Core'],['all','Main'],['alts','Main + Alternatives']].filter(([k])=>k!=='alts'||alts).map(([k,l])=>`<option value="${k}" ${sc===k?'selected':''}>${l} · ${n(k)}</option>`).join('')}</select></label>`);
+  } else if(pas) parts.push(`<label class="fs ${sc!=='active'?'on':''}"><select data-filter="scope" aria-label="scope"><option value="active" ${sc==='active'?'selected':''}>Active</option><option value="all" ${sc!=='active'?'selected':''}>+ Passive</option></select></label>`);
   return parts.length?`<div class="fbar" style="grid-template-columns:repeat(${parts.length},minmax(0,1fr))">${parts.join('')}</div>`:'';
 }
 document.addEventListener('change', e => { const f=e.target.closest('select[data-filter]'); if(!f) return;
-  if(f.dataset.filter==='type') st.type=f.value; else if(f.dataset.filter==='dom') st.dom=f.value; else { cfg.scope=f.value; LS.set(K.cfg,cfg); }
+  if(f.dataset.filter==='cat') st.cat=f.value; else if(f.dataset.filter==='type') st.type=f.value; else if(f.dataset.filter==='dom') st.dom=f.value; else { cfg.scope=f.value; LS.set(K.cfg,cfg); }
   render(); });
 function typeChips(items){
   const types=[...new Set(items.map(i=>i.type).filter(Boolean))].sort((a,b)=>(TYPE_RANK[a]??2)-(TYPE_RANK[b]??2));
@@ -1166,7 +1184,7 @@ function vTrap(){ const it=cur(), t=trapParts(it);
 // 8f. Recall (type the English)
 function vSpell(){ const it=cur(), core=stripBr(it.en)||it.en, L=core.split(/\s+/).length, opt=/\[/.test(it.en);
   return `<div class="card"><div class="trans" style="font-size:1.3rem;color:var(--fg)">${esc(it.ru)}</div>
-  <p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(core[0])}…”${opt?' · [brackets] optional':''}</p>
+  ${it.altOf?`<p class="hint" style="margin:6px 0 0">Another way to say: <b>${esc(it.altOf)}</b></p>`:''}<p class="hint" style="margin:6px 0 14px">${L} word${L>1?'s':''} · starts with “${esc(core[0])}…”${opt?' · [brackets] optional':''}</p>
   <form id="typeForm"><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="English phrase"></form>
   <div id="fb" style="margin-top:12px"></div>
   <div class="actions">${audioBtn(it.en)}<button class="btn ghost" data-act="giveup" style="flex:0 0 auto">Show</button><button class="btn ghost" data-act="skipItem" style="flex:0 0 auto">Skip</button><button class="btn" data-act="typeCheck">Check</button></div></div>`; }
@@ -1174,7 +1192,7 @@ actions.typeCheck = () => {
   const S=st.S, it=cur(), inp=$('#ans'), v=inp.value.trim(); if(!v) return inp.focus();
   const full=typeTarget(it), r=check(v,full), target=bestTarget(v,full);
   if(S.sub?.locked) return;
-  if(r==='wrong' && S.step==='spell'){ const syn=siblings(it).find(x=>check(v,x.en)!=='wrong') || (it.alts||[]).map(a=>({en:a})).find(x=>check(v,x.en.replace(/\.\.\.|…/g,'').trim())!=='wrong');
+  if(r==='wrong' && S.step==='spell'){ const syn=siblings(it).find(x=>check(v,x.en)!=='wrong');
     if(syn){ $('#fb').innerHTML=`<div class="fb warn"><span class="ttl">Synonym: ${esc(syn.en)}</span><div class="hint" style="margin-top:4px">Right meaning. This card asks for <b>${showBr(it.en)}</b>. Type it to continue.</div></div>`; inp.value=''; inp.focus(); return; } }
   if(r==='wrong'){ S.misses.add(it); softLapse(it); buzz(); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); $('#fb').innerHTML=`<div class="fb bad"><span class="ttl">Not quite</span><div class="diff">${diff(v,target)}</div>${it.trap?`<div class="hint" style="margin-top:6px"><b>RU trap:</b> ${esc(it.trap)}</div>`:''}<div class="hint" style="margin-top:6px">Type it correctly to continue.</div></div>`; inp.select(); return; }
   S.sub=Object.assign(S.sub||{},{locked:true}); inp.disabled=true;
