@@ -596,7 +596,7 @@ function parsePhr(t){
         cat=f(x=>x.includes('category'),3), intent=f(x=>x.includes('strategic intent'),4), dl=f(x=>x.includes('dialogue'),-1);
   return rows.slice(1).filter(c=>c[en]&&c[ru]).map((c,i)=>({
     deck:'phr', id:String(parseInt(c[id])||i+1), en:c[en], ru:c[ru], cat:c[cat]||'Uncategorized',
-    note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'') : ''
+    note:c[intent]||'', example:'', dialogue: dl>-1 ? (c[dl]||'').replace(/<br\s*\/?>/gi,'\n') : ''
   }));
 }
 // Examples may sit in two columns or together in one cell ("1) ... 2) ...", line breaks, " / ", or plain sentences)
