@@ -400,17 +400,20 @@ body.sess .actions .audio{width:54px;height:54px}
 <script>
 /* ============================================================
    Business English Trainer v2 (offline edition)
-   - Data: two published Google Sheets (TSV). Cached in localStorage,
+   - Data: Google Sheet vocabulary_v2, tabs Eng_Phrases and Eng_Chunks (CSV via gviz). Cached in localStorage,
      so after one successful load the app works with no network.
    - Progress: SM-2 style spaced repetition, namespaced per deck.
    - No AI calls. Everything below runs in the browser.
    ============================================================ */
 
 // ---------- 1. Config & storage ----------
+// Single library: Google Sheet vocabulary_v2, one tab per deck (gid picks the tab).
+const LIB = 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit';
 const DEFAULT_SOURCES = {
-  phr: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv',
-  voc: 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit?usp=drivesdk'
+  phr: LIB+'#gid=64343216',    // tab Eng_Phrases
+  voc: LIB+'#gid=2132440094'   // tab Eng_Chunks
 };
+const OLD_PHR = ['https://docs.google.com/spreadsheets/d/e/2PACX-1vSgas0kuEQP66HKOAGuHKTFy2K2PYdGBhFbcsFG-pppwct7mcrpBHs5-G_iLUgGmu8xLJEf-DVAdpPH/pub?output=tsv'];
 const V1_VOC = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdmq2vg_mur1e-GiVxLgZ2KBNddV_xEhV-jY5J0V1VUMh0GBgBQcJ5_ZRoK24UKIiKLXN29rOoYAzV/pub?gid=974599349&single=true&output=tsv';
 const DECKS = {
   phr: { name:'Phrases & Functions', short:'Phrases', sub:'Mode 1 · meeting language, dialogues', tone:'t-mint', icoBg:'var(--primary-soft)', icoFg:'var(--primary)' },
@@ -434,8 +437,11 @@ const K = { srs:'bet3.srs', data:'bet3.data', cfg:'bet3.cfg', log:'bet3.log' };
 })();
 
 let cfg = Object.assign({ ygAccent:'us', sources:{...DEFAULT_SOURCES}, dir:'en-ru', scope:'active', hideCaution:true, lessonSize:7, autoSpeak:true, theme:'system', driveKey:'' }, LS.get(K.cfg, {}));
-const OLD_VOC = [V1_VOC, 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing'];
-if (!cfg.sources || OLD_VOC.includes(cfg.sources.voc) || !cfg.sources.voc){ cfg.sources={...(cfg.sources||{}), voc:DEFAULT_SOURCES.voc}; LS.set(K.cfg, cfg); }
+const OLD_VOC = [V1_VOC, 'https://drive.google.com/file/d/1oOsik3T03eBYi8pJFInGSTQi5FVhUIWZ/view?usp=sharing', 'https://docs.google.com/spreadsheets/d/1NK-IXlso1yqvbCFIlWbUbDziymyw3iuFOxGO0avcyvo/edit?usp=drivesdk'];
+// Move saved settings off retired sources onto the vocabulary_v2 tabs (custom sources are left alone)
+if (!cfg.sources) cfg.sources={};
+if (OLD_VOC.includes(cfg.sources.voc) || !cfg.sources.voc){ cfg.sources.voc=DEFAULT_SOURCES.voc; LS.set(K.cfg, cfg); }
+if (OLD_PHR.includes(cfg.sources.phr) || !cfg.sources.phr){ cfg.sources.phr=DEFAULT_SOURCES.phr; LS.set(K.cfg, cfg); }
 let srs = LS.get(K.srs, {});
 let log = LS.get(K.log, {});        // { 'YYYY-MM-DD': {rev:n, ok:n} }
 let data = LS.get(K.data, { phr:null, voc:null }); // { items:[], at:ts }
