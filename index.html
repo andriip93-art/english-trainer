@@ -668,16 +668,17 @@ async function fetchDeckText(deck){
   }
   throw new Error(`Tab ${TABS[deck]}: ${last?.message||'not reachable'}`);
 }
+const LOAD_ERR = {};   // deck -> reason the current sheet could not be read (an old cached copy is shown instead)
 async function loadDeck(deck, {force=false}={}){
   const cached = data[deck];
   if (cached && !force && cached.src===srcKey(deck)) return cached;
   try{
     const items = (deck==='phr'?parsePhr:parseVoc)(await fetchDeckText(deck));
     if(!items.length) throw new Error('The source returned no rows');
-    data[deck] = { items, at:Date.now(), src:srcKey(deck) }; LS.set(K.data, data);
+    data[deck] = { items, at:Date.now(), src:srcKey(deck) }; LS.set(K.data, data); delete LOAD_ERR[deck];
     return data[deck];
   }catch(e){
-    if (cached){ toast('Offline. Using the copy saved '+fmtAgo(cached.at)+'.'); return cached; }
+    if (cached){ LOAD_ERR[deck]=e.message; toast('New source not loaded ('+e.message+'). Showing an old copy from '+fmtAgo(cached.at)+'.'); return cached; }
     throw e;
   }
 }
@@ -779,7 +780,7 @@ function vHome(){
     return `<button class="deck" data-act="openDeck" data-d="${k}">
       <div class="ico" style="background:${D.icoBg};color:${D.icoFg}">${k==='phr'?ICON.chat:ICON.book}</div>
       <div class="meta"><h3>${D.name}</h3><div class="muted" style="font-size:.85rem">${D.sub}</div>
-      <div class="row" style="margin-top:8px;gap:6px">${loaded?`<span class="pill due">${c.due} due</span><span class="pill new">${c.newLeft} new</span><span class="pill">${c.total} total</span>`:'<span class="pill">Tap to load</span>'}</div></div></button>`; };
+      <div class="row" style="margin-top:8px;gap:6px">${loaded?`<span class="pill due">${c.due} due</span><span class="pill new">${c.newLeft} new</span><span class="pill">${c.total} total</span>${LOAD_ERR[k]||(data[k]&&data[k].src!==srcKey(k))?'<span class="pill due" title="'+esc(LOAD_ERR[k]||'')+'">old copy, sheet not loaded</span>':''}`:'<span class="pill">Tap to load</span>'}</div></div></button>`; };
   const all=[...(data.phr?.items||[]),...(data.voc?.items||[])].filter(inScope);
   const pod = all.length ? (all.filter(isDue)[0] || all[Math.floor(Date.now()/DAY)%all.length]) : null;
   const dueAll=all.filter(isDue).length, goal=t.rev+dueAll, pct=goal?t.rev/goal:0, C=2*Math.PI*27;
