@@ -2356,7 +2356,7 @@ function coachPatterns(){
   spkHist().slice(0,6).forEach(s=>(s.result?.patterns||[]).forEach(p=>{ tally[p.code]=(tally[p.code]||0)+(p.count||1); }));
   return Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,6);
 }
-const CODE_RU = { OTHER:'Другое', ART:'Артикли', PERF:'Present Perfect / Past', PREP:'Предлоги-кальки', SUBJ:'Нет подлежащего', UNC:'Неисчисляемые', COMP:'Управление глаголов', WO:'Порядок слов', COND:'Будущее после if/when', NEG:'Отрицание', QUES:'Вопросы', MOD:'Модальность, жёсткость', FF:'Ложные друзья', CLICHE:'Кальки-клише', REG:'Регистр', LEX:'Бедная лексика', PRON:'Произношение' };
+const CODE_RU = { OTHER:'Other', ART:'Articles', PERF:'Tenses: Perfect vs Past', PREP:'Prepositions', SUBJ:'Missing subject', UNC:'Uncountable nouns', COMP:'Verb patterns', WO:'Word order', COND:'Future after if / when', NEG:'Negation', QUES:'Questions', MOD:'Modals and softening', FF:'False friends', CLICHE:'Calqued phrases', REG:'Register', LEX:'Word choice', PRON:'Pronunciation', GRAM:'Grammar' };
 function coachStart(){
   const h=coachHist(), pats=coachPatterns(), pmax=Math.max(1,...pats.map(p=>p[1]));
   const fmt=cfg.aiFmt||'mix', src=cfg.aiSrc||'mix', size=cfg.aiSize||5;
@@ -2714,7 +2714,6 @@ function errBackfill(){
 // 7 of 8 right marks the errors behind the lesson as drilled; another 7+ on a later day marks them fixed.
 const FIX_MIN = 3;
 const ICON_FIX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>';
-CODE_RU.GRAM = CODE_RU.GRAM || 'Грамматика';
 const FTYPE = { choose:'Choose', gap:'Fill the gap', fix:'Fix the mistake', translate:'Translate' };
 function fixGroups(){
   const g={};
