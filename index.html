@@ -1647,7 +1647,7 @@ document.addEventListener('touchend', e => { if(bx===null) return; const dx=e.ch
 
 // ---------- 10. Speak (Mode 3): study 4-6 targets, use them in live speech, record, get coached ----------
 // Flow: start -> cards (swipe through every target) -> ready (scene + mic) -> rec -> review -> analysing -> result.
-// Analysis: Gemini Flash (hears the audio: grammar + pronunciation + prosody), fallback Groq
+// Analysis: Gemini Flash (hears the audio: grammar + pronunciation + prosody)
 // (Whisper transcript + open LLM: grammar and lexis only). Keys stay in this browser and are never synced.
 const SPK = { hist:'bet3.speak', models:'bet3.gemModels', maxSec:900 };
 const SPK_META = { name:'Speak & Record', short:'Speak', sub:'Mode 3 · use your phrases live, get native feedback' };
@@ -1805,7 +1805,7 @@ function spkAnalysing(){
     <div class="spk-orb"><span></span><span></span><span></span></div>
     <h2>Listening to your take</h2>
     <p class="muted" id="spkStep">${esc(K.step||'Preparing audio…')}</p>
-    <p class="hint">Usually 20 to 60 seconds. Free models are sometimes busy, the app then moves to the next one by itself.</p>
+    <p class="hint">Usually 20 to 60 seconds. If a model is busy, the app moves to the next one by itself.</p>
   </div>`;
 }
 
@@ -1976,10 +1976,7 @@ function spkSaveHist(result, extra={}){
 
 // ---- 10f. Analysis ----
 const spkKeysOk = () => aiKeysOk();
-function spkProvLine(){ const p=cfg.spkProv||'auto';
-  const g=aiKey('gemini')?'Gemini Flash (hears pronunciation)':'', q=aiKey('groq')?'Groq (Whisper + open model, text only)':'';
-  if(!g && !q) return syncOn()?'Keys will come from your Apps Script.':'';
-  return p==='gemini'?g||'Gemini key missing':p==='groq'?q||'Groq key missing':[g,q].filter(Boolean).join(', then ')||''; }
+function spkProvLine(){ return aiKey()?'Gemini Flash · hears grammar, pronunciation and intonation':syncOn()?'The key will come from your Apps Script.':''; }
 const SPK_CHECK = `RU/UA interference codes (use these codes; add your own short code only if none fits):
 ART articles: zero article for known/specific nouns, "a" with uncountables, missing "the" with superlatives/ordinals/unique (the market, the CFO, the Q3 results).
 PERF Present Perfect vs Past Simple: "I work here since 2019" -> have worked; finished time (yesterday, in 2023) needs Past Simple.
@@ -2000,7 +1997,7 @@ PRON (audio only) meaning-changing first: final devoicing (bag->back, need->neat
 Prosody: syllable-timed rhythm instead of stress-timed, no thought groups, falling tone on requests (sounds like an order), no contrastive stress, filler density (ehm, eh, like, you know, actually, so).`;
 function spkPrompt(items, audio){
   return {
-sys:`You are an elite speaking coach for a Russian/Ukrainian-speaking senior finance professional (corporate finance, DCM, liability management, Metals & Mining) aiming for C1 executive English. You analyse ONE learner's spoken take and return ONLY a JSON object.
+sys:`You are an elite speaking coach for a Russian/Ukrainian-speaking senior finance professional (corporate finance, DCM, liability management, Metals & Mining) aiming for C1 executive English. Current level: about ${cfg.aiLevel||'B2+'}. ${LEVEL[cfg.aiLevel||'B2+'].speak} You analyse ONE learner's spoken take and return ONLY a JSON object.
 
 Hard rules
 1. Transcript: ${audio?'transcribe verbatim from the audio, keep every error, filler (um, uh, эээ), false start and repetition. Never correct the learner in the transcript.':'the transcript is given (machine ASR). It may have silently fixed small errors and cannot show pronunciation. Treat plausible ASR artefacts (homophones, cut words, names) as not-an-error.'} Timecodes mm:ss.
@@ -2048,13 +2045,13 @@ function gemRank(a,b){ const v=n=>parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)|
   const lite=n=>/lite/.test(n)?1:0, pre=n=>/preview|exp/.test(n)?1:0;
   return lite(a)-lite(b) || v(b)-v(a) || pre(a)-pre(b) || a.length-b.length; }
 async function gemModels(key){
-  const c=LS.get(SPK.models,null); if(c && c.k===key.slice(-6) && Date.now()-c.at<DAY) return c.list;
+  const c=LS.get(SPK.models,null); if(c && c.v===2 && c.k===key.slice(-6) && Date.now()-c.at<DAY) return c.list;
   const r=await fetch(`${GEM}/models?pageSize=200`,{headers:{'x-goog-api-key':key}});
   if(r.status===400||r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key. Check it in Settings.');
   if(!r.ok) throw new Error('Gemini model list: HTTP '+r.status);
-  const j=await r.json(); const list=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,'')).filter(isFlash).sort(gemRank).slice(0,5);
+  const j=await r.json(); const list=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,'')).filter(isFlash).sort(gemRank);
   if(!list.length) throw new SpkFatal('No Gemini Flash model is available for this key.');
-  LS.set(SPK.models,{k:key.slice(-6),at:Date.now(),list}); return list;
+  LS.set(SPK.models,{v:2,k:key.slice(-6),at:Date.now(),list}); return list;
 }
 // Browsers record webm/opus (Chrome) or mp4/aac (Safari). If a model refuses the container, re-encode to 16 kHz mono WAV.
 async function toWav(blob){
@@ -2066,54 +2063,30 @@ async function toWav(blob){
   return new Blob([dv],{type:'audio/wav'});
 }
 async function viaGemini(key, audio, P){
-  const models=await gemModels(key); let data64=await b64(audio.blob), mime=audio.type||'audio/webm', wavTried=false, lastErr='';
+  const models=pickModels(await gemModels(key), 'audio'); let noThink=false; let data64=await b64(audio.blob), mime=audio.type||'audio/webm', wavTried=false, lastErr='';
   for(const m of models){
     for(let attempt=0; attempt<3; attempt++){
       spkStep(`Gemini · ${m}${attempt?` · retry ${attempt}`:''}`);
       let r;
       try{ r=await fetch(`${GEM}/models/${m}:generateContent`,{ method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key},
         body:JSON.stringify({ systemInstruction:{parts:[{text:P.sys}]}, contents:[{role:'user',parts:[{inline_data:{mime_type:mime,data:data64}},{text:P.user}]}],
-          generationConfig:{ responseMimeType:'application/json', temperature:0.3, maxOutputTokens:32768 } }) }); }
+          generationConfig:{ responseMimeType:'application/json', temperature:0.3, maxOutputTokens:32768, ...(noThink?{}:thinkCfg(m,'mid')) } }) }); }
       catch(e){ lastErr='network'; await sleep(1500); continue; }
       if(r.ok){
         const j=await r.json(), c=j.candidates?.[0], txt=(c?.content?.parts||[]).map(p=>p.text||'').join('');
+        trackUsage(m,'audio',j.usageMetadata);
         try{ const out=parseJSON(txt); out._provider='Gemini · '+m; out._audio=true; return out; }
         catch(e){ lastErr=`${m}: ${c?.finishReason||'bad JSON'}`; break; }   // truncated or malformed: next model
       }
       const body=await r.text(); lastErr=`${m}: HTTP ${r.status}`;
       if(r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key. Check it in Settings.');
+      if(r.status===400 && /thinking/i.test(body) && !noThink){ noThink=true; attempt--; continue; }
       if(r.status===400 && /mime|audio|unsupported|invalid argument/i.test(body) && !wavTried){ wavTried=true; spkStep('Converting audio to WAV…'); try{ const w=await toWav(audio.blob); data64=await b64(w); mime='audio/wav'; attempt--; continue; }catch(e){} }
       if([429,500,502,503,504].includes(r.status)){ await sleep(r.status===429?4000:2000*(attempt+1)); if(r.status===429 && /quota|per day|PerDay/i.test(body)) break; continue; }
       break;   // 404 / other 400: try the next model
     }
   }
   throw new Error('Gemini: all Flash models failed ('+lastErr+')');
-}
-// Groq: Whisper large-v3 for a near-verbatim transcript (the prompt nudges it to keep fillers and errors),
-// then an open model with JSON mode does the coaching. No audio reaches the coach, so no pronunciation audit.
-async function viaGroq(key, audio, P){
-  const ext=/mp4|aac|m4a/.test(audio.type)?'m4a':/ogg/.test(audio.type)?'ogg':/wav/.test(audio.type)?'wav':/mpeg|mp3/.test(audio.type)?'mp3':'webm';
-  spkStep('Groq · Whisper transcript');
-  const fd=new FormData(); fd.append('file', audio.blob, 'take.'+ext); fd.append('model','whisper-large-v3'); fd.append('response_format','verbose_json');
-  fd.append('language','en'); fd.append('temperature','0'); fd.append('prompt','Umm, so, uh... I think we need to, like, discuss about the refinancing. Eh, he don\'t agree with this informations.');
-  let r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+key},body:fd});
-  if(r.status===401||r.status===403) throw new SpkFatal('Groq rejected the key. Check it in Settings.');
-  if(!r.ok) throw new Error('Groq Whisper: HTTP '+r.status);
-  const tr=await r.json();
-  const lines=(tr.segments||[]).map(s=>`[${fmtSec(s.start)}]${s.avg_logprob<-0.8?' (unclear)':''} ${s.text.trim()}`).join('\n') || tr.text;
-  let last='';
-  for(const model of ['openai/gpt-oss-120b','llama-3.3-70b-versatile','openai/gpt-oss-20b']){
-    spkStep('Groq · '+model.split('/').pop());
-    const body={ model, temperature:0.3, max_completion_tokens:12000, response_format:{type:'json_object'},
-      messages:[{role:'system',content:P.sys},{role:'user',content:P.user+'\n\nTranscript (Whisper, timecodes mm:ss):\n'+lines}] };
-    if(/gpt-oss/.test(model)) body.reasoning_effort='medium';
-    r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!r.ok){ last=model+': HTTP '+r.status; if(r.status===429) await sleep(3000); continue; }
-    try{ const j=await r.json(); const out=parseJSON(j.choices[0].message.content); out._provider='Groq · '+model.split('/').pop(); out._audio=false;
-      if(!(out.transcript||[]).length) out.transcript=(tr.segments||[]).map(s=>({t:fmtSec(s.start),text:s.text.trim()})); return out; }
-    catch(e){ last=model+': bad JSON'; }
-  }
-  throw new Error('Groq: '+last);
 }
 function spkClean(r, items){
   // keep the app in charge of arithmetic and of the target list: the model only judges
@@ -2136,18 +2109,18 @@ actions.spkAnalyse = async () => {
   const K=st.K, a=K.audio; if(!a) return;
   if(a.sec && a.sec<20) return toast('The take is under 20 seconds. Record a bit more for a useful analysis.');
   K.phase='analysing'; K.step='Preparing audio…'; go('speak');
-  const pref=cfg.spkProv||'auto'; const order=pref==='gemini'?['gemini']:pref==='groq'?['groq']:['gemini','groq'];
+  const order=['gemini'];
   const errs=[]; await ensureKeys();
   for(const p of order){
     for(let pass=0; pass<2; pass++){
       const key=aiKey(p); if(!key) break;
       try{
         const P=spkPrompt(K.items, p==='gemini');
-        let r=await (p==='gemini'?viaGemini(key,a,P):viaGroq(key,a,P));
+        let r=await viaGemini(key,a,P);
         r=spkClean(r, K.items); spkApplySRS(r, K.items); K.result=r; K.phase='result';
         spkSaveHist(r,{provider:r._provider}); if(st.view==='speak') go('speak'); return;
       }catch(e){
-        if(e instanceof SpkFatal && pass===0 && fromVault(p)){ await ensureKeys(true); continue; }
+        if(e instanceof SpkFatal && pass===0 && fromVault()){ await ensureKeys(true); continue; }
         errs.push(e.message); break; }
     }
   }
@@ -2170,19 +2143,18 @@ function spkBack(){
       <div class="row" style="margin-top:8px;gap:6px"><span class="pill">4–6 targets</span>${k?.result?`<span class="pill ok">last ${spkUsed(k.result)}/${k.items.length}</span>`:''}${spkKeysOk()?'':'<span class="pill new">add API key</span>'}</div></div></button>`;
     return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
 { const _set=vSettings; vSettings=function(){
-    const seg=`<div class="seg">${[['auto','Gemini → Groq'],['gemini','Gemini only'],['groq','Groq only']].map(([v,l])=>`<button class="${(cfg.spkProv||'auto')===v?'on':''}" data-act="set" data-k="spkProv" data-v="${v}">${l}</button>`).join('')}</div>`;
-    const vs = p => cfg[p==='gemini'?'gemKey':'groqKey'] ? 'typed on this device' : (p==='gemini'?cfg.vGem:cfg.vGroq) ? 'from your Apps Script ✓' : syncOn() ? 'not in Script Properties' : 'none';
+    const vs = cfg.gemKey ? 'typed on this device' : cfg.vGem ? 'from your Apps Script ✓' : syncOn() ? 'not in Script Properties' : 'not connected';
     const card=`<div class="card stack"><h3>AI coach · Modes 3 and 4</h3>
-      <div class="c-keys"><div><span>Gemini</span><b class="${aiKey('gemini')?'ok':''}">${vs('gemini')}</b></div><div><span>Groq</span><b class="${aiKey('groq')?'ok':''}">${vs('groq')}</b></div></div>
-      <p class="hint" style="margin:0">Recommended: keep the keys in your Apps Script (Project Settings &gt; Script Properties: <b>GEMINI_KEY</b>, optional <b>GROQ_KEY</b>). Every device connected to sync then gets them automatically. ${syncOn()?'':'Connect sync below first.'}</p>
-      ${syncOn()?'<button class="btn ghost small" data-act="vaultRefresh" style="align-self:flex-start">Reload keys from Apps Script</button>':''}
-      <div><div class="eyebrow" style="margin-bottom:6px">Provider order</div>${seg}</div>
+      <div class="c-keys"><div><span>Gemini key</span><b class="${aiKey()?'ok':''}">${vs}</b></div></div>
+      <p class="hint" style="margin:0">Recommended: keep the key in your Apps Script (Project Settings &gt; Script Properties: <b>GEMINI_KEY</b>). Every device connected to sync then gets it automatically. ${syncOn()?'':'Connect sync below first.'}</p>
+      ${syncOn()?'<button class="btn ghost small" data-act="vaultRefresh" style="align-self:flex-start">Reload key from Apps Script</button>':''}
+      <div><div class="eyebrow" style="margin-bottom:6px">Gemini models</div><div class="seg">${Object.entries(AI_PROFILES).map(([k,v])=>`<button class="${aiProf()===k?'on':''}" data-act="set" data-k="aiProfile" data-v="${k}">${v.l}</button>`).join('')}</div>
+        <p class="hint" style="margin:6px 0 0">${esc(AI_PROFILES[aiProf()].d)}</p>${usageLine()}</div>
       <label class="stack" style="gap:6px"><span class="eyebrow">Your work context (the coach writes tasks in it)</span><textarea id="aiDomain" rows="3" spellcheck="false">${esc(cfg.aiDomain||C_DOMAIN)}</textarea></label>
-      <details><summary class="hint" style="cursor:pointer">Type a key on this device instead (overrides Apps Script)</summary><div class="stack" style="margin-top:10px">
+      <details><summary class="hint" style="cursor:pointer">Type the key on this device instead (overrides Apps Script)</summary><div class="stack" style="margin-top:10px">
       <label class="stack" style="gap:6px"><span class="eyebrow">Gemini API key · <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio</a></span><input type="password" id="gemKey" autocomplete="off" placeholder="AIza…" value="${esc(cfg.gemKey||'')}" class="spk-in"></label>
-      <label class="stack" style="gap:6px"><span class="eyebrow">Groq API key (backup) · <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console</a></span><input type="password" id="groqKey" autocomplete="off" placeholder="gsk_…" value="${esc(cfg.groqKey||'')}" class="spk-in"></label>
-      <p class="hint" style="margin:0">Leave empty to use the Apps Script keys. Keys are never synced and never stored in the sheet.</p></div></details>
-      <p class="hint" style="margin:0">Gemini hears the audio, so Mode 3 also checks pronunciation and intonation; Groq is the text-only backup. With a paid Gemini project Google does not use your inputs for training; on free tiers it may, so keep real deal details out. Restrict the key in Google Cloud to the Generative Language API and to this site's address.</p></div>`;
+      <p class="hint" style="margin:0">Leave empty to use the Apps Script key. The key is never synced and never stored in the sheet.</p></div></details>
+      <p class="hint" style="margin:0">Gemini hears the audio, so Mode 3 also checks pronunciation and intonation. With a paid Gemini project Google does not use your inputs for training; on free tiers it may, so keep real deal details out. Restrict the key in Google Cloud to the Generative Language API and to this site's address.</p></div>`;
     return _set().replace(/<\/div>\s*$/, card+'</div>'); }; }
 { const _ar=afterRender; afterRender=function(){ _ar();
     if(st.view==='speak'){ $('#title').textContent='Speak'; const K=st.K;
@@ -2190,25 +2162,25 @@ function spkBack(){
       const f=$('#spkFile'); if(f) f.onchange=()=>spkUpload(f.files[0]);
       if(K?.phase==='cards' && cfg.autoSpeak && K.spoke!==K.i){ K.spoke=K.i; speak(K.items[K.i].en); }
       if(K?.phase==='rec') { cancelAnimationFrame(R.raf); recDraw(); } }
-    ['gemKey','groqKey'].forEach(id=>{ const el=$('#'+id); if(el) el.onchange=()=>{ cfg[id]=el.value.trim(); LS.set(K.cfg,cfg); localStorage.removeItem(SPK.models); toast(el.value.trim()?'Key saved on this device':'Using the Apps Script key'); render(); }; });
+    ['gemKey'].forEach(id=>{ const el=$('#'+id); if(el) el.onchange=()=>{ cfg[id]=el.value.trim(); LS.set(K.cfg,cfg); localStorage.removeItem(SPK.models); toast(el.value.trim()?'Key saved on this device':'Using the Apps Script key'); render(); }; });
   }; }
 { const _back=actions.back; actions.back=()=>{ if(st.view==='speak') return spkBack(); if(st.view==='settings' && st.prev==='speak' && st.K && st.K.phase!=='start'){ return go('speak'); } _back(); }; }
 
 // ---------- 11. AI keys: one vault for every device ----------
 // Manual keys typed in Settings win. Otherwise the app asks the Apps Script (same URL + token as sync) for the keys
 // kept in its Script Properties and caches them on this device (never synced, never in the repo).
-const aiKey = p => p==='gemini' ? (cfg.gemKey||cfg.vGem||'') : (cfg.groqKey||cfg.vGroq||'');
-const aiKeysOk = () => !!(aiKey('gemini') || aiKey('groq') || syncOn());
+const aiKey = () => cfg.gemKey||cfg.vGem||'';
+const aiKeysOk = () => !!(aiKey() || syncOn());
 async function ensureKeys(force=false){
   if(!syncOn()) return;
-  if(!force && cfg.vAt && Date.now()-cfg.vAt<3*DAY && (aiKey('gemini')||aiKey('groq'))) return;
+  if(!force && cfg.vAt && Date.now()-cfg.vAt<3*DAY && aiKey()) return;
   try{ const r=await syncPost({action:'keys'});
-    if(r.ok && (r.gemini!==undefined || r.groq!==undefined)){
+    if(r.ok && r.gemini!==undefined){
       if(r.gemini!==cfg.vGem) localStorage.removeItem(SPK.models);
-      cfg.vGem=r.gemini||''; cfg.vGroq=r.groq||''; cfg.vAt=Date.now(); LS.set(K.cfg,cfg); }
+      cfg.vGem=r.gemini||''; cfg.vAt=Date.now(); LS.set(K.cfg,cfg); }
   }catch(e){ /* offline or old script without the keys action: keep what we have */ }
 }
-const fromVault = p => p==='gemini' ? !cfg.gemKey && !!cfg.vGem : !cfg.groqKey && !!cfg.vGroq;
+const fromVault = () => !cfg.gemKey && !!cfg.vGem;
 // Thinking costs output tokens and time. Drills need little of it; the speech audit keeps the model default.
 function thinkCfg(m, lvl){
   if(!lvl) return {};
@@ -2216,24 +2188,24 @@ function thinkCfg(m, lvl){
   if(/gemini-[3-9]/.test(m)) return { thinkingConfig:{ thinkingLevel: lvl==='low'?'low':'medium' } };
   return {};
 }
-// Text-only JSON call with the same provider order as Mode 3 (Gemini first, Groq as backup).
-async function aiJSON(P, { temp=0.5, max=8000, think='low', label='' }={}){
+// Text-only JSON call to Gemini (model chosen per job, see section 13).
+async function aiJSON(P, { temp=0.5, max=8000, think='low', label='', kind='eval' }={}){
   await ensureKeys();
-  const pref=cfg.spkProv||'auto', order=pref==='gemini'?['gemini']:pref==='groq'?['groq']:['gemini','groq'];
+  const order=['gemini'];
   const errs=[];
   for(const p of order){
     for(let pass=0; pass<2; pass++){
       const key=aiKey(p); if(!key) break;
-      try{ return p==='gemini' ? await gemText(key,P,{temp,max,think,label}) : await groqText(key,P,{temp,max}); }
+      try{ return await gemText(key,P,{temp,max,think,label,kind}); }
       catch(e){
-        if(e instanceof SpkFatal && pass===0 && fromVault(p) && syncOn()){ await ensureKeys(true); continue; }   // key rotated in the vault
+        if(e instanceof SpkFatal && pass===0 && fromVault() && syncOn()){ await ensureKeys(true); continue; }   // key rotated in the vault
         errs.push(e.message); break; }
     }
   }
   throw new Error(errs.join(' | ') || 'No API key. Connect sync or add a key in Settings.');
 }
-async function gemText(key, P, { temp, max, think, label }){
-  const models=await gemModels(key); let last='';
+async function gemText(key, P, { temp, max, think, label, kind }){
+  const models=pickModels(await gemModels(key), kind); let last='';
   for(const m of models){
     let noThink=false;
     for(let attempt=0; attempt<3; attempt++){
@@ -2244,6 +2216,7 @@ async function gemText(key, P, { temp, max, think, label }){
           generationConfig:{ responseMimeType:'application/json', temperature:temp, maxOutputTokens:max, ...(noThink?{}:thinkCfg(m,think)) } }) }); }
       catch(e){ last='network'; await sleep(1200); continue; }
       if(r.ok){ const j=await r.json(), c=j.candidates?.[0], txt=(c?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join('');
+        trackUsage(m,kind,j.usageMetadata);
         try{ const out=parseJSON(txt); out._provider='Gemini · '+m; return out; }catch(e){ last=`${m}: ${c?.finishReason||'bad JSON'}`; break; } }
       const body=await r.text(); last=`${m}: HTTP ${r.status}`;
       if(r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key.');
@@ -2253,20 +2226,6 @@ async function gemText(key, P, { temp, max, think, label }){
     }
   }
   throw new Error('Gemini: '+last);
-}
-async function groqText(key, P, { temp, max }){
-  let last='';
-  for(const model of ['openai/gpt-oss-120b','llama-3.3-70b-versatile','openai/gpt-oss-20b']){
-    coachStep('Groq · '+model.split('/').pop());
-    const body={ model, temperature:temp, max_completion_tokens:max, response_format:{type:'json_object'}, messages:[{role:'system',content:P.sys},{role:'user',content:P.user}] };
-    if(/gpt-oss/.test(model)) body.reasoning_effort='low';
-    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(r.status===401||r.status===403) throw new SpkFatal('Groq rejected the key.');
-    if(!r.ok){ last=model+': HTTP '+r.status; if(r.status===429) await sleep(2500); continue; }
-    try{ const j=await r.json(); const out=parseJSON(j.choices[0].message.content); out._provider='Groq · '+model.split('/').pop(); return out; }
-    catch(e){ last=model+': bad JSON'; }
-  }
-  throw new Error('Groq: '+last);
 }
 
 // ---------- 12. Context Drills (Mode 4): pushed written output with AI feedback ----------
@@ -2312,12 +2271,14 @@ const tgtLine = it => `${it.deck}:${it.id} | ${it.en} | ${it.ru}${it.type?' | '+
 // ---- 12b. Prompts ----
 function coachGenPrompt(tasks){
   return {
-sys:`You write practice tasks for a Russian/Ukrainian-speaking senior finance professional aiming for C1 executive English. Context: ${cfg.aiDomain||C_DOMAIN}. Return ONLY JSON.
+sys:`You write practice tasks for a Russian/Ukrainian-speaking senior finance professional. Current English level: ${L().id}, goal C1. Context: ${cfg.aiDomain||C_DOMAIN}. Return ONLY JSON.
+
+Difficulty (most important): the only hard part of each task must be using the target expression. Everything around it stays easy to read for a ${L().id} learner: ${L().words}. One idea per task, no stacked clauses, no rare idioms, no unexplained abbreviations except common finance ones (EBITDA, capex, bond, covenant).
 
 Task types
-- scenario: a live work moment in English, 2-3 sentences, max 55 words. Name a person and role, one concrete detail (a number, a deadline, a covenant, a plant), a channel (email, call, meeting, chat). End with a direct question or request to the learner. The target expression(s) must be the natural thing to say in the reply, but never appear in the text. Add prompt_ru: a natural Russian translation (not word-for-word).
-- translate: ONE natural Russian sentence (12-28 words), as a Russian-speaking banker or CFO would really say or write it. The given English target must be the most natural way to render its key idea. Never include the English target, a transliteration or a calque that gives it away. Avoid Russian bureaucratese unless the target is formal.
-- upgrade: ONE English sentence (10-25 words) that a non-native professional might say: understandable but blunt, vague, too informal, or calqued from Russian, expressing the idea the target expresses better. It must not contain the target. Add flaw_ru: a short Russian hint of what is wrong with it (register, calque, vagueness), without giving the answer.
+- scenario: a live work moment in English, ${L().scen}. Name a person and role, one concrete detail (a number, a deadline, a covenant, a plant), a channel (email, call, meeting, chat). End with a direct question or request to the learner. The target expression(s) must be the natural thing to say in the reply, but never appear in the text. Add prompt_ru: a natural Russian translation (not word-for-word).
+- translate: ONE natural Russian sentence (${L().tr}), as a Russian-speaking banker or CFO would really say or write it. The given English target must be the most natural way to render its key idea. Never include the English target, a transliteration or a calque that gives it away. Avoid Russian bureaucratese unless the target is formal.
+- upgrade: ONE English sentence (${L().up}) that a non-native professional might say: understandable but blunt, vague, too informal, or calqued from Russian, expressing the idea the target expresses better. It must not contain the target. Add flaw_ru: a short Russian hint of what is wrong with it (register, calque, vagueness), without giving the answer.
 - create: a one-line situation cue in Russian (max 20 words) from the learner's own work that invites using the target, e.g. «Расскажите банку, почему вы переносите выпуск».
 
 Rules: vary situations, channels and counterparts across tasks; no two tasks in the same scene; realistic numbers; no real company names except generic ones (the group, the bank, the plant). Keep the learner's register in mind: the targets marked Informal or Caution need an informal setting.
@@ -2329,7 +2290,9 @@ user:'Tasks:\n'+tasks.map((t,i)=>`${i+1}. type ${t.fmt}. Target(s): ${t.targets.
 function coachEvalPrompt(t, answer, retry){
   const task = t.fmt==='translate' ? `Russian source: «${t.prompt}»` : t.fmt==='upgrade' ? `Line to upgrade: "${t.prompt}"` : t.fmt==='scenario' ? `Situation: ${t.prompt}` : `Cue: ${t.prompt||'free sentence about the learner\'s work'}`;
   return {
-sys:`You are a strict but encouraging executive English coach for a Russian/Ukrainian-speaking senior finance professional (C1 target). Context: ${cfg.aiDomain||C_DOMAIN}. You assess ONE written answer and return ONLY JSON.
+sys:`You are a fair, encouraging executive English coach for a Russian/Ukrainian-speaking senior finance professional. Current level: ${L().id}, goal C1. Context: ${cfg.aiDomain||C_DOMAIN}. You assess ONE written answer and return ONLY JSON.
+
+Calibration for this learner: ${L().bar} Feedback must be usable at this level: simple Russian explanations, no linguistics jargon, no more than ${L().rules} rules.
 
 What to judge, in this order
 1. Task: did the answer do the job? translate: is the meaning of the Russian source fully and accurately rendered (no omissions, no added claims)? scenario: does it answer the question/request in a sensible way? upgrade: same meaning, better register and precision? create: a meaningful sentence on the cue?
@@ -2341,9 +2304,9 @@ Grade: "A" native-like and natural, no errors, targets used well; "B" correct an
 Feedback rules
 - marked: the learner's answer copied EXACTLY, with every trigger wrapped as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = genuine C1 success (precise collocation, hedge, discourse marker). Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Idiom, Meaning, Spelling. Fix = corrected words ("—" for S). Explanation in Russian, one sentence. Use pipes only as separators.
 - fix: a minimal correction that keeps the learner's own words and structure, changing only what is wrong. If there is nothing to fix, repeat the answer.
-- native: how a senior native-speaking executive would say it in this exact situation, using every target naturally, max 45 words, spoken-natural, not flowery.
+- native: how a senior native-speaking executive would say it in this exact situation, using every target naturally, max ${L().native} words, spoken-natural, not flowery, with words a ${L().id} learner can reuse tomorrow.
 - alts: 0-2 other natural ways to say the key part (short).
-- rules: one entry per distinct error type, max 3, each with a code from the list below and a Russian explanation that the learner will remember (contrast with Russian, a hook, an image), not a textbook definition.
+- rules: one entry per distinct error type, max ${L().rules}, most important first, each with a code from the list below and a Russian explanation that the learner will remember (contrast with Russian, a hook, an image), not a textbook definition.
 - praise: one real strength in Russian, or "" if there is none. Never invent praise.
 - Be precise and brief. If the answer is good, say so; do not hunt for problems.${retry?'\n- This is the learner\'s second attempt after feedback. In "comment" say in Russian what improved and what is still off.':''}
 
@@ -2384,6 +2347,7 @@ function coachStart(){
     <div class="card stack">
       <div><div class="eyebrow" style="margin-bottom:8px">Task type</div>
         <div class="c-fmts">${[['mix','Mix','All four, interleaved','◆'],...Object.entries(FMT).map(([k,v])=>[k,v.l,v.d,v.ico])].map(([k,l,d,ic])=>`<button class="c-fmt ${fmt===k?'on':''}" data-act="coachSet" data-k="aiFmt" data-v="${k}"><i>${ic}</i><b>${l}</b><span>${d}</span></button>`).join('')}</div></div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Difficulty</div>${seg('aiLevel',L().id,Object.keys(LEVEL).map(k=>[k,k]))}<p class="hint" style="margin:6px 0 0">${esc(LEVEL[L().id].d)}</p></div>
       <div><div class="eyebrow" style="margin-bottom:6px">Targets from</div>${seg('aiSrc',src,[['mix','Both decks'],['phr','Phrases'],['voc','Chunks']])}</div>
       <div><div class="eyebrow" style="margin-bottom:6px">Items</div>${seg('aiSize',size,COACH.sizes.map(n=>[n,String(n)]))}</div>
       <button class="btn spk-go" data-act="coachGo" ${aiKeysOk()?'':'disabled'}>${ICON_COACH} Start</button>
@@ -2418,8 +2382,8 @@ function coachTargets(t, reveal){
 }
 function coachPromptBox(t){
   if(t.fmt==='translate') return `<div class="c-src ru">${esc(t.prompt)}</div>`;
-  if(t.fmt==='upgrade') return `<div class="c-src"><span class="c-strike">${esc(t.prompt)}</span>${audioBtn(t.prompt)}</div>${t.hints>=1&&t.flaw_ru?`<div class="note"><b>What is off</b>${esc(t.flaw_ru)}</div>`:''}`;
-  if(t.fmt==='scenario') return `<div class="c-src">${esc(t.prompt)} ${audioBtn(t.prompt)}</div>${t.prompt_ru?`<details class="c-ru"><summary>Перевод</summary>${esc(t.prompt_ru)}</details>`:''}`;
+  if(t.fmt==='upgrade') return `<div class="c-src"><span class="c-strike">${esc(t.prompt)}</span>${audioBtn(t.prompt)}</div>${(t.hints>=1||L().id==='B2')&&t.flaw_ru?`<div class="note"><b>What is off</b>${esc(t.flaw_ru)}</div>`:''}`;
+  if(t.fmt==='scenario') return `<div class="c-src">${esc(t.prompt)} ${audioBtn(t.prompt)}</div>${t.prompt_ru?`<details class="c-ru" ${L().id==='B2'?'open':''}><summary>Перевод</summary>${esc(t.prompt_ru)}</details>`:''}`;
   return `<div class="c-src ru">${esc(t.prompt||'Напишите одно-два предложения о своей работе, используя выражение.')}</div>`;
 }
 const GR = { A:['ok','Native-like'], B:['ok','Correct'], C:['warn','Needs work'], D:['bad','Missed'] };
@@ -2479,6 +2443,7 @@ function coachSum(){
       <b class="serif">${t.targets.map(x=>esc(x.en)).join(' + ')}</b>
       ${t.res?.native?`<div class="spk-native"><span>Native</span>${esc(t.res.native)} ${audioBtn(t.res.native)}</div>`:`<div class="muted" style="font-size:.9rem">Skipped</div>`}</div></div>`; }).join('')}</section>
     ${Object.keys(codes).length?`<section><h3 class="spk-h">What to watch</h3><div class="row" style="gap:6px">${Object.entries(codes).sort((a,b)=>b[1]-a[1]).map(([c,k])=>`<span class="pill"><b>${esc(c)}</b>&nbsp;${esc(CODE_RU[c]||'')} ×${k}</span>`).join('')}</div></section>`:''}
+    ${coachLevelTip(good/n)}
     <p class="hint" style="text-align:center">Review dates updated for ${C.tasks.reduce((a,t)=>a+(t.res?t.targets.length:0),0)} cards.</p>
     <div class="actions">${weak.length?`<button class="btn ghost" data-act="coachAgain">Again with ${weak.length} weak</button>`:''}<button class="btn" data-act="coachNew">New session</button></div>
   </div>`;
@@ -2500,7 +2465,7 @@ actions.coachAgain = () => { const C=st.C, items=C.tasks.filter(t=>!t.res||t.fir
 async function coachStart2(fmt, tasks){
   st.C={ phase:'gen', fmt, tasks, i:0, at:Date.now(), step:'' }; go('coach');
   try{
-    const out=await aiJSON(coachGenPrompt(tasks), { temp:0.9, max:4000, label:'Tasks · ' });
+    const out=await aiJSON(coachGenPrompt(tasks), { temp:0.9, max:4000, label:'Tasks · ', kind:'gen' });
     (out.tasks||[]).forEach((g,i)=>{ const t=tasks[i]; if(!t||!g) return; t.prompt=String(g.prompt||''); t.prompt_ru=g.prompt_ru||''; t.flaw_ru=g.flaw_ru||''; });
     const bad=tasks.filter(t=>t.fmt!=='create' && !t.prompt);
     if(bad.length===tasks.length) throw new Error('the model returned no tasks');
@@ -2521,11 +2486,11 @@ actions.coachCheck = async () => {
   dictStop(); const retry=t.tries.length>0; t.tries.push(ans); C.draft=ans;
   const back=C.phase; C.phase='check'; C.step=''; go('coach');
   try{
-    const r=await aiJSON(coachEvalPrompt(t, ans, retry), { temp:0.2, max:3000, label:'Check · ' });
+    const r=await aiJSON(coachEvalPrompt(t, ans, retry), { temp:0.2, max:3000, label:'Check · ', kind:'eval' });
     r.grade=String(r.grade||'C').trim().toUpperCase()[0]; if(!GR[r.grade]) r.grade='C';
     const ids=t.targets.map(i=>i.deck+':'+i.id);
     r.targets=ids.map(id=>{ const x=(r.targets||[]).find(y=>String(y.id)===id) || (r.targets||[]).find(y=>norm(String(y.id))===norm(id)) || {status:'avoided'}; return { ...x, id, status:['used','error','avoided'].includes(x.status)?x.status:'avoided' }; });
-    ['alts','rules'].forEach(k=>{ if(!Array.isArray(r[k])) r[k]=[]; }); r.rules=r.rules.slice(0,3);
+    ['alts','rules'].forEach(k=>{ if(!Array.isArray(r[k])) r[k]=[]; }); r.rules=r.rules.slice(0,L().rules);
     t.res=r; if(!retry){ t.first=r.grade; coachSRS(t); markActive(); }
     C.phase='fb'; C.retry=false; C.draft='';
     if(cfg.autoSpeak && r.native && (r.grade==='C'||r.grade==='D')) speak(r.native);
@@ -2584,12 +2549,12 @@ actions.copySetup = () => { if(!syncOn()) return toast('Connect sync first.'); c
   try{ const v=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if(v.u && v.t){ cfg.syncUrl=v.u; cfg.syncToken=v.t; cfg.vAt=0; LS.set(K.cfg,cfg); setTimeout(()=>toast('This device is connected. Syncing…'),400); } }catch(e){ toast('The setup link is damaged.'); }
   history.replaceState(null,'',location.pathname+location.search); })();
 
-actions.vaultRefresh = async () => { cfg.vAt=0; await ensureKeys(true); render(); toast(cfg.vGem||cfg.vGroq?'Keys loaded from Apps Script':'No keys found. Add GEMINI_KEY in Script Properties and redeploy.'); };
+actions.vaultRefresh = async () => { cfg.vAt=0; await ensureKeys(true); render(); toast(cfg.vGem?'Key loaded from Apps Script':'No keys found. Add GEMINI_KEY in Script Properties and redeploy.'); };
 // After sync is saved, fetch the keys right away
 { const _ss=actions.saveSync; actions.saveSync=async()=>{ await _ss(); cfg.vAt=0; await ensureKeys(true); if(st.view==='settings') render(); }; }
 
 // ---- 12g. Wiring ----
-SYNC_CFG_KEYS.push('aiFmt','aiSrc','aiSize','aiDomain','spkProv');
+SYNC_CFG_KEYS.push('aiFmt','aiSrc','aiSize','aiDomain');
 { const _home=vHome; vHome=function(){ const k=coachHist()[0];
     const tile=`<button class="deck" data-act="openCoach">
       <div class="ico" style="background:var(--primary-soft);color:var(--primary)">${ICON_COACH}</div>
@@ -2602,6 +2567,60 @@ SYNC_CFG_KEYS.push('aiFmt','aiSrc','aiSize','aiDomain','spkProv');
     const dm=$('#aiDomain'); if(dm) dm.onchange=()=>{ cfg.aiDomain=dm.value.trim(); touchCfg(); toast('Context saved'); };
   }; }
 { const _back=actions.back; actions.back=()=>{ if(st.view==='coach') return coachBack(); if(st.view==='settings' && st.C && st.C.phase!=='start' && st.prev==='coach') return go('coach'); _back(); }; }
+
+// ---------- 13. Cost control: the cheapest model that does each job well ----------
+// Prices USD per 1M tokens [text in, audio in, out incl. thinking], ai.google.dev, checked Nov 2026. Unknown models count as 2.5 Flash.
+const PRICE = { 'gemini-2.5-flash-lite':[0.10,0.30,0.40], 'gemini-2.5-flash':[0.30,1.00,2.50], 'gemini-3.1-flash-lite':[0.25,0.50,1.50], 'gemini-3-flash':[0.50,1.00,3.00], 'gemini-3.8-flash':[0.75,1.50,3.75] };
+const priceOf = m => { const k=Object.keys(PRICE).sort((a,b)=>b.length-a.length).find(k=>m===k||m.startsWith(k+'-')&&(/lite/.test(k)||!/lite/.test(m))); return PRICE[k]||PRICE['gemini-2.5-flash']; };
+// gen = writing drill tasks (easy), eval = checking an answer (needs judgement), audio = Mode 3 speech audit (needs to hear well)
+const AI_PROFILES = {
+  eco:{ l:'Economy', d:'Flash-Lite everywhere. About 4x cheaper; feedback is shorter and misses more subtle errors.', gen:['2.5-flash-lite','3.1-flash-lite'], eval:['2.5-flash-lite','3.1-flash-lite'], audio:['3.1-flash-lite','2.5-flash-lite'] },
+  bal:{ l:'Balanced', d:'Recommended. Flash-Lite writes the tasks, 2.5 Flash checks answers and listens to speech. About $0.005 per checked answer, $0.03 per 3-minute take.', gen:['2.5-flash-lite','3.1-flash-lite'], eval:['2.5-flash','3.1-flash-lite'], audio:['2.5-flash'] },
+  top:{ l:'Best', d:'The newest Flash for everything. 1.5 to 2x the Balanced cost; worth it only if Balanced feedback feels wrong.', gen:['2.5-flash-lite'], eval:['*'], audio:['*'] }
+};
+const aiProf = () => AI_PROFILES[cfg.aiProfile] ? cfg.aiProfile : 'bal';
+// Preferred models first, then everything else the key offers (newest full Flash first) as the fallback chain.
+function pickModels(list, kind){
+  const prefs=AI_PROFILES[aiProf()][kind]||['*'], out=[];
+  const hit=(n,p)=> n==='gemini-'+p || (n.startsWith('gemini-'+p+'-') && (/lite/.test(p)||!/lite/.test(n)));
+  prefs.forEach(p=>{ const c=p==='*' ? list.filter(n=>!/lite/.test(n)) : list.filter(n=>hit(n,p)); c.sort((a,b)=>(/preview|exp/.test(a)?1:0)-(/preview|exp/.test(b)?1:0)); c.forEach(n=>{ if(!out.includes(n)) out.push(n); }); });
+  list.forEach(n=>{ if(!out.includes(n)) out.push(n); });
+  return out.slice(0,5);
+}
+function trackUsage(m, kind, u){
+  if(!u) return; const pr=priceOf(m), audio=(u.promptTokensDetails||[]).filter(x=>x.modality==='AUDIO').reduce((a,x)=>a+(x.tokenCount||0),0);
+  const usd=((u.promptTokenCount||0)-audio)/1e6*pr[0] + audio/1e6*pr[1] + ((u.candidatesTokenCount||0)+(u.thoughtsTokenCount||0))/1e6*pr[2];
+  const mo=today().slice(0,7), U=LS.get('bet3.usage',{}); if(U.mo!==mo){ U.prev=U.mo?{mo:U.mo,usd:U.usd}:U.prev; U.mo=mo; U.usd=0; U.n={}; U.c={}; }
+  U.usd+=usd; U.n[kind]=(U.n[kind]||0)+1; U.c[kind]=(U.c[kind]||0)+usd; LS.set('bet3.usage',U);
+}
+function usageLine(){ const U=LS.get('bet3.usage',{}); if(!U.mo||!U.usd) return '<p class="hint" style="margin:4px 0 0">Spend on this device appears here after the first call.</p>';
+  const avg=k=>U.n?.[k]?'$'+(U.c[k]/U.n[k]).toFixed(4):'–';
+  return `<p class="hint" style="margin:4px 0 0">This device, ${U.mo}: <b>$${U.usd.toFixed(3)}</b> · average per call: tasks ${avg('gen')}, check ${avg('eval')}, speech ${avg('audio')}${U.prev?` · ${U.prev.mo}: $${U.prev.usd.toFixed(2)}`:''}. Estimate from token counts; the bill in Google Cloud is the reference.</p>`; }
+
+// ---------- 14. Difficulty: the challenge is the target, not the task text ----------
+const LEVEL = {
+  'B2':{ d:'Short, plain tasks. Russian translation of each situation open, hints on what is off shown at once.', words:'only common B1-B2 words around the target, short sentences',
+    scen:'2 short sentences, max 35 words', tr:'8-14 words, one clause, plain spoken Russian', up:'8-14 words, one obvious problem', native:25, rules:2,
+    bar:'Grade A or B whenever the message is clear, correct and the target is used right, even if a native would phrase it differently. Only flag errors that change meaning, sound rude, or are typical Russian interference.',
+    speak:'Prioritise the few errors that most hurt clarity; do not flood the learner.' },
+  'B2+':{ d:'Default. Everyday business English around the target, one idea per task.', words:'common B2 business words around the target, sentences under 20 words',
+    scen:'2-3 sentences, max 45 words', tr:'10-18 words, at most one subordinate clause', up:'10-18 words', native:35, rules:2,
+    bar:'A = a manager would send it as is; B = correct and clear with small non-native choices. Flag errors in meaning, grammar, register and typical Russian interference; mention style only if it clearly helps.',
+    speak:'Focus on high-impact, recurring issues and on moves that take a B2+ speaker to C1.' },
+  'C1':{ d:'Denser, more realistic situations and stricter grading of naturalness.', words:'natural C1 business language',
+    scen:'2-3 sentences, max 55 words', tr:'12-28 words', up:'10-25 words', native:45, rules:3,
+    bar:'Grade against a native-like C1 bar: collocation precision, register and concision count.',
+    speak:'Hold the learner to a C1 executive standard.' }
+};
+const L = () => ({ id: LEVEL[cfg.aiLevel] ? cfg.aiLevel : 'B2+', ...LEVEL[LEVEL[cfg.aiLevel]?cfg.aiLevel:'B2+'] });
+function coachLevelTip(rate){
+  const ks=Object.keys(LEVEL), i=ks.indexOf(L().id);
+  if(rate>=0.8 && i<ks.length-1) return `<div class="note"><b>Too easy?</b>You got most answers right first time. <a href="#" data-act="coachLevel" data-v="${ks[i+1]}">Switch to ${ks[i+1]}</a></div>`;
+  if(rate<=0.3 && i>0) return `<div class="note warn-note"><b>Too hard?</b>Short, simpler tasks build the habit faster. <a href="#" data-act="coachLevel" data-v="${ks[i-1]}">Switch to ${ks[i-1]}</a></div>`;
+  return '';
+}
+actions.coachLevel = d => { cfg.aiLevel=d.v; touchCfg(); toast('Difficulty: '+d.v); render(); };
+SYNC_CFG_KEYS.push('aiLevel','aiProfile');
 
 render();
 if(syncOn()){ syncNow({silent:true}); ensureKeys(); }

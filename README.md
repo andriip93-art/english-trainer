@@ -31,14 +31,23 @@ each answer and pulls on open, on return to the tab and on reconnect. Cards: new
 
 ## AI keys (Mode 3 Speak & Record, Mode 4 Context Drills)
 
-Keys live only in the Script Properties of your Apps Script, never in the repo or the sheet:
+The key lives only in the Script Properties of your Apps Script (`GEMINI_KEY`), never in the repo or the sheet. Use a key from a
+Google Cloud project with billing for the app (inputs are not used for training); keep the podcast pipeline on a separate
+free-tier project.
 
-- `GEMINI_KEY`: Gemini API key. Use a key from a Google Cloud project with billing for the app (inputs are not used for training).
-  Keep the podcast pipeline on a separate free-tier project.
-- `GROQ_KEY` (optional): backup provider, text-only analysis.
+Model profiles (Settings > AI coach), cheapest model that does each job well:
 
-Every device connected to sync asks the script for the keys (action `keys`, protected by the token) and caches them locally.
-Rotate a key: change the property, then Settings > AI coach > Reload keys from Apps Script. A key typed in Settings on a device
+| Profile | Writes drill tasks | Checks answers | Listens to speech (Mode 3) |
+|---|---|---|---|
+| Economy | 2.5 Flash-Lite | 2.5 Flash-Lite | 3.1 Flash-Lite |
+| Balanced (default) | 2.5 Flash-Lite | 2.5 Flash | 2.5 Flash |
+| Best | 2.5 Flash-Lite | newest Flash | newest Flash |
+
+Thinking is capped (512 tokens for drills, 2048 for speech) because thinking is billed as output. The app estimates spend per
+device from token counts (Settings > AI coach). Drill difficulty: B2, B2+ (default), C1; the summary suggests a step up or down.
+
+Every device connected to sync asks the script for the key (action `keys`, protected by the token) and caches them locally.
+Rotate the key: change the property, then Settings > AI coach > Reload key from Apps Script. A key typed in Settings on a device
 overrides the script for that device only. In Google Cloud > Credentials restrict the Gemini key to the Generative Language API
 and to the site address `https://andriip93-art.github.io/*`.
 
