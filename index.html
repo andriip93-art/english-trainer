@@ -2669,7 +2669,7 @@ async function errFlush(){
   const q=LS.get(ERR.q,[]).slice(0,300), up=LS.get(ERR.up,[]).slice(0,300); if(!q.length && !up.length) return;
   errBusy=true; let sent=false;
   try{ const r=await syncPost({ action:'errors', rows:q, updates:up });
-    if(r.ok){ sent=true; LS.set(ERR.q, LS.get(ERR.q,[]).slice(q.length)); LS.set(ERR.up, LS.get(ERR.up,[]).slice(up.length)); } }
+    if(r.ok && r.added!==undefined){ sent=true; LS.set(ERR.q, LS.get(ERR.q,[]).slice(q.length)); LS.set(ERR.up, LS.get(ERR.up,[]).slice(up.length)); } }
   catch(e){ /* old script or offline: keep the queue */ }
   errBusy=false;
   if(sent && (LS.get(ERR.q,[]).length || LS.get(ERR.up,[]).length)) return errFlush();   // more arrived while sending
@@ -2702,6 +2702,8 @@ function errFromSpeak(at, r, scene){
       .map((x,j)=>({ ...x, key:`d${C.at}#${C.i}#${j}` }))); }; }
 // One-time import of the Speak sessions already stored on this device
 function errBackfill(){
+  // Once: resend every error kept on this device. Rows sent before the script had the Errors tab were lost there; the sheet drops duplicates by key.
+  if(!LS.get('bet3.errResend',false)){ const have=new Set(LS.get(ERR.q,[]).map(r=>r.key)); LS.set(ERR.q,[...LS.get(ERR.q,[]),...errAll().filter(r=>!have.has(r.key))]); LS.set('bet3.errResend',true); }
   if(LS.get(ERR.back,false)) return;
   const h=spkHist(); h.forEach(s=>{ if(s.result && !s.result._logged){ errLog(errFromSpeak(s.at, s.result, s.scene)); s.result._logged=true; } });
   LS.set(SPK.hist, h); LS.set(ERR.back, true);
