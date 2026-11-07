@@ -2269,56 +2269,67 @@ function coachBuild(fmt, src, n){
 const tgtLine = it => `${it.deck}:${it.id} | ${it.en} | ${it.ru}${it.type?' | '+it.type:''}${it.register?' | register '+it.register:''}${it.note?' | '+String(it.note).slice(0,160):''}${it.examples?.[0]?' | e.g. '+it.examples[0]:''}`;
 
 // ---- 12b. Prompts ----
-function coachGenPrompt(tasks){
-  return {
-sys:`You write practice tasks for a Russian/Ukrainian-speaking senior finance professional. Current English level: ${L().id}, goal C1. Context: ${cfg.aiDomain||C_DOMAIN}. Return ONLY JSON.
-
-Difficulty (most important): the only hard part of each task must be using the target expression. Everything around it stays easy to read for a ${L().id} learner: ${L().words}. One idea per task, no stacked clauses, no rare idioms, no unexplained abbreviations except common finance ones (EBITDA, capex, bond, covenant).
-
-Task types
-- scenario: a live work moment in English, ${L().scen}. Name a person and role, one concrete detail (a number, a deadline, a covenant, a plant), a channel (email, call, meeting, chat). End with a direct question or request to the learner. The target expression(s) must be the natural thing to say in the reply, but never appear in the text. Add prompt_ru: a natural Russian translation (not word-for-word).
-- translate: ONE natural Russian sentence (${L().tr}), as a Russian-speaking banker or CFO would really say or write it. The given English target must be the most natural way to render its key idea. Never include the English target, a transliteration or a calque that gives it away. Avoid Russian bureaucratese unless the target is formal.
-- upgrade: ONE English sentence (${L().up}) that a non-native professional might say: understandable but blunt, vague, too informal, or calqued from Russian, expressing the idea the target expresses better. It must not contain the target. Add flaw_ru: a short Russian hint of what is wrong with it (register, calque, vagueness), without giving the answer.
-- create: a one-line situation cue in Russian (max 20 words) from the learner's own work that invites using the target, e.g. «Расскажите банку, почему вы переносите выпуск».
-
-Rules: vary situations, channels and counterparts across tasks; no two tasks in the same scene; realistic numbers; no real company names except generic ones (the group, the bank, the plant). Keep the learner's register in mind: the targets marked Informal or Caution need an informal setting.
-
-Return: {"tasks":[{"n":1,"prompt":"...","prompt_ru":"...","flaw_ru":"..."}]} with one object per task in the same order.`,
-user:'Tasks:\n'+tasks.map((t,i)=>`${i+1}. type ${t.fmt}. Target(s): ${t.targets.map(tgtLine).join(' || ')}`).join('\n')
-  };
+// One short prompt per task type. Each type has its own JSON field named after its language (ru / en),
+// and the app checks the language, so a Translate task can never arrive in English.
+const CYR = /[а-яё]/i;
+const tq = it => `"${it.en}" (${it.ru})`;
+function coachGenPrompt(t){
+  const tg=t.targets.map(tq).join(' and '), ctx=`Work context: ${cfg.aiDomain||C_DOMAIN}.`;
+  const P = {
+translate:`Write ONE Russian sentence (${L().tr}) that a Russian-speaking CFO or banker would naturally say at work.
+The most natural English rendering of its key idea must be the target: ${tg}.
+The sentence must be in Russian only, must not contain the target or a word-for-word calque of it, and must use plain everyday business Russian.
+${ctx}
+Return JSON: {"ru":"..."}`,
+scenario:`Write a short work message to the learner in English (${L().scen}, simple B2 words).
+Include a name and role, one concrete detail (number, deadline, plant), and end with a direct question.
+The natural reply should use: ${tg}. Do not use the target in the message.
+${ctx}
+Return JSON: {"en":"...","ru":"<natural Russian translation>"}`,
+upgrade:`Write ONE English sentence (${L().up}) that a non-native finance professional might say: clear but blunt, vague or calqued from Russian.
+It should express the idea that ${tg} expresses better. Do not use the target.
+${ctx}
+Return JSON: {"en":"...","flaw_ru":"<what is wrong, in Russian, without giving the answer>"}`,
+create:`Write a one-line situation cue in Russian (max 15 words) from corporate finance work that invites using ${tg}.
+${ctx}
+Return JSON: {"ru":"..."}`
+  }[t.fmt];
+  return { sys:'You write short English practice tasks for a Russian-speaking finance professional. Return ONLY JSON.', user:P };
+}
+// true when the generated text fits the task type: right language, target not given away
+function genOk(t, g){
+  const has=x=>typeof x==='string' && x.trim().length>5, leak=x=>t.targets.some(it=>norm(x).includes(norm(stripBr(it.en))));
+  if(t.fmt==='translate'||t.fmt==='create') return has(g.ru) && CYR.test(g.ru) && !/[a-z]{4,}\s+[a-z]{4,}\s+[a-z]{4,}/i.test(g.ru);
+  return has(g.en) && !CYR.test(g.en) && !leak(g.en);
+}
+function genApply(t, g){
+  if(t.fmt==='translate'||t.fmt==='create'){ t.prompt=g.ru.trim(); }
+  else { t.prompt=g.en.trim(); t.prompt_ru=CYR.test(g.ru||'')?g.ru:''; t.flaw_ru=g.flaw_ru||''; }
+}
+async function genTask(t){
+  for(let k=0;k<2;k++){
+    try{ const g=await aiJSON(coachGenPrompt(t), { temp:k?0.6:0.9, max:1500, label:'Tasks · ', kind:'gen' }); if(genOk(t,g)){ genApply(t,g); return true; } }
+    catch(e){ if(k) throw e; }
+  }
+  return false;
 }
 function coachEvalPrompt(t, answer, retry){
-  const task = t.fmt==='translate' ? `Russian source: «${t.prompt}»` : t.fmt==='upgrade' ? `Line to upgrade: "${t.prompt}"` : t.fmt==='scenario' ? `Situation: ${t.prompt}` : `Cue: ${t.prompt||'free sentence about the learner\'s work'}`;
+  const task = t.fmt==='translate' ? `translate this Russian sentence into English: «${t.prompt}»` : t.fmt==='upgrade' ? `rewrite this line better: "${t.prompt}"` : t.fmt==='scenario' ? `reply to this message: "${t.prompt}"` : `write a sentence for this cue: «${t.prompt}»`;
   return {
-sys:`You are a fair, encouraging executive English coach for a Russian/Ukrainian-speaking senior finance professional. Current level: ${L().id}, goal C1. Context: ${cfg.aiDomain||C_DOMAIN}. You assess ONE written answer and return ONLY JSON.
-
-Calibration for this learner: ${L().bar} Feedback must be usable at this level: simple Russian explanations, no linguistics jargon, no more than ${L().rules} rules.
-
-What to judge, in this order
-1. Task: did the answer do the job? translate: is the meaning of the Russian source fully and accurately rendered (no omissions, no added claims)? scenario: does it answer the question/request in a sensible way? upgrade: same meaning, better register and precision? create: a meaningful sentence on the cue?
-2. Targets: for each target id decide status "used" (correct form, meaning, collocation and register, natural in context; normal inflection and optional [bracketed] parts are fine), "error" (attempted but wrong form, meaning, preposition, collocation or register), "avoided" (not used, including a synonym instead).
-3. Language: grammar, articles, prepositions, tense, word order, collocation, register, false friends. Flag only real errors; a correct but less idiomatic choice is a note, not an error.
-
-Grade: "A" native-like and natural, no errors, targets used well; "B" correct and clear, only small non-native choices; "C" understandable, but errors or a target used wrongly; "D" meaning lost, task not done, or targets missing.
-
-Feedback rules
-- marked: the learner's answer copied EXACTLY, with every trigger wrapped as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = genuine C1 success (precise collocation, hedge, discourse marker). Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Idiom, Meaning, Spelling. Fix = corrected words ("—" for S). Explanation in Russian, one sentence. Use pipes only as separators.
-- fix: a minimal correction that keeps the learner's own words and structure, changing only what is wrong. If there is nothing to fix, repeat the answer.
-- native: how a senior native-speaking executive would say it in this exact situation, using every target naturally, max ${L().native} words, spoken-natural, not flowery, with words a ${L().id} learner can reuse tomorrow.
-- alts: 0-2 other natural ways to say the key part (short).
-- rules: one entry per distinct error type, max ${L().rules}, most important first, each with a code from the list below and a Russian explanation that the learner will remember (contrast with Russian, a hook, an image), not a textbook definition.
-- praise: one real strength in Russian, or "" if there is none. Never invent praise.
-- Be precise and brief. If the answer is good, say so; do not hunt for problems.${retry?'\n- This is the learner\'s second attempt after feedback. In "comment" say in Russian what improved and what is still off.':''}
-
-${SPK_CHECK.split('\nPRON')[0]}
-
-Return exactly: {"grade":"A|B|C|D","task_ok":true,"comment":"one sentence in Russian, the main point","targets":[{"id":"phr:12","status":"used|error|avoided","note":"Russian, short"}],"marked":"...","fix":"...","native":"...","alts":["..."],"rules":[{"code":"ART","rule":"..."}],"praise":"..."}`,
-user:`Task type: ${t.fmt}
-${task}
-Target(s) the learner had to use (id | expression | meaning | ...):
-${t.targets.map(tgtLine).join('\n')}
+sys:`You check one written answer by a ${L().id} English learner (Russian native, finance professional). Return ONLY JSON.
+- grade: A (a manager would send it as is), B (correct, small non-native choices), C (understandable, errors or target misused), D (meaning lost or target missing). ${L().bar}
+- task_ok: false if the answer does not do the task (for a translation: meaning missing or changed)
+- comment: one short sentence in Russian, the main point${retry?'; this is a second attempt, say what improved':''}
+- targets: [{"id":"...","status":"used|error|avoided"}]
+- marked: the answer copied exactly, errors as [[words|E|Type|Fix|why in Russian]], strong choices as [[words|S|Type|—|why in Russian]]
+- fix: the answer with only the errors corrected
+- native: how a native executive would say it, max ${L().native} words, simple reusable words
+- rules: max ${L().rules}, [{"code":"...","rule":"in Russian, short and memorable"}]; codes ART, PREP, PERF, COMP, FF, REG, LEX, OTHER
+Flag only real errors. If the answer is good, say so.`,
+user:`Task: ${task}
+Target(s): ${t.targets.map(it=>`${it.deck}:${it.id} = "${it.en}" (${it.ru})`).join('; ')}
 Hints used: ${t.hints}
-Learner's answer: "${answer}"`
+Answer: "${answer}"`
   };
 }
 
@@ -2333,7 +2344,7 @@ function coachPatterns(){
   spkHist().slice(0,6).forEach(s=>(s.result?.patterns||[]).forEach(p=>{ tally[p.code]=(tally[p.code]||0)+(p.count||1); }));
   return Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,6);
 }
-const CODE_RU = { ART:'Артикли', PERF:'Present Perfect / Past', PREP:'Предлоги-кальки', SUBJ:'Нет подлежащего', UNC:'Неисчисляемые', COMP:'Управление глаголов', WO:'Порядок слов', COND:'Будущее после if/when', NEG:'Отрицание', QUES:'Вопросы', MOD:'Модальность, жёсткость', FF:'Ложные друзья', CLICHE:'Кальки-клише', REG:'Регистр', LEX:'Бедная лексика', PRON:'Произношение' };
+const CODE_RU = { OTHER:'Другое', ART:'Артикли', PERF:'Present Perfect / Past', PREP:'Предлоги-кальки', SUBJ:'Нет подлежащего', UNC:'Неисчисляемые', COMP:'Управление глаголов', WO:'Порядок слов', COND:'Будущее после if/when', NEG:'Отрицание', QUES:'Вопросы', MOD:'Модальность, жёсткость', FF:'Ложные друзья', CLICHE:'Кальки-клише', REG:'Регистр', LEX:'Бедная лексика', PRON:'Произношение' };
 function coachStart(){
   const h=coachHist(), pats=coachPatterns(), pmax=Math.max(1,...pats.map(p=>p[1]));
   const fmt=cfg.aiFmt||'mix', src=cfg.aiSrc||'mix', size=cfg.aiSize||5;
@@ -2465,12 +2476,11 @@ actions.coachAgain = () => { const C=st.C, items=C.tasks.filter(t=>!t.res||t.fir
 async function coachStart2(fmt, tasks){
   st.C={ phase:'gen', fmt, tasks, i:0, at:Date.now(), step:'' }; go('coach');
   try{
-    const out=await aiJSON(coachGenPrompt(tasks), { temp:0.9, max:4000, label:'Tasks · ', kind:'gen' });
-    (out.tasks||[]).forEach((g,i)=>{ const t=tasks[i]; if(!t||!g) return; t.prompt=String(g.prompt||''); t.prompt_ru=g.prompt_ru||''; t.flaw_ru=g.flaw_ru||''; });
-    const bad=tasks.filter(t=>t.fmt!=='create' && !t.prompt);
-    if(bad.length===tasks.length) throw new Error('the model returned no tasks');
-    bad.forEach(t=>{ t.fmt='create'; t.prompt=''; });   // a failed item still trains the target
-    st.C.phase='task'; st.C.provider=out._provider;
+    const res=await Promise.allSettled(tasks.map(genTask));
+    if(res.every(r=>r.status==='rejected')) throw new Error(res[0].reason?.message||'no response');
+    if(res.every(r=>r.status!=='fulfilled'||!r.value)) throw new Error('the model returned no usable tasks');
+    tasks.forEach((t,i)=>{ if(res[i].status!=='fulfilled'||!res[i].value){ t.fmt='create'; t.prompt=''; } });   // a failed item still trains the target
+    st.C.phase='task';
   }catch(e){ toast('Could not create tasks: '+e.message.slice(0,180)); st.C={phase:'start'}; }
   if(st.view==='coach') go('coach');
 }
