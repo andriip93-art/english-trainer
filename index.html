@@ -2667,10 +2667,11 @@ let errBusy=false;
 async function errFlush(){
   if(errBusy || !syncOn()) return;
   const q=LS.get(ERR.q,[]).slice(0,300), up=LS.get(ERR.up,[]).slice(0,300); if(!q.length && !up.length) return;
-  errBusy=true; let sent=false;
+  errBusy=true; let sent=false; const stat=m=>LS.set('bet3.errstat',{ at:Date.now(), ok:sent, msg:m });
   try{ const r=await syncPost({ action:'errors', rows:q, updates:up });
-    if(r.ok && r.added!==undefined){ sent=true; LS.set(ERR.q, LS.get(ERR.q,[]).slice(q.length)); LS.set(ERR.up, LS.get(ERR.up,[]).slice(up.length)); } }
-  catch(e){ /* old script or offline: keep the queue */ }
+    if(r.ok && r.added!==undefined){ sent=true; LS.set(ERR.q, LS.get(ERR.q,[]).slice(q.length)); LS.set(ERR.up, LS.get(ERR.up,[]).slice(up.length)); stat(`Sent ${q.length} errors, ${r.added} new in the sheet`); }
+    else stat('The Apps Script answered, but it is the old version without the Errors tab. Paste the new Code.gs and deploy a New version.'); }
+  catch(e){ stat('Could not send: '+e.message); }
   errBusy=false;
   if(sent && (LS.get(ERR.q,[]).length || LS.get(ERR.up,[]).length)) return errFlush();   // more arrived while sending
 }
@@ -2766,6 +2767,10 @@ function fixStart(){
     ${gs.length?`<section><h3 class="spk-h">Your error patterns <small class="muted">tap to train</small></h3>
       ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.code)}" ${g.n<FIX_MIN?'disabled':''}><span class="code">${esc(g.code)}</span><span class="t">${esc(CODE_RU[g.code]||g.code)}<small class="muted"> · ${g.drilled?g.drilled+' drilled · ':''}last ${esc(g.last)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
     </section>`:''}
+    ${(()=>{ const q=LS.get(ERR.q,[]).length, x=LS.get('bet3.errstat',null);
+      if(!syncOn()) return '<div class="note warn-note"><b>Sync is off</b>Errors stay on this device until you connect sync in Settings.</div>';
+      return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
+        : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
     <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
     ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.title||'')}</small></span><span class="pill ${x.score>=7?'ok':x.score>=5?'new':'due'}">${x.score}/8</span></div>`).join('')}`:''}
     <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
@@ -2860,7 +2865,7 @@ function bankPick(code){
 const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); bankLoad(); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
 actions.openFix = fixOpen;
 actions.fixHome = () => { st.F={phase:'start'}; go('fix'); };
-actions.fixPull = async () => { toast('Updating…'); await bankLoad(true); const ok=await errPull(); toast(ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
+actions.fixPull = async () => { toast('Updating…'); await bankLoad(true); const ok=await errPull(); const x=LS.get('bet3.errstat',null); toast(x&&!x.ok?x.msg:ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
 actions.fixGo = async d => {
   const g=fixGroups().find(x=>x.code===d.c); if(!g || g.n<FIX_MIN) return;
   const rows=g.rows.slice(0,15), cache=LS.get(ERR.lessons,{}), c=cache[d.c];
