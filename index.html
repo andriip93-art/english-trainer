@@ -2784,7 +2784,7 @@ function lessonBody(ls, compact){
 function fixLesson(){
   const F=st.F, ls=F.lesson;
   return `<div class="stack"><div class="card c-card">
-    <div class="spk-kind">Lesson · ${esc(F.code)} · from ${F.rows.length} of your errors</div>
+    <div class="spk-kind">Lesson · ${esc(F.code)} · ${F.fromBank?`deep review of all your errors${typeof F.fromBank==='string'?' · '+esc(F.fromBank):''}`:`from ${F.rows.length} of your errors`}</div>
     <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
     ${lessonBody(ls,false)}
     <div class="actions"><button class="btn ghost" data-act="fixRelesson" style="flex:0 0 auto">New lesson</button><button class="btn" data-act="fixTasks">Start 8 tasks</button></div>
@@ -2827,15 +2827,46 @@ function fixSum(){
   </div>`;
 }
 
+
+// ---- 16d. FixBank: lessons and task banks prepared every 3 days by a scheduled Claude run (tab "FixBank": code | updated | basis | lesson | tasks).
+// The app prefers the bank (deeper analysis of all errors, instant start); Gemini is the fallback when a pattern has no bank yet.
+let BANK=null;
+async function bankLoad(force){
+  if(BANK && !force) return BANK;
+  const id=sheetId(cfg.sheet)||sheetId(LIB_URL), c=LS.get('bet3.bank',null);
+  if(c && !force && Date.now()-c.at<6*3600e3) return (BANK=c.v);
+  try{ const r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=FixBank`,{cache:'no-store'});
+    const t=await r.text(); if(!r.ok || /^\s*<(!doctype|html)/i.test(t)) throw 0;
+    const rows=splitTSV(t), h=(rows[0]||[]).map(x=>x.trim().toLowerCase()), col=n=>h.indexOf(n), v={};
+    if(col('code')<0) throw 0;
+    rows.slice(1).forEach(r=>{ try{ const code=r[col('code')].trim(); if(!code) return;
+      const lesson=JSON.parse(r[col('lesson')]), tasks=JSON.parse(r[col('tasks')]);
+      if(lesson?.title_ru && Array.isArray(tasks) && tasks.length) v[code]={ updated:r[col('updated')]||'', lesson, tasks }; }catch(e){} });
+    LS.set('bet3.bank',{ at:Date.now(), v }); return (BANK=v); }
+  catch(e){ return (BANK=c?.v||{}); }
+}
+function bankPick(code){
+  const b=BANK?.[code]; if(!b) return null;
+  const all=b.tasks.map((t,i)=>({ ...t, id:t.id||code+'-'+i })), seen=LS.get('bet3.fixseen',{}), mine=new Set(seen[code]||[]);
+  let pool=all.filter(t=>!mine.has(t.id)); if(pool.length<8){ mine.clear(); pool=all; }
+  const by=k=>shuffle(pool.filter(t=>t.type===k)), pick=[];
+  ['choose','gap','fix','translate'].forEach(k=>pick.push(...by(k).slice(0,2)));
+  if(pick.length<8) pick.push(...shuffle(pool.filter(t=>!pick.includes(t))).slice(0,8-pick.length));
+  pick.forEach(t=>mine.add(t.id)); seen[code]=[...mine]; LS.set('bet3.fixseen',seen);
+  const order={choose:0,gap:1,fix:2,translate:3}; return pick.sort((a,b)=>order[a.type]-order[b.type]);
+}
+
 // ---- 16b. Actions ----
-const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
+const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); bankLoad(); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
 actions.openFix = fixOpen;
 actions.fixHome = () => { st.F={phase:'start'}; go('fix'); };
-actions.fixPull = async () => { toast('Updating…'); const ok=await errPull(); toast(ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
+actions.fixPull = async () => { toast('Updating…'); await bankLoad(true); const ok=await errPull(); toast(ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
 actions.fixGo = async d => {
   const g=fixGroups().find(x=>x.code===d.c); if(!g || g.n<FIX_MIN) return;
   const rows=g.rows.slice(0,15), cache=LS.get(ERR.lessons,{}), c=cache[d.c];
   st.F={ phase:'wait', wait:'Writing your lesson', code:d.c, rows };
+  await bankLoad(); const bk=BANK?.[d.c];
+  if(bk && !d.fresh){ st.F.lesson=bk.lesson; st.F.fromBank=bk.updated||true; st.F.phase='lesson'; return go('fix'); }
   if(c && Date.now()-c.at<30*DAY && g.n-c.n<5 && !d.fresh){ st.F.lesson=c.lesson; st.F.phase='lesson'; return go('fix'); }
   go('fix');
   try{ const ls=await aiJSON(fixLessonPrompt(d.c, rows), { temp:0.3, max:2500, label:'Lesson · ', kind:'eval' });
@@ -2850,7 +2881,9 @@ actions.fixRelesson = () => actions.fixGo({ c:st.F.code, fresh:true });
 actions.fixLessonAgain = () => { st.F.phase='lesson'; go('fix'); };
 actions.fixMore = () => actions.fixTasks();
 actions.fixTasks = async () => {
-  const F=st.F; F.phase='wait'; F.wait='Writing 8 tasks'; F.step=''; go('fix');
+  const F=st.F;
+  if(F.fromBank){ const bt=bankPick(F.code); if(bt){ Object.assign(F,{ tasks:bt.map(t=>({ ...t, type:String(t.type).toLowerCase(), answers:(t.answers||[]).map(String), options:(t.options||[]).map(String), answer:+t.answer||0, res:null, pick:undefined, ans:undefined })), i:0, phase:'task', draft:'', showRule:false, at:Date.now() }); return go('fix'); } }
+  F.phase='wait'; F.wait='Writing 8 tasks'; F.step=''; go('fix');
   try{ const out=await aiJSON(fixTasksPrompt(F.lesson), { temp:0.7, max:4000, label:'Tasks · ', kind:'eval' });
     const tasks=(out.tasks||[]).map(t=>({ ...t, type:String(t.type||'').toLowerCase(), q:String(t.q||''), answers:(Array.isArray(t.answers)?t.answers:[t.answers]).filter(a=>a!=null).map(String), options:Array.isArray(t.options)?t.options.map(String):[], answer:+t.answer||0 }))
       .filter(t=>FTYPE[t.type] && t.q && (t.type==='choose' ? t.options.length>=2 && t.answer<t.options.length : t.answers.length))
