@@ -60,3 +60,16 @@ item. Feedback: grade A to D, target status, tappable error and success highligh
 one rule per error with the same interference codes as Mode 3, one rewrite per item. First-attempt grade updates review dates
 (A/B = Good, C or any hint = Hard, avoided or D = back tomorrow). Error codes from drills and speaking add up to a personal
 pattern list on the start screen. Dictation uses the browser's speech recognition where available.
+
+## Error journal and Mode 5 · Fix My Errors
+
+Every mistake from Speak & Record (Mode 3) and the first attempt in Context Drills (Mode 4) is saved as one row in the
+`Errors` tab of vocabulary_v2 (created by the script): key, date, mode, task, code, type, wrong, fix, why_ru, context,
+target, level, status, updated. Rows queue on the device while offline. Speak sessions already stored on a device are
+imported once.
+
+Fix My Errors groups open errors by code (ART, PREP, PERF, COMP, WO, REG, FF, LEX, GRAM, OTHER). A pattern with 3 or more
+open errors gets a short lesson written from your own mistakes (why Russian speakers make it, the rule, a pattern line,
+three of your errors corrected, the trap, a memory hook; cached for 30 days or until 5 new errors), then 8 tasks from easy
+to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate. Exact answers are checked in the app, others by Gemini.
+7 of 8 marks the errors behind the lesson as drilled; 7 of 8 again on a later day marks them fixed.

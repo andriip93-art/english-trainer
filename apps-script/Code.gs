@@ -16,12 +16,68 @@
  *        Copy the /exec URL into the app (Settings > Sync). After editing this file later use
  *        Deploy > Manage deployments > Edit > Version: New version, so the URL stays the same.
  *
+ * Errors tab (created automatically): one row per mistake from Speak (Mode 3) and Drills (Mode 4), used by
+ * Fix My Errors (Mode 5). Action "errors" appends new rows (deduplicated by key) and updates status;
+ * action "errorsGet" returns them. Columns: key | date | mode | task | code | type | wrong | fix | why_ru |
+ * context | target | level | status | updated. status: open, drilled, fixed. Safe to filter, sort and pivot.
+ *
  * Key vault: action "keys" hands the AI keys to a device that knows the TOKEN, so each phone or laptop
  * gets them automatically and nobody types a key twice. Keys never live in the repo or in the sheet.
  */
 const TOKEN_FALLBACK = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';   // used only if the TOKEN script property is not set
 function token_() { return PropertiesService.getScriptProperties().getProperty('TOKEN') || TOKEN_FALLBACK; }
 const TAB = 'Progress';
+const ERR_TAB = 'Errors';
+const ERR_COLS = ['key', 'date', 'mode', 'task', 'code', 'type', 'wrong', 'fix', 'why_ru', 'context', 'target', 'level', 'status', 'updated'];
+
+function errTab_() {
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName(ERR_TAB);
+  if (!s) {
+    s = ss.insertSheet(ERR_TAB);
+    s.getRange(1, 1, 1, ERR_COLS.length).setValues([ERR_COLS]).setFontWeight('bold');
+    s.setFrozenRows(1);
+  }
+  return s;
+}
+
+// Text from the learner or the model must never be read as a formula
+function safe_(v) { const t = String(v == null ? '' : v).slice(0, 500); return /^[=+\-@]/.test(t) ? "'" + t : t; }
+
+function errors_(req) {
+  const s = errTab_();
+  const n = s.getLastRow() - 1;
+  const data = n > 0 ? s.getRange(2, 1, n, ERR_COLS.length).getValues() : [];
+  const idx = {};
+  data.forEach(function (r, i) { idx[r[0]] = i; });
+  const stamp = new Date().toISOString().slice(0, 10);
+  const add = [];
+  (req.rows || []).forEach(function (o) {
+    if (!o || !o.key || idx[o.key] !== undefined) return;
+    idx[o.key] = -1;
+    add.push(ERR_COLS.map(function (c) { return c === 'status' ? (o.status || 'open') : c === 'updated' ? stamp : safe_(o[c]); }));
+  });
+  if (add.length) s.getRange(s.getLastRow() + 1, 1, add.length, ERR_COLS.length).setValues(add);
+  const st = ERR_COLS.indexOf('status');
+  (req.updates || []).forEach(function (u) {
+    const i = idx[u && u.key];
+    if (i === undefined || i < 0) return;
+    s.getRange(i + 2, st + 1, 1, 2).setValues([[u.status, stamp]]);
+  });
+  return { ok: true, added: add.length };
+}
+
+function errorsGet_() {
+  const s = errTab_();
+  const n = s.getLastRow() - 1;
+  const data = n > 0 ? s.getRange(2, 1, n, ERR_COLS.length).getValues() : [];
+  const rows = data.slice(-3000).map(function (r) {
+    const o = {};
+    ERR_COLS.forEach(function (c, j) { o[c] = r[j] instanceof Date ? r[j].toISOString().slice(0, 10) : String(r[j]); });
+    return o;
+  });
+  return { ok: true, rows: rows };
+}
 
 function tab_() {
   const ss = SpreadsheetApp.getActive();
@@ -63,6 +119,8 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
+    if (req.action === 'errors') return json_(errors_(req));
+    if (req.action === 'errorsGet') return json_(errorsGet_());
     const s = tab_();
     const now = Date.now();
 

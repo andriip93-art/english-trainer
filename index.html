@@ -536,6 +536,18 @@ body.sess .actions .audio{width:54px;height:54px}
 .c-keys>div{border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:grid;gap:2px}
 .c-keys span{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .c-keys b{font-size:.88rem;font-weight:600}.c-keys b.ok{color:var(--ok)}
+
+/* ---- Mode 5 · Fix My Errors ---- */
+.f-row{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);cursor:pointer;font:inherit}
+.f-row:disabled{opacity:.45;cursor:default}
+.f-row:not(:disabled):hover .t{color:var(--primary)}
+.f-rule{margin:0;padding-left:20px;display:grid;gap:6px;line-height:1.5}
+.f-pair{display:grid;gap:3px;padding:10px 0;border-bottom:1px solid var(--line)}
+.f-pair:last-child{border-bottom:0}
+.f-pair .w{font-family:var(--serif);color:var(--bad);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 55%,transparent)}
+.f-pair .r{font-family:var(--serif);color:var(--navy);font-weight:600;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.f-pair .r .audio{width:30px;height:30px;flex-shrink:0}
+.f-mini{display:grid;gap:10px;background:var(--surface-2);border-radius:6px;padding:12px;animation:enter .2s var(--ease)}
 </style>
 </head>
 <body>
@@ -929,7 +941,7 @@ function render(){
   document.body.classList.toggle('bul', st.view==='session' && st.S?.step==='bullet');
   $('#backBtn').innerHTML = document.body.classList.contains('sess') ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
   $('#backBtn').setAttribute('aria-label', document.body.classList.contains('sess')?'End session':'Back');
-  const V = { speak:()=>vSpeak(), coach:()=>vCoach(), home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
+  const V = { speak:()=>vSpeak(), coach:()=>vCoach(), fix:()=>vFix(), home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
   if(st.view!=='session') bar(0);
   $('#title').textContent = st.view==='home' ? 'Business English' : st.view==='settings' ? 'Settings' : DECKS[st.deck]?.short || '';
   app.innerHTML = V[st.view]();
@@ -2632,8 +2644,271 @@ function coachLevelTip(rate){
 actions.coachLevel = d => { cfg.aiLevel=d.v; touchCfg(); toast('Difficulty: '+d.v); render(); };
 SYNC_CFG_KEYS.push('aiLevel','aiProfile');
 
+// ---------- 15. Error journal: every mistake from Speak (Mode 3) and Drills (Mode 4) goes to the "Errors" tab ----------
+// One row per mistake, deduplicated by key. Rows wait in a local queue while offline and are sent with the next call.
+const ERR = { all:'bet3.errs', q:'bet3.errq', up:'bet3.errup', lessons:'bet3.lessons', back:'bet3.errBackfill', hist:'bet3.fixhist' };
+const TYPE_CODE = [[/article/i,'ART'],[/prepos/i,'PREP'],[/tense|aspect|perfect/i,'PERF'],[/verb pattern|complement|gerund|infinitive/i,'COMP'],
+  [/word order/i,'WO'],[/register|tone|polite/i,'REG'],[/false friend/i,'FF'],[/lexis|lexical|collocation|idiom|meaning|word choice|vocab/i,'LEX'],
+  [/spell/i,'OTHER'],[/grammar|agreement|plural|countable|conditional|question|negat|modal|subject/i,'GRAM']];
+const typeCode = t => (TYPE_CODE.find(([re])=>re.test(t||''))||[0,'OTHER'])[1];
+const stripMarks = s => String(s||'').replace(/\[\[(.+?)\]\]/g,(m,x)=>x.split('|')[0]);
+const errAll = () => LS.get(ERR.all, []);
+function errRows(text, base){
+  return parseMarks(text||'').toks.filter(t=>t.k==='E' && t.text && t.fix && t.fix.trim()!=='—' && norm(t.text)!==norm(t.fix))
+    .map(t=>({ ...base, type:(t.type||'').trim(), code:typeCode(t.type), wrong:t.text.trim(), fix:t.fix.trim(), why_ru:(t.why||'').trim() }));
+}
+function errLog(rows){
+  if(!rows.length) return;
+  const all=errAll(), have=new Set(all.map(r=>r.key)), fresh=rows.filter(r=>!have.has(r.key)).map(r=>({ ...r, status:'open' }));
+  if(!fresh.length) return;
+  LS.set(ERR.all, [...all, ...fresh].slice(-3000)); LS.set(ERR.q, [...LS.get(ERR.q,[]), ...fresh]); errFlush();
+}
+let errBusy=false;
+async function errFlush(){
+  if(errBusy || !syncOn()) return;
+  const q=LS.get(ERR.q,[]).slice(0,300), up=LS.get(ERR.up,[]).slice(0,300); if(!q.length && !up.length) return;
+  errBusy=true; let sent=false;
+  try{ const r=await syncPost({ action:'errors', rows:q, updates:up });
+    if(r.ok){ sent=true; LS.set(ERR.q, LS.get(ERR.q,[]).slice(q.length)); LS.set(ERR.up, LS.get(ERR.up,[]).slice(up.length)); } }
+  catch(e){ /* old script or offline: keep the queue */ }
+  errBusy=false;
+  if(sent && (LS.get(ERR.q,[]).length || LS.get(ERR.up,[]).length)) return errFlush();   // more arrived while sending
+}
+async function errPull(){
+  if(!syncOn()) return false;
+  await errFlush();
+  try{ const r=await syncPost({ action:'errorsGet' }); if(!r.ok || !Array.isArray(r.rows)) return false;
+    const local=Object.fromEntries(errAll().map(x=>[x.key,x])), pend=new Set(LS.get(ERR.up,[]).map(u=>u.key));
+    r.rows.forEach(x=>{ if(!x.key) return; local[x.key] = pend.has(x.key) && local[x.key] ? local[x.key] : { ...local[x.key], ...x }; });
+    LS.set(ERR.all, Object.values(local).sort((a,b)=>String(a.date).localeCompare(String(b.date))).slice(-3000)); return true; }
+  catch(e){ return false; }
+}
+function errSetStatus(keys, status){
+  const set=new Set(keys); if(!set.size) return;
+  LS.set(ERR.all, errAll().map(r=>set.has(r.key)?{ ...r, status, updated:today() }:r));
+  LS.set(ERR.up, [...LS.get(ERR.up,[]).filter(u=>!set.has(u.key)), ...keys.map(key=>({ key, status }))]); errFlush();
+}
+const dstr = at => new Date(at).toISOString().slice(0,10);
+function errFromSpeak(at, r, scene){
+  const rows=[];
+  (r?.log||[]).forEach(e=>errRows(e.original,{ date:dstr(at), mode:'speak', task:scene||'', context:e.native||stripMarks(e.original), target:'', level:L().id }).forEach(x=>rows.push(x)));
+  return rows.map((x,i)=>({ ...x, key:`s${at}#${i}` }));
+}
+// Hooks: Speak result saved -> log once. Drills first attempt graded -> log once.
+{ const _sh=spkSaveHist; spkSaveHist=function(result, extra={}){ _sh(result, extra);
+    if(result && !result._logged){ const K=st.K, at=K.histAt||K.at; errLog(errFromSpeak(at, result, K.scene?.cat)); result._logged=true; _sh(result, extra); } }; }
+{ const _cs=coachSRS; coachSRS=function(t){ _cs(t); const C=st.C, r=t.res;
+    errLog(errRows(r.marked, { date:today(), mode:'drill', task:t.fmt, context:r.fix||'', target:t.targets.map(x=>x.deck+':'+x.id).join(' '), level:L().id })
+      .map((x,j)=>({ ...x, key:`d${C.at}#${C.i}#${j}` }))); }; }
+// One-time import of the Speak sessions already stored on this device
+function errBackfill(){
+  if(LS.get(ERR.back,false)) return;
+  const h=spkHist(); h.forEach(s=>{ if(s.result && !s.result._logged){ errLog(errFromSpeak(s.at, s.result, s.scene)); s.result._logged=true; } });
+  LS.set(SPK.hist, h); LS.set(ERR.back, true);
+}
+
+// ---------- 16. Fix My Errors (Mode 5): a short lesson built from your own mistakes, then 8 tasks on that one rule ----------
+// Method: explicit rule first (noticing), then a graded sequence: recognise (choose) > controlled (gap) > repair (fix) > produce (translate).
+// 7 of 8 right marks the errors behind the lesson as drilled; another 7+ on a later day marks them fixed.
+const FIX_MIN = 3;
+const ICON_FIX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>';
+CODE_RU.GRAM = CODE_RU.GRAM || 'Грамматика';
+const FTYPE = { choose:'Choose', gap:'Fill the gap', fix:'Fix the mistake', translate:'Translate' };
+function fixGroups(){
+  const g={};
+  errAll().filter(r=>r.status!=='fixed').forEach(r=>{ const c=r.code||'OTHER'; (g[c]=g[c]||{ code:c, rows:[], drilled:0, last:'' }).rows.push(r); if(r.status==='drilled') g[c].drilled++; if(String(r.date)>g[c].last) g[c].last=String(r.date); });
+  return Object.values(g).map(x=>({ ...x, n:x.rows.length, rows:x.rows.slice().reverse() })).sort((a,b)=>b.n-a.n);
+}
+function fixLessonPrompt(code, rows){
+  return {
+sys:`You are an English grammar coach for a Russian-speaking finance professional, level ${L().id}. From the learner's real mistakes below (category ${code}: ${CODE_RU[code]||code}), find the ONE rule behind most of them and teach it briefly and practically. Russian for explanations, English for examples, no linguistics jargon. Return ONLY JSON:
+{"title_ru":"rule name in Russian, max 8 words","title_en":"short English name of the rule","why_ru":"why a Russian speaker makes this mistake, 1-2 sentences","rule_ru":["2-4 short rule lines in Russian"],"formula":"the pattern in one line, English","pairs":[{"wrong":"short fragment from the learner's mistake","right":"corrected fragment","note_ru":"what changed"}],"trap_ru":"the most common trap, 1 sentence","hook_ru":"a memory hook, 1 sentence","keys":["keys of the mistakes that follow this rule"]}
+Give exactly 3 pairs, taken from the learner's mistakes.`,
+user:rows.map(r=>`${r.key} | wrong: ${r.wrong} | fix: ${r.fix} | context: ${r.context} | note: ${r.why_ru}`).join('\n')
+  };
+}
+function fixTasksPrompt(ls){
+  return {
+sys:`You write grammar practice for ONE rule. Return ONLY JSON.`,
+user:`Rule: "${ls.title_en}". Pattern: ${ls.formula}. Learner: Russian native, finance professional, level ${L().id}. Work context: ${cfg.aiDomain||C_DOMAIN}.
+Write 8 tasks in this order: 2 choose, 2 gap, 2 fix, 2 translate. Business sentences of 8-16 words, common words; the only difficulty is the rule. Vary situations.
+- choose: {"type":"choose","q":"one-line situation in Russian","options":["sentence","sentence","sentence"],"answer":0,"why_ru":"..."}; exactly one option is correct, the others break the rule the way Russian speakers do.
+- gap: {"type":"gap","q":"sentence with ___ for 1-3 missing words","answers":["accepted fill"],"why_ru":"..."}; if nothing is needed in the gap, the answer is "-".
+- fix: {"type":"fix","q":"sentence with exactly one mistake of this rule","answers":["the fully corrected sentence"],"why_ru":"..."}
+- translate: {"type":"translate","q":"Russian sentence","answers":["natural English sentence"],"why_ru":"..."}
+why_ru: one short sentence in Russian that explains the right answer with the rule.
+Return {"tasks":[...]}`
+  };
+}
+function fixCheckPrompt(ls, t, ans){
+  return { sys:'You judge one answer in a grammar drill. Return ONLY JSON.',
+user:`Rule being trained: "${ls.title_en}" (${ls.formula}).
+Task (${t.type}): ${t.q}
+Reference answer(s): ${t.answers.join(' | ')}
+Learner's answer: "${ans}"
+ok = true if the learner's sentence is correct, natural English, keeps the meaning and applies the rule correctly. Ignore punctuation, capitals and small wording differences.
+Return {"ok":true,"why_ru":"one short sentence in Russian; if wrong, name the problem"}` };
+}
+
+function vFix(){ const F=st.F||(st.F={phase:'start'}); return ({ start:fixStart, wait:fixWait, lesson:fixLesson, task:fixTask, sum:fixSum })[F.phase](); }
+function fixStart(){
+  const gs=fixGroups(), all=errAll(), ready=gs.filter(g=>g.n>=FIX_MIN), top=ready[0], h=LS.get(ERR.hist,[]);
+  const cnt=s=>all.filter(r=>r.status===s).length, max=Math.max(1,...gs.map(g=>g.n));
+  return `<div class="stack">
+    <div class="hero spk-hero">
+      <div class="lbl">Mode 5 · Fix My Errors</div>
+      <div class="q">Your own mistakes, one rule at a time.</div>
+      <ol class="spk-how"><li>A short lesson built from your real errors</li><li>Eight tasks: choose, fill the gap, fix, translate</li><li>7 of 8 right marks the errors as drilled; again on another day, fixed</li></ol>
+    </div>
+    ${top?`<button class="btn spk-go" data-act="fixGo" data-c="${esc(top.code)}">${ICON_FIX} Train: ${esc(CODE_RU[top.code]||top.code)} · ${top.n}</button>`
+      :`<div class="note"><b>Not enough errors yet</b>A lesson needs at least ${FIX_MIN} open errors of one kind. Errors are collected automatically from Speak & Record and Context Drills.</div>`}
+    ${gs.length?`<section><h3 class="spk-h">Your error patterns <small class="muted">tap to train</small></h3>
+      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.code)}" ${g.n<FIX_MIN?'disabled':''}><span class="code">${esc(g.code)}</span><span class="t">${esc(CODE_RU[g.code]||g.code)}<small class="muted"> · ${g.drilled?g.drilled+' drilled · ':''}last ${esc(g.last)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
+    </section>`:''}
+    <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.title||'')}</small></span><span class="pill ${x.score>=7?'ok':x.score>=5?'new':'due'}">${x.score}/8</span></div>`).join('')}`:''}
+    <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
+    <p class="hint">Every mistake from Speak and Drills is saved to the "Errors" tab of vocabulary_v2 (one row per mistake), so you can also filter or pivot it there.</p>
+  </div>`;
+}
+function fixWait(){ return `<div class="stack" style="text-align:center;padding-top:30px"><div class="spk-orb"><span></span><span></span><span></span></div><h2>${esc(st.F.wait||'Preparing')}</h2><p class="muted" id="coachStep">${esc(st.F.step||'')}</p></div>`; }
+function lessonBody(ls, compact){
+  return `${compact?'':`<div class="note"><b>В чём ошибка</b>${esc(ls.why_ru||'')}</div>`}
+    <div><div class="eyebrow" style="margin-bottom:6px">Правило</div><ul class="f-rule">${(ls.rule_ru||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+    ${ls.formula?`<div class="spk-native"><span>Pattern</span>${esc(ls.formula)}</div>`:''}
+    ${compact?'':`<div><div class="eyebrow" style="margin-bottom:6px">Ваши ошибки → как правильно</div>${(ls.pairs||[]).map(p=>`<div class="f-pair"><div class="w">${esc(p.wrong)}</div><div class="r">${esc(p.right)} ${audioBtn(p.right)}</div>${p.note_ru?`<div class="muted" style="font-size:.88rem">${esc(p.note_ru)}</div>`:''}</div>`).join('')}</div>
+    ${ls.trap_ru?`<div class="note warn-note"><b>Ловушка</b>${esc(ls.trap_ru)}</div>`:''}
+    ${ls.hook_ru?`<div class="spk-win" style="margin:0"><b>Как запомнить</b><div class="muted" style="font-size:.92rem;margin-top:2px">${esc(ls.hook_ru)}</div></div>`:''}`}`;
+}
+function fixLesson(){
+  const F=st.F, ls=F.lesson;
+  return `<div class="stack"><div class="card c-card">
+    <div class="spk-kind">Lesson · ${esc(F.code)} · from ${F.rows.length} of your errors</div>
+    <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
+    ${lessonBody(ls,false)}
+    <div class="actions"><button class="btn ghost" data-act="fixRelesson" style="flex:0 0 auto">New lesson</button><button class="btn" data-act="fixTasks">Start 8 tasks</button></div>
+  </div></div>`;
+}
+function fixTask(){
+  const F=st.F, t=F.tasks[F.i], r=t.res, last=F.i===F.tasks.length-1;
+  const q = t.type==='gap' ? esc(t.q).replace(/_{2,}/,'<span class="blank">&nbsp;?&nbsp;</span>') : esc(t.q);
+  const zero=t.type==='gap' && t.answers.some(a=>a.trim()==='-');
+  return `<div class="stack">
+    <div class="spk-dots">${F.tasks.map((x,i)=>`<span class="${x.res?(x.res.ok?'done':'warnd'):i===F.i?'on':''}"></span>`).join('')}<em>${F.i+1} / ${F.tasks.length}</em></div>
+    <div class="card c-card">
+      <div class="row" style="justify-content:space-between"><div class="spk-kind" style="margin:0">${FTYPE[t.type]}</div><button class="btn ghost small" data-act="fixRule">${F.showRule?'Hide rule':'Rule'}</button></div>
+      ${F.showRule?`<div class="f-mini">${lessonBody(F.lesson,true)}</div>`:''}
+      <div class="c-src ${t.type==='translate'||t.type==='choose'?'ru':''}">${q}</div>
+      ${t.type==='choose' ? `<div class="stack" style="gap:10px">${t.options.map((o,n)=>`<button class="opt ${r?(n===t.answer?'right':n===t.pick?'wrong':''):''}" data-act="fixPick" data-n="${n}" ${r?'disabled':''}><span class="k">${n+1}</span><span class="serif">${esc(o)}</span></button>`).join('')}</div>`
+      : r ? `<div class="c-fix"><span>Your answer</span>${esc(t.ans)}</div>`
+      : `<div class="c-in"><textarea id="fAns" rows="${t.type==='gap'?1:3}" spellcheck="false" autocomplete="off" placeholder="${t.type==='gap'?'Missing words'+(zero?' (type - if nothing is needed)':''):t.type==='fix'?'Write the corrected sentence':'Your English sentence'}">${esc(F.draft||'')}</textarea></div>
+        <div class="actions"><button class="btn ghost" data-act="fixGiveUp" style="flex:0 0 auto">Show answer</button><button class="btn" data-act="fixCheck">Check</button></div>`}
+    </div>
+    ${r?`<div class="card c-fb ${r.ok?'ok':'bad'}">
+      <div class="row" style="gap:10px;flex-wrap:nowrap;align-items:center"><div class="c-grade ${r.ok?'ok':'bad'}">${r.ok?'✓':'×'}</div><div><b>${r.ok?'Right':'Not quite'}</b>${r.why?`<div class="muted" style="font-size:.92rem">${esc(r.why)}</div>`:''}</div></div>
+      ${t.type!=='choose'?`<div class="spk-native"><span>Answer</span>${esc(t.type==='gap'?fillGap(t.q,t.answers[0]):t.answers[0])} ${audioBtn(t.type==='gap'?fillGap(t.q,t.answers[0]):t.answers[0])}</div>`:''}
+      ${t.why_ru?`<div class="note"><b>Почему</b>${esc(t.why_ru)}</div>`:''}
+      <div class="actions">${!r.ok&&t.type!=='choose'&&t.type!=='gap'?'<button class="btn ghost" data-act="fixMine" style="flex:0 0 auto">My answer is also right</button>':''}<button class="btn" data-act="fixNext">${last?'See result':'Next'}</button></div>
+    </div>`:''}
+  </div>`;
+}
+const fillGap = (q,a) => q.replace(/_{2,}/, a.trim()==='-'?'':a).replace(/\s+/g,' ').replace(/\s+([.,;:!?])/g,'$1').trim();
+function fixSum(){
+  const F=st.F, n=F.tasks.length, ok=F.tasks.filter(t=>t.res?.ok).length;
+  return `<div class="stack spk-res">
+    <div class="summary-hero spk-sum"><div class="eyebrow">Fix My Errors · ${esc(CODE_RU[F.code]||F.code)}</div>
+      <div class="n">${ok}<small>/${n}</small></div><div class="muted">${esc(F.lesson.title_ru||'')}</div></div>
+    <div class="note ${ok>=7?'':'warn-note'}"><b>${ok>=7?(F.promoted?.fixed?`${F.promoted.fixed} errors marked fixed`:`${F.promoted?.drilled||0} errors marked drilled`):'Not yet'}</b>${ok>=7?(F.promoted?.fixed?'You got it right on two different days. These errors leave your training list.':'Repeat on another day with 7 or more to mark them fixed.'):'Re-read the rule and try a new set. 7 of 8 moves the errors forward.'}</div>
+    <section><h3 class="spk-h">Task by task</h3>${F.tasks.map(t=>`<div class="spk-t ${t.res?.ok?'ok':'bad'}"><div class="spk-ti">${t.res?.ok?'✓':'×'}</div><div class="meta"><div class="muted" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">${FTYPE[t.type]}</div>
+      <span class="serif">${esc(t.type==='choose'?t.options[t.answer]:t.type==='gap'?fillGap(t.q,t.answers[0]):t.answers[0])}</span></div></div>`).join('')}</section>
+    <div class="actions"><button class="btn ghost" data-act="fixLessonAgain">Read the rule</button><button class="btn" data-act="fixMore">New 8 tasks</button></div>
+    <button class="btn ghost" data-act="fixHome">All patterns</button>
+  </div>`;
+}
+
+// ---- 16b. Actions ----
+const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
+actions.openFix = fixOpen;
+actions.fixHome = () => { st.F={phase:'start'}; go('fix'); };
+actions.fixPull = async () => { toast('Updating…'); const ok=await errPull(); toast(ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
+actions.fixGo = async d => {
+  const g=fixGroups().find(x=>x.code===d.c); if(!g || g.n<FIX_MIN) return;
+  const rows=g.rows.slice(0,15), cache=LS.get(ERR.lessons,{}), c=cache[d.c];
+  st.F={ phase:'wait', wait:'Writing your lesson', code:d.c, rows };
+  if(c && Date.now()-c.at<30*DAY && g.n-c.n<5 && !d.fresh){ st.F.lesson=c.lesson; st.F.phase='lesson'; return go('fix'); }
+  go('fix');
+  try{ const ls=await aiJSON(fixLessonPrompt(d.c, rows), { temp:0.3, max:2500, label:'Lesson · ', kind:'eval' });
+    ['rule_ru','pairs','keys'].forEach(k=>{ if(!Array.isArray(ls[k])) ls[k]=[]; });
+    if(!ls.title_ru || !ls.rule_ru.length) throw new Error('empty lesson');
+    cache[d.c]={ at:Date.now(), n:g.n, lesson:ls }; LS.set(ERR.lessons, cache);
+    st.F.lesson=ls; st.F.phase='lesson'; }
+  catch(e){ toast('Could not write the lesson: '+e.message.slice(0,160)); st.F={phase:'start'}; }
+  if(st.view==='fix') go('fix');
+};
+actions.fixRelesson = () => actions.fixGo({ c:st.F.code, fresh:true });
+actions.fixLessonAgain = () => { st.F.phase='lesson'; go('fix'); };
+actions.fixMore = () => actions.fixTasks();
+actions.fixTasks = async () => {
+  const F=st.F; F.phase='wait'; F.wait='Writing 8 tasks'; F.step=''; go('fix');
+  try{ const out=await aiJSON(fixTasksPrompt(F.lesson), { temp:0.7, max:4000, label:'Tasks · ', kind:'eval' });
+    const tasks=(out.tasks||[]).map(t=>({ ...t, type:String(t.type||'').toLowerCase(), q:String(t.q||''), answers:(Array.isArray(t.answers)?t.answers:[t.answers]).filter(a=>a!=null).map(String), options:Array.isArray(t.options)?t.options.map(String):[], answer:+t.answer||0 }))
+      .filter(t=>FTYPE[t.type] && t.q && (t.type==='choose' ? t.options.length>=2 && t.answer<t.options.length : t.answers.length))
+      .filter(t=>t.type!=='gap' || /_{2,}/.test(t.q));
+    if(tasks.length<4) throw new Error('too few usable tasks');
+    Object.assign(F, { tasks, i:0, phase:'task', draft:'', showRule:false, at:Date.now() }); }
+  catch(e){ toast('Could not write tasks: '+e.message.slice(0,160)); F.phase='lesson'; }
+  if(st.view==='fix') go('fix');
+};
+actions.fixRule = () => { st.F.draft=$('#fAns')?.value||st.F.draft; st.F.showRule=!st.F.showRule; render(); };
+actions.fixPick = d => { const t=st.F.tasks[st.F.i]; if(t.res) return; t.pick=+d.n; t.res={ ok:t.pick===t.answer }; buzz(t.res.ok?15:[30,40,30]); render(); };
+actions.fixGiveUp = () => { const t=st.F.tasks[st.F.i]; t.ans='(shown)'; t.res={ ok:false }; render(); };
+actions.fixMine = () => { const t=st.F.tasks[st.F.i]; t.res={ ok:true, why:'Засчитано по вашей оценке.' }; render(); };
+actions.fixCheck = async () => {
+  const F=st.F, t=F.tasks[F.i], el=$('#fAns'), ans=(el?.value||'').trim();
+  if(!ans) return toast(t.type==='gap'?'Type the missing words, or - if nothing is needed.':'Write your answer first.');
+  t.ans=ans; F.draft='';
+  const z=x=>norm(x.trim()==='-'?'':x), hit=t.answers.some(a=> t.type==='gap' ? (z(a)===z(ans==='—'||ans==='0'?'-':ans)) : norm(a)===norm(ans));
+  if(hit || t.type==='gap'){ t.res={ ok:hit }; buzz(hit?15:[30,40,30]); return render(); }
+  const btn=document.querySelector('[data-act="fixCheck"]'); if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
+  try{ const r=await aiJSON(fixCheckPrompt(F.lesson,t,ans), { temp:0, max:600, label:'Check · ', kind:'gen' }); t.res={ ok:!!r.ok, why:r.why_ru||'' }; }
+  catch(e){ t.res={ ok:false, why:'Не удалось проверить автоматически. Сравните с ответом и нажмите «My answer is also right», если совпадает по смыслу.' }; }
+  buzz(t.res.ok?15:[30,40,30]); if(st.view==='fix') render();
+};
+actions.fixNext = () => { const F=st.F; if(F.i<F.tasks.length-1){ F.i++; F.showRule=false; return go('fix'); } fixFinish(); };
+function fixFinish(){
+  const F=st.F, ok=F.tasks.filter(t=>t.res?.ok).length; F.phase='sum'; F.promoted={ drilled:0, fixed:0 };
+  if(ok>=7){
+    const keys=new Set(F.lesson.keys?.length?F.lesson.keys:F.rows.map(r=>r.key)), rows=errAll().filter(r=>keys.has(r.key) && r.status!=='fixed');
+    const toFix=rows.filter(r=>r.status==='drilled' && String(r.updated||r.date)<today()).map(r=>r.key), toDrill=rows.filter(r=>r.status!=='drilled').map(r=>r.key);
+    errSetStatus(toFix,'fixed'); errSetStatus(toDrill,'drilled'); F.promoted={ drilled:toDrill.length, fixed:toFix.length };
+  }
+  const h=LS.get(ERR.hist,[]); h.unshift({ at:F.at, code:F.code, title:F.lesson.title_ru, score:ok }); LS.set(ERR.hist, h.slice(0,30));
+  markActive(); go('fix');
+}
+function fixBack(){
+  const ph=st.F?.phase;
+  if(ph==='wait') return toast('One moment, the coach is working.');
+  if(ph==='task'){ if(!confirm('Leave this set?')) return; st.F.phase='lesson'; return go('fix'); }
+  if(ph==='lesson'||ph==='sum'){ st.F={phase:'start'}; return go('fix'); }
+  go('home');
+}
+
+// ---- 16c. Wiring ----
+{ const _home=vHome; vHome=function(){ const open=errAll().filter(r=>r.status!=='fixed').length, ready=fixGroups().some(g=>g.n>=FIX_MIN);
+    const tile=`<button class="deck" data-act="openFix">
+      <div class="ico" style="background:var(--surface-2);color:var(--fg)">${ICON_FIX}</div>
+      <div class="meta"><h3>Fix My Errors</h3><div class="muted" style="font-size:.85rem">Mode 5 · a lesson and 8 tasks on your own mistakes</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${open?'due':''}">${open} open errors</span>${ready?'<span class="pill ok">lesson ready</span>':''}</div></div></button>`;
+    return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
+{ const _ar=afterRender; afterRender=function(){ _ar();
+    if(st.view==='fix'){ $('#title').textContent='Fix'; const F=st.F; bar(F?.tasks&&F.phase==='task'?(F.i+(F.tasks[F.i]?.res?1:0))/F.tasks.length*100:F?.phase==='sum'?100:0);
+      const a=$('#fAns'); if(a){ a.oninput=()=>{ F.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey||F.tasks[F.i].type==='gap')){ e.preventDefault(); actions.fixCheck(); } }; if(!('ontouchstart' in window)) a.focus(); } } }; }
+{ const _back=actions.back; actions.back=()=>{ if(st.view==='fix') return fixBack(); _back(); }; }
+
+errBackfill();
 render();
-if(syncOn()){ syncNow({silent:true}); ensureKeys(); }
+if(syncOn()){ syncNow({silent:true}); ensureKeys(); errFlush(); }
+addEventListener('online', ()=>errFlush());
 </script>
 </body>
 </html>
