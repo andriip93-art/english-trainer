@@ -548,6 +548,12 @@ body.sess .actions .audio{width:54px;height:54px}
 .f-pair .r{font-family:var(--serif);color:var(--navy);font-weight:600;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .f-pair .r .audio{width:30px;height:30px;flex-shrink:0}
 .f-mini{display:grid;gap:10px;background:var(--surface-2);border-radius:6px;padding:12px;animation:enter .2s var(--ease)}
+
+.f-q{font-family:var(--serif);font-size:1.15rem;line-height:1.75}
+.f-q.ru{border-left:3px solid var(--primary);padding-left:12px}
+.f-gap{display:inline-block;min-width:3.2em;padding:0 6px;margin:0 2px;border-bottom:2px solid var(--primary);text-align:center;color:var(--primary);font-weight:600;line-height:1.3}
+.f-gap.ok{color:var(--ok);border-color:var(--ok)}
+.f-gap.bad{color:var(--bad);border-color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
 </style>
 </head>
 <body>
@@ -2797,16 +2803,17 @@ function fixLesson(){
 }
 function fixTask(){
   const F=st.F, t=F.tasks[F.i], r=t.res, last=F.i===F.tasks.length-1;
-  const q = t.type==='gap' ? esc(t.q).replace(/_{2,}/,'<span class="blank">&nbsp;?&nbsp;</span>') : esc(t.q);
+  const gapFill = r ? (t.ans && t.ans!=='(shown)' ? (t.ans.trim()==='-'?'∅':t.ans) : t.answers[0].trim()==='-'?'∅':t.answers[0]) : '?';
+  const q = t.type==='gap' ? esc(t.q).replace(/_{2,}/,`<span class="f-gap ${r&&t.ans!=='(shown)'?(r.ok?'ok':'bad'):''}">${esc(gapFill)}</span>`) : esc(t.q);
   const zero=t.type==='gap' && t.answers.some(a=>a.trim()==='-');
   return `<div class="stack">
     <div class="spk-dots">${F.tasks.map((x,i)=>`<span class="${x.res?(x.res.ok?'done':'warnd'):i===F.i?'on':''}"></span>`).join('')}<em>${F.i+1} / ${F.tasks.length}</em></div>
     <div class="card c-card">
       <div class="row" style="justify-content:space-between"><div class="spk-kind" style="margin:0">${FTYPE[t.type]}</div><button class="btn ghost small" data-act="fixRule">${F.showRule?'Hide rule':'Rule'}</button></div>
       ${F.showRule?`<div class="f-mini">${lessonBody(F.lesson,true)}</div>`:''}
-      <div class="c-src ${t.type==='translate'||t.type==='choose'?'ru':''}">${q}</div>
+      <div class="f-q ${t.type==='translate'||t.type==='choose'?'ru':''}">${q}</div>
       ${t.type==='choose' ? `<div class="stack" style="gap:10px">${t.options.map((o,n)=>`<button class="opt ${r?(n===t.answer?'right':n===t.pick?'wrong':''):''}" data-act="fixPick" data-n="${n}" ${r?'disabled':''}><span class="k">${n+1}</span><span class="serif">${esc(o)}</span></button>`).join('')}</div>`
-      : r ? `<div class="c-fix"><span>Your answer</span>${esc(t.ans)}</div>`
+      : r ? (t.ans && t.ans!=='(shown)' && t.type!=='gap' ? `<div class="c-fix"><span>Your answer</span>${esc(t.ans)}</div>` : '')
       : `<div class="c-in"><textarea id="fAns" rows="${t.type==='gap'?1:3}" spellcheck="false" autocomplete="off" placeholder="${t.type==='gap'?'Missing words'+(zero?' (type - if nothing is needed)':''):t.type==='fix'?'Write the corrected sentence':'Your English sentence'}">${esc(F.draft||'')}</textarea></div>
         <div class="actions"><button class="btn ghost" data-act="fixGiveUp" style="flex:0 0 auto">Show answer</button><button class="btn" data-act="fixCheck">Check</button></div>`}
     </div>
