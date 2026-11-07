@@ -8,10 +8,19 @@
  *   g               synced settings                    (last write wins)
  *   sv = server time of the last change, used so each device only downloads what is new.
  *
- * Setup: set TOKEN below, then Deploy > New deployment > Web app,
- *        Execute as: Me, Who has access: Anyone. Copy the /exec URL into the app (Settings > Sync).
+ * Setup: Project Settings > Script Properties, add:
+ *          TOKEN       a long random string (the app asks for it once per device)
+ *          GEMINI_KEY  your Gemini API key (paid project: no training on your data)   optional
+ *          GROQ_KEY    your Groq API key (backup for text analysis)                    optional
+ *        Then Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone.
+ *        Copy the /exec URL into the app (Settings > Sync). After editing this file later use
+ *        Deploy > Manage deployments > Edit > Version: New version, so the URL stays the same.
+ *
+ * Key vault: action "keys" hands the AI keys to a device that knows the TOKEN, so each phone or laptop
+ * gets them automatically and nobody types a key twice. Keys never live in the repo or in the sheet.
  */
-const TOKEN = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';
+const TOKEN_FALLBACK = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';   // used only if the TOKEN script property is not set
+function token_() { return PropertiesService.getScriptProperties().getProperty('TOKEN') || TOKEN_FALLBACK; }
 const TAB = 'Progress';
 
 function tab_() {
@@ -42,11 +51,18 @@ function doGet() {
 }
 
 function doPost(e) {
+  let req;
+  try { req = JSON.parse(e.postData.contents); } catch (err) { return json_({ error: 'bad request' }); }
+  if (!req || req.token !== token_() || token_() === 'CHANGE_ME_TO_A_LONG_RANDOM_STRING') { Utilities.sleep(800); return json_({ error: 'bad token' }); }
+
+  if (req.action === 'keys') {
+    const p = PropertiesService.getScriptProperties();
+    return json_({ ok: true, gemini: p.getProperty('GEMINI_KEY') || '', groq: p.getProperty('GROQ_KEY') || '' });
+  }
+
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
-    const req = JSON.parse(e.postData.contents);
-    if (req.token !== TOKEN) return json_({ error: 'bad token' });
     const s = tab_();
     const now = Date.now();
 

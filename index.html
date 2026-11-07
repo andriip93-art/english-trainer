@@ -384,6 +384,158 @@ body.bul .progress{display:none}
 .pc-say svg{width:15px;height:15px}
 .skip-ex{display:block;margin-top:6px;margin-left:auto;border:1px solid var(--fg);background:transparent;border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:600}
 body.sess .actions .audio{width:54px;height:54px}
+
+/* ---- Mode 3 · Speak & Record. Same paper/ink/one-red language: red = live recording and errors, navy = what worked ---- */
+.spk-hero .q{font-size:clamp(1.25rem,5vw,1.6rem)}
+.spk-how{margin:10px 0 0;padding-left:1.2em;font-size:.9rem;color:var(--muted);display:grid;gap:2px}
+.spk-how li::marker{color:var(--primary);font-weight:700}
+.warn-note{border-left-color:var(--warn)!important;background:var(--warn-soft)}
+.warn-note a{color:var(--navy);font-weight:600}
+.spk-past .ico.spk-score{font-family:var(--serif);font-weight:700;font-size:1.05rem;background:var(--surface-2);color:var(--fg)}
+.spk-score.ok{background:var(--ok-soft)!important;color:var(--ok)!important}.spk-score.warn{background:var(--warn-soft)!important;color:var(--warn)!important}.spk-score.bad{background:var(--bad-soft)!important;color:var(--bad)!important}
+.spk-dots{display:flex;gap:6px;align-items:center}
+.spk-dots span{flex:1;height:4px;border-radius:99px;background:var(--line);transition:background .3s}
+.spk-dots span.done{background:var(--fg)}.spk-dots span.on{background:var(--primary)}
+.spk-dots em{font-style:normal;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:4px}
+.spk-card{border-top:3px solid var(--fg)}
+.spk-kind{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin-bottom:8px}
+.spk-targets{display:flex;flex-wrap:wrap;gap:8px}
+.spk-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px 7px 9px;font-family:var(--serif);font-size:.95rem;text-align:left;transition:all .2s var(--ease)}
+.spk-chip i{width:16px;height:16px;border-radius:50%;border:1.6px solid var(--line);flex-shrink:0;position:relative;transition:all .2s}
+.spk-chip.on{border-color:var(--navy);background:var(--navy-soft)}
+.spk-chip.on i{background:var(--navy);border-color:var(--navy)}
+.spk-chip.on i::after{content:'';position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.spk-chip.on span{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--navy) 50%,transparent)}
+.spk-scene .eyebrow{font-weight:700;color:var(--fg)}
+.spk-beats{margin:0;padding:0;list-style:none;counter-reset:b;display:grid;gap:10px}
+.spk-beats li{counter-increment:b;display:grid;grid-template-columns:28px 1fr;column-gap:10px;font-size:.92rem}
+.spk-beats li::before{content:counter(b);grid-row:span 3;width:24px;height:24px;border-radius:50%;background:var(--fg);color:var(--bg);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.spk-beats b{font-weight:600}.spk-beats span{color:var(--muted)}
+.spk-beats em{font-style:normal;font-family:var(--serif);color:var(--primary);font-size:.9rem}
+.spk-mic-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0 4px}
+.spk-mic{width:88px;height:88px;border-radius:50%;border:0;background:var(--primary);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px var(--primary-soft),0 10px 24px -10px var(--primary);transition:transform .15s var(--ease);animation:spkBreath 2.6s ease-in-out infinite}
+.spk-mic svg{width:36px;height:36px}.spk-mic:active{transform:scale(.94)}
+@keyframes spkBreath{50%{box-shadow:0 0 0 14px var(--primary-soft),0 10px 24px -10px var(--primary)}}
+.spk-upload{align-self:center;font-size:.86rem;color:var(--navy);font-weight:600;cursor:pointer;text-align:center}
+.spk-upload input{display:none}
+.spk-rec{align-items:center;text-align:center;padding-top:8px}
+.spk-status{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary)}
+.spk-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);animation:spkBlink 1.1s steps(2,start) infinite}
+.spk-rec.paused .spk-status{color:var(--muted)}.spk-rec.paused .spk-dot{background:var(--muted);animation:none}
+@keyframes spkBlink{to{visibility:hidden}}
+.spk-time{font-family:var(--serif);font-weight:600;font-size:clamp(3.4rem,17vw,4.6rem);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.spk-time.sm{font-size:2rem;margin-top:2px}
+.spk-rec.paused .spk-time{color:var(--muted);animation:spkPulse 1.6s ease-in-out infinite}
+@keyframes spkPulse{50%{opacity:.45}}
+.spk-wave{width:100%;height:72px;display:block}
+.spk-ctrl{display:flex;align-items:center;justify-content:center;gap:34px;margin:4px 0 8px}
+.spk-stop{width:78px;height:78px;border-radius:50%;border:4px solid var(--fg);background:var(--bg);color:var(--primary);display:flex;align-items:center;justify-content:center;transition:transform .15s var(--ease)}
+.spk-stop svg{width:30px;height:30px}.spk-stop:active{transform:scale(.93)}
+.spk-side{border:0;background:transparent;color:var(--fg);display:flex;flex-direction:column;align-items:center;gap:4px;width:64px}
+.spk-side svg{width:26px;height:26px;padding:12px;box-sizing:content-box;border-radius:50%;background:var(--surface-2)}
+.spk-side small{font-size:.74rem;color:var(--muted);font-weight:600}
+.spk-rec .spk-targets{justify-content:center}
+.spk-peek{width:100%;text-align:left;padding:14px 16px}.spk-peek summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.spk-peek .spk-scene{margin-top:10px}
+.btn svg{width:18px;height:18px;flex-shrink:0}
+.spk-take{display:grid;gap:14px}.spk-take audio{width:100%}
+.spk-go{min-height:58px;font-size:1.02rem}
+.spk-orb{position:relative;width:96px;height:96px;margin:0 auto 18px}
+.spk-orb span{position:absolute;inset:0;border-radius:50%;border:2px solid var(--primary);opacity:0;animation:spkRing 2.4s var(--ease) infinite}
+.spk-orb span:nth-child(2){animation-delay:.8s}.spk-orb span:nth-child(3){animation-delay:1.6s}
+@keyframes spkRing{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.1);opacity:0}}
+.spk-sum .n{font-size:4rem}.spk-sum .n small{font-size:1.6rem;color:var(--muted);font-weight:500}
+.spk-head{font-family:var(--serif);font-size:1.1rem;line-height:1.4;margin:14px auto 0;max-width:34ch;text-wrap:balance}
+.spk-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.spk-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.spk-m{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:6px;padding:10px 10px 9px;display:flex;flex-direction:column;gap:1px}
+.spk-m b{font-family:var(--serif);font-size:1.6rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.spk-m span{font-size:.78rem;font-weight:600}.spk-m small{font-size:.72rem;color:var(--muted)}
+.spk-m.ok{border-top-color:var(--ok)}.spk-m.ok b{color:var(--ok)}
+.spk-m.warn{border-top-color:var(--warn)}.spk-m.warn b{color:var(--warn)}
+.spk-m.bad{border-top-color:var(--bad)}.spk-m.bad b{color:var(--bad)}
+.spk-h{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:6px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--fg)}
+.spk-h small{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.serif{font-family:var(--serif)}
+.spk-t{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.spk-t .meta{flex:1;min-width:0}
+.spk-ti{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem}
+.spk-t.ok .spk-ti{background:var(--ok-soft);color:var(--ok)}.spk-t.warn .spk-ti{background:var(--warn-soft);color:var(--warn)}.spk-t.bad .spk-ti{background:var(--bad-soft);color:var(--bad)}
+.spk-q{font-family:var(--serif);font-style:italic;margin-top:6px;color:var(--fg)}
+.spk-native{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-family:var(--serif);font-size:.98rem;background:var(--navy-soft);border-radius:4px;padding:8px 10px}
+.spk-native>span{font-family:var(--font);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin-right:2px}
+.spk-native .audio{width:28px;height:28px;margin-left:auto}
+.spk-win{border-left:3px solid var(--navy);padding:6px 0 6px 12px;margin-bottom:10px;font-family:var(--serif)}
+.spk-win .muted{font-family:var(--font)}
+.spk-p{border-bottom:1px solid var(--line)}
+.spk-p summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px 0 14px;position:relative}
+.spk-p summary::-webkit-details-marker{display:none}
+.spk-p .code{font-size:.72rem;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:var(--fg);color:var(--bg)}
+.spk-p.high .code{background:var(--primary);color:var(--primary-ink)}
+.spk-p .t{font-weight:600;font-size:.94rem}.spk-p .c{font-family:var(--serif);font-weight:700;font-variant-numeric:tabular-nums}
+.spk-p summary i{position:absolute;left:0;bottom:6px;height:3px;border-radius:99px;background:var(--primary);opacity:.8}
+.spk-p:not(.high) summary i{background:var(--fg);opacity:.35}
+.spk-pb{padding:0 0 14px;font-size:.93rem}.spk-pb p{margin:0 0 8px}
+.spk-ex{display:flex;flex-wrap:wrap;gap:6px}.spk-ex span{font-family:var(--serif);font-size:.9rem;background:var(--bad-soft);border-radius:4px;padding:2px 8px;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 55%,transparent)}
+.spk-line{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.spk-line .meta{flex:1;min-width:0}
+.spk-lt{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:4px;width:38px;flex-shrink:0}
+.spk-orig{font-family:var(--serif);font-size:1.02rem;line-height:1.7}
+.tok{font:inherit;border:0;padding:0 2px;border-radius:3px;background:transparent;cursor:pointer;color:inherit}
+.tok.e{background:var(--bad-soft);box-shadow:inset 0 -2px 0 var(--bad)}
+.tok.s{background:var(--navy-soft);box-shadow:inset 0 -2px 0 var(--navy)}
+.tok.open{outline:2px solid currentColor;outline-offset:1px}
+.spk-tx{margin-top:8px;font-size:.9rem;border-radius:4px;padding:10px 12px;background:var(--surface-2);border-left:3px solid var(--bad);animation:enter .2s var(--ease)}
+.spk-tx.s{border-left-color:var(--navy)}.spk-tx .fix{color:var(--ok)}
+.spk-pr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.spk-pr b{font-family:var(--serif);font-size:1.1rem}.spk-pr .audio{width:28px;height:28px}
+.spk-pr .ipa{font-family:var(--serif);color:var(--muted)}
+.spk-nv{border-top:3px solid var(--navy)}.spk-nv p{font-size:1.04rem;line-height:1.65;margin:10px 0 0}
+.spk-next{margin:0;padding-left:1.3em;display:grid;gap:8px;font-size:.95rem}
+.spk-next li::marker{font-family:var(--serif);font-weight:700;color:var(--primary)}
+.spk-trans p{margin:8px 0;font-family:var(--serif);font-size:.95rem}
+.spk-trans span{font-family:var(--font);font-size:.74rem;color:var(--muted);margin-right:8px;font-variant-numeric:tabular-nums}
+.spk-in{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-family:ui-monospace,monospace;font-size:.86rem}
+@media (prefers-reduced-motion:reduce){.spk-mic,.spk-dot,.spk-orb span,.spk-rec.paused .spk-time{animation:none}}
+
+/* ---- Mode 4 · Context Drills. Ink for the task, red for errors, navy for the native model ---- */
+.c-fmts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.c-fmt{display:grid;grid-template-columns:26px 1fr;column-gap:8px;row-gap:1px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 12px;color:var(--fg);transition:all .18s var(--ease)}
+.c-fmt i{grid-row:span 2;font-style:normal;font-weight:700;width:26px;height:26px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.c-fmt b{font-size:.95rem}.c-fmt span{font-size:.78rem;color:var(--muted);line-height:1.3}
+.c-fmt.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}.c-fmt.on i{background:var(--primary);color:var(--primary-ink)}
+.c-pat{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0 13px;position:relative;border-bottom:1px solid var(--line)}
+.c-pat .code,.c-code{font-size:.72rem;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:var(--fg);color:var(--bg)}
+.c-pat:first-of-type .code{background:var(--primary);color:var(--primary-ink)}
+.c-pat .t{font-weight:600;font-size:.93rem}.c-pat .c{font-family:var(--serif);font-weight:700;font-variant-numeric:tabular-nums}
+.c-pat i{position:absolute;left:0;bottom:5px;height:3px;border-radius:99px;background:var(--fg);opacity:.3}
+.c-pat:first-of-type i{background:var(--primary);opacity:.8}
+.c-past{cursor:default}
+.c-card{border-top:3px solid var(--fg);display:grid;gap:14px}
+.c-src{font-family:var(--serif);font-size:1.12rem;line-height:1.55;display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.c-src .audio{flex-shrink:0;width:32px;height:32px}
+.c-src.ru{border-left:3px solid var(--primary);padding-left:12px}
+.c-strike{text-decoration:underline wavy color-mix(in srgb,var(--bad) 55%,transparent);text-underline-offset:4px}
+.c-ru{font-size:.92rem;color:var(--muted)}.c-ru summary{cursor:pointer;font-weight:600;color:var(--navy);font-size:.84rem}
+.c-tg{display:grid;gap:10px}
+.c-tgi{background:var(--surface-2);border-radius:6px;padding:10px 12px;display:grid;gap:2px}
+.c-sk{font-size:1.2rem;letter-spacing:.04em}
+.c-ask{display:grid;gap:8px}
+.c-in{position:relative}.c-in textarea{font-family:var(--serif);font-size:1.08rem;padding-right:56px}
+.c-mic{position:absolute;right:8px;bottom:10px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface-2);color:var(--fg);display:flex;align-items:center;justify-content:center}
+.c-mic svg{width:20px;height:20px}.c-mic.on{background:var(--primary);color:var(--primary-ink);animation:spkBreath 1.6s ease-in-out infinite}
+.c-fb{display:grid;gap:12px;border-top:3px solid var(--line);animation:enter .25s var(--ease)}
+.c-fb.ok{border-top-color:var(--ok)}.c-fb.warn{border-top-color:var(--warn)}.c-fb.bad{border-top-color:var(--bad)}
+.c-grade{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:1.6rem}
+.c-grade.ok{background:var(--ok-soft);color:var(--ok)}.c-grade.warn{background:var(--warn-soft);color:var(--warn)}.c-grade.bad{background:var(--bad-soft);color:var(--bad)}
+.c-fix{font-family:var(--serif);font-size:.98rem;border:1px dashed var(--line);border-radius:4px;padding:8px 10px}
+.c-fix>span{display:block;font-family:var(--font);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.c-fb .note b .c-code{margin-right:4px}
+.spk-dots span.warnd{background:var(--warn)}
+.c-keys{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.c-keys>div{border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:grid;gap:2px}
+.c-keys span{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.c-keys b{font-size:.88rem;font-weight:600}.c-keys b.ok{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -777,7 +929,7 @@ function render(){
   document.body.classList.toggle('bul', st.view==='session' && st.S?.step==='bullet');
   $('#backBtn').innerHTML = document.body.classList.contains('sess') ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
   $('#backBtn').setAttribute('aria-label', document.body.classList.contains('sess')?'End session':'Back');
-  const V = { home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
+  const V = { speak:()=>vSpeak(), coach:()=>vCoach(), home:vHome, deck:vDeck, dict:vDict, settings:vSettings, session:vSession, loading:()=>'<div class="spin"></div>' };
   if(st.view!=='session') bar(0);
   $('#title').textContent = st.view==='home' ? 'Business English' : st.view==='settings' ? 'Settings' : DECKS[st.deck]?.short || '';
   app.innerHTML = V[st.view]();
@@ -1347,7 +1499,7 @@ function vSettings(){
   <div class="card stack"><h3>Sync across devices</h3><p class="hint" style="margin:0">Progress, intervals and practice settings are stored in the "Progress" tab of vocabulary_v2 through your Google Apps Script, so every device shows the same cards. Setup steps are in the repo README (apps-script/Code.gs).</p>
     <label class="eyebrow" for="syncU">Apps Script web app URL (ends with /exec)</label><input type="url" id="syncU" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(cfg.syncUrl||'')}">
     <label class="eyebrow" for="syncT">Token (the same as TOKEN in the script)</label><input type="password" id="syncT" autocomplete="off" spellcheck="false" value="${esc(cfg.syncToken||'')}">
-    <div class="row"><button class="btn small" data-act="saveSync">Save and sync</button><button class="btn ghost small" data-act="syncNow">Sync now</button></div>
+    <div class="row"><button class="btn small" data-act="saveSync">Save and sync</button><button class="btn ghost small" data-act="syncNow">Sync now</button>${syncOn()?'<button class="btn ghost small" data-act="copySetup">Copy setup link for another device</button>':''}</div>
     <p class="hint" style="margin:0">${syncLine()}</p></div>
   <div class="card stack"><h3>Reset</h3><p class="hint" style="margin:0">${Object.keys(srs).length} cards tracked.</p>
     <button class="btn ghost small" data-act="wipe" style="color:var(--bad)">${st.wipeArm?'Tap again to erase all progress':'Erase all progress'}</button></div>
@@ -1492,8 +1644,967 @@ document.addEventListener('keydown', e => { if(st.S?.step!=='bullet'||st.view!==
   if(e.key==='ArrowLeft'){ e.preventDefault(); actions.bulletAns({v:'0'}); } if(e.key==='ArrowRight'){ e.preventDefault(); actions.bulletAns({v:'1'}); } });
 let bx=null; document.addEventListener('touchstart', e => { if(st.S?.step==='bullet' && e.target.closest('#bcard')) bx=e.touches[0].clientX; }, {passive:true});
 document.addEventListener('touchend', e => { if(bx===null) return; const dx=e.changedTouches[0].clientX-bx; bx=null; if(Math.abs(dx)>50) actions.bulletAns({v:dx>0?'1':'0'}); });
+
+// ---------- 10. Speak (Mode 3): study 4-6 targets, use them in live speech, record, get coached ----------
+// Flow: start -> cards (swipe through every target) -> ready (scene + mic) -> rec -> review -> analysing -> result.
+// Analysis: Gemini Flash (hears the audio: grammar + pronunciation + prosody), fallback Groq
+// (Whisper transcript + open LLM: grammar and lexis only). Keys stay in this browser and are never synced.
+const SPK = { hist:'bet3.speak', models:'bet3.gemModels', maxSec:900 };
+const SPK_META = { name:'Speak & Record', short:'Speak', sub:'Mode 3 · use your phrases live, get native feedback' };
+const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+const ICON_RESUME = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_SAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
+const spkHist = () => LS.get(SPK.hist, []);
+const fmtSec = s => { s=Math.max(0,Math.floor(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+
+// ---- 10a. Picking the set ----
+// Size is random 4-6. Mode 1 gives the frame of the conversation (functions: hedging, disagreeing, summarising),
+// Mode 2 gives the content words, so phrases always get the larger share: 4 = 2+2, 5 = 3+2, 6 = 4+2.
+// Weighting (same signals as the review queue): due > weak (low ease, lapses) > learning (short interval) > new > mature.
+// The first phrase is the anchor: preferably one with a dialogue, it sets the scene. Other phrases from the same
+// category get a 2.5x boost so the story hangs together, but other categories are still possible.
+function spkWeight(it){
+  const c=card(it); if(!c) return 1.4;
+  let w = c.due<=Date.now() ? 3 : c.ivl<21 ? 2 : 0.7;
+  if(c.lapses) w += 0.8*Math.min(c.lapses,3);
+  if(c.ease<2.2) w += 0.7;
+  return w;
+}
+function wpick(arr, n, w){
+  const a=[...arr], out=[];
+  while(out.length<n && a.length){
+    const ws=a.map(w), sum=ws.reduce((x,y)=>x+y,0); let r=Math.random()*sum, i=0;
+    while(i<a.length-1 && (r-=ws[i])>0) i++;
+    out.push(a.splice(i,1)[0]);
+  }
+  return out;
+}
+function buildSet(){
+  const n=4+Math.floor(Math.random()*3);
+  const P=(data.phr?.items||[]).filter(i=>inScope(i) && i.status!=='Alt');
+  const V=(data.voc?.items||[]).filter(inScope);
+  let nP=Math.min(n===4?2:n-2, P.length), nV=Math.min(n-nP, V.length);
+  if(nP+nV<n) nP=Math.min(P.length, n-nV);
+  const withDlg=P.filter(i=>i.dialogue);
+  const anchor = wpick(withDlg.length?withDlg:P, 1, spkWeight)[0];
+  const rest = anchor ? wpick(P.filter(i=>i!==anchor), nP-1, i=>spkWeight(i)*(i.cat===anchor.cat?2.5:1)) : [];
+  return [anchor, ...rest, ...wpick(V, nV, i=>spkWeight(i)*(rank(i)===0?1.2:1))].filter(Boolean);
+}
+// Story beats: a business-conversation arc. Targets are spread over the beats as gentle prompts, never as a script.
+function spkScene(items){
+  const a=items.find(i=>i.deck==='phr' && i.dialogue) || items.find(i=>i.deck==='phr') || items[0];
+  const beats=[
+    { t:'Set the scene', q:'Who are you talking to, what is on the table, why now?' },
+    { t:'Make your case', q:'Give your view with one number or fact and a reason.' },
+    { t:'Handle push-back', q:'Imagine an objection. Acknowledge it, then hold or adjust your position.' },
+    { t:'Land it', q:'Summarise and agree concrete next steps, owners and timing.' }
+  ];
+  const order=shuffle(items.map((_,i)=>i));
+  order.forEach((ix,k)=>{ const b=beats[k%beats.length]; (b.use=b.use||[]).push(ix); });
+  return { cat:a?.cat||'Business conversation', desc:(typeof CAT_DESC!=='undefined' && CAT_DESC[a?.cat])||'', dialogue:a?.dialogue||'', beats };
+}
+
+// ---- 10b. Views ----
+function vSpeak(){
+  const K=st.K||(st.K={phase:'start'});
+  return ({ start:spkStart, cards:spkCards, ready:spkReady, rec:spkRec, review:spkReview, analysing:spkAnalysing, result:spkResult })[K.phase]();
+}
+function spkStart(){
+  const h=spkHist(), keys=spkKeysOk();
+  return `<div class="stack">
+    <div class="hero spk-hero">
+      <div class="lbl">Mode 3 · Speak & Record</div>
+      <div class="q">Use your phrases in live speech, then hear how a native would say it.</div>
+      <ol class="spk-how"><li>Get 4 to 6 targets from both decks</li><li>Study each card</li><li>Record a 2 to 3 minute story</li><li>Get a coach's breakdown</li></ol>
+      <div class="actions" style="margin-top:14px"><button class="btn" data-act="spkNew">${ICON_MIC} Generate my set</button></div>
+    </div>
+    ${keys?'':`<div class="note warn-note"><b>Analysis needs an AI key</b>Recording works without it. Connect sync in <a href="#" data-act="settings">Settings</a> (the key then comes from your Apps Script), or paste a key there.</div>`}
+    ${h.length?`<div class="eyebrow" style="margin-top:6px">Past sessions</div>
+    ${h.map((s,i)=>`<button class="deck spk-past" data-act="spkOpen" data-i="${i}">
+      <div class="ico spk-score ${spkTone(s)}">${s.result?spkUsed(s.result)+'/'+s.items.length:'–'}</div>
+      <div class="meta"><h3>${esc(s.scene||'Session')}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtSec(s.sec||0)}${s.result?` · ${esc(s.result.summary?.cefr||'')} · ${esc(s.provider||'')}`:' · not analysed'}</div>
+      <div class="row" style="margin-top:6px;gap:6px">${s.items.slice(0,4).map(x=>`<span class="pill">${esc(x.en.length>26?x.en.slice(0,24)+'…':x.en)}</span>`).join('')}</div></div></button>`).join('')}`:''}
+    <p class="hint">Targets come from both decks, weighted towards cards that are due or weak. The result updates their review dates: used well = Good, used with an error = Hard, avoided = back tomorrow.</p>
+  </div>`;
+}
+const spkUsed = r => (r.targets||[]).filter(t=>t.status==='used').length;
+const spkTone = s => !s.result ? '' : spkUsed(s.result)>=s.items.length-1 ? 'ok' : spkUsed(s.result)>=Math.ceil(s.items.length/2) ? 'warn' : 'bad';
+
+function spkCardBody(it){
+  const dlg = it.dialogue ? `<div class="note"><b>In a conversation</b><div class="dlg">${fmtDialogue(/\*\*/.test(it.dialogue)?it.dialogue:blankByPhrase(it),'show')}</div></div>` : '';
+  return `<div class="spk-kind">${it.deck==='phr'?'Phrase · Mode 1':'Chunk · Mode 2'}${it.cat?' · '+esc(it.cat):''}${it.type?' · '+esc(short(it.type)):''}</div>
+    <div class="phrase">${esc(it.en)}</div><div class="trans" style="margin:8px 0 14px">${esc(it.ru)}</div>
+    <div class="stack" style="gap:10px">${notes(it)}${dlg}</div>`;
+}
+function spkCards(){
+  const K=st.K, it=K.items[K.i], last=K.i===K.items.length-1;
+  return `<div class="stack">
+    <div class="spk-dots">${K.items.map((_,i)=>`<span class="${i<K.i?'done':i===K.i?'on':''}"></span>`).join('')}<em>${K.i+1} / ${K.items.length}</em></div>
+    <div class="card spk-card" id="spkCard">${spkCardBody(it)}
+      <div class="actions" style="align-items:center">${audioBtn(it.en)}${clipBtn(it.en,1)}
+        ${K.i?'<button class="btn ghost" data-act="spkPrev" style="flex:0 0 auto">Back</button>':''}
+        <button class="btn" data-act="spkNext">${last?'I\'m ready':'Next'}</button></div></div>
+    <p class="hint" style="text-align:center">Swipe or use the arrow keys. The microphone unlocks after the last card.</p>
+  </div>`;
+}
+function spkChips(K, live){
+  return `<div class="spk-targets">${K.items.map((it,i)=>`<button class="spk-chip ${K.said?.[i]?'on':''}" data-act="spkSaid" data-i="${i}" ${live?'':'tabindex="-1"'}><i></i><span>${esc(it.en)}</span></button>`).join('')}</div>`;
+}
+function spkSceneBox(K){
+  const s=K.scene;
+  return `<div class="card spk-scene"><div class="eyebrow">Scene · ${esc(s.cat)}</div>
+    ${s.desc?`<p class="muted" style="margin:4px 0 10px;font-size:.92rem">${esc(s.desc)}</p>`:''}
+    <ol class="spk-beats">${s.beats.map(b=>`<li><b>${b.t}</b><span>${b.q}</span>${b.use?`<em>${b.use.map(i=>esc(K.items[i].en)).join(' · ')}</em>`:''}</li>`).join('')}</ol></div>`;
+}
+function spkReady(){
+  const K=st.K;
+  return `<div class="stack">
+    <div><div class="eyebrow">Your targets</div><h2 style="margin-top:4px">Tell the story out loud</h2>
+    <p class="muted" style="margin:6px 0 0">Two to three minutes, in any order. Tap a target when you've said it.</p></div>
+    ${spkChips(K,true)}
+    ${spkSceneBox(K)}
+    <div class="spk-mic-wrap"><button class="spk-mic" data-act="spkRec" aria-label="Start recording">${ICON_MIC}</button><div class="muted" style="font-size:.86rem">Tap to start recording</div></div>
+    <label class="spk-upload">Or analyse an existing recording<input type="file" id="spkFile" accept="audio/*,.m4a,.mp3,.wav,.ogg,.webm"></label>
+    <button class="btn ghost small" data-act="spkCardsAgain" style="align-self:center">Review the cards again</button>
+  </div>`;
+}
+function spkRec(){
+  const K=st.K, paused=K.rec==='paused';
+  return `<div class="stack spk-rec ${paused?'paused':''}">
+    <div class="spk-status"><span class="spk-dot"></span>${paused?'Paused':'Recording'}</div>
+    <div class="spk-time" id="spkTime">${fmtSec(recElapsed()/1000)}</div>
+    <canvas class="spk-wave" id="spkWave" aria-hidden="true"></canvas>
+    <div class="spk-ctrl">
+      <button class="spk-side" data-act="spkPause" aria-label="${paused?'Resume':'Pause'}">${paused?ICON_RESUME:ICON_PAUSE}<small>${paused?'Resume':'Pause'}</small></button>
+      <button class="spk-stop" data-act="spkStop" aria-label="Stop">${ICON_STOP}</button>
+      <button class="spk-side" data-act="spkDiscard" aria-label="Discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><small>Discard</small></button>
+    </div>
+    ${spkChips(K,true)}
+    <details class="card spk-peek"><summary>Story beats</summary>${spkSceneBox(K).replace('class="card spk-scene"','class="spk-scene"')}</details>
+  </div>`;
+}
+function spkReview(){
+  const K=st.K, a=K.audio, ready=spkKeysOk();
+  return `<div class="stack">
+    <div class="card spk-take">
+      <div class="row" style="justify-content:space-between"><div><div class="eyebrow">Your take</div><div class="spk-time sm">${fmtSec(a.sec)}</div></div>
+      <span class="pill ${a.sec<45?'due':'ok'}">${a.sec<45?'Short take':'Good length'}</span></div>
+      <audio controls src="${a.url}" preload="metadata"></audio>
+      <div class="row" style="gap:8px"><button class="btn soft small" data-act="spkSave">${ICON_SAVE} Save recording</button><button class="btn ghost small" data-act="spkRedo">Record again</button></div>
+    </div>
+    ${spkChips(K,true)}
+    <button class="btn spk-go" data-act="spkAnalyse" ${ready?'':'disabled'}>Analyse my English</button>
+    ${ready?`<p class="hint" style="text-align:center">${spkProvLine()}</p>`:`<div class="note warn-note"><b>No AI key yet</b>Save the recording now, connect sync or add a key in <a href="#" data-act="settings">Settings</a>, then come back: the take stays here until you start a new set.</div>`}
+  </div>`;
+}
+function spkAnalysing(){
+  const K=st.K;
+  return `<div class="stack" style="text-align:center;padding-top:30px">
+    <div class="spk-orb"><span></span><span></span><span></span></div>
+    <h2>Listening to your take</h2>
+    <p class="muted" id="spkStep">${esc(K.step||'Preparing audio…')}</p>
+    <p class="hint">Usually 20 to 60 seconds. Free models are sometimes busy, the app then moves to the next one by itself.</p>
+  </div>`;
+}
+
+// ---- 10c. Result ----
+const MET = {
+  epw:{ l:'Errors / 100 words', good:v=>v<2.5, ok:v=>v<5, d:'C1 < 2.5' },
+  fpw:{ l:'Fillers / 100 words', good:v=>v<=4, ok:v=>v<=7, d:'Target ≤ 4' },
+  mlu:{ l:'Words per run', good:v=>v>=10, ok:v=>v>=7, d:'Target ≥ 10' },
+  lex:{ l:'Lexical score', good:v=>v>=25, ok:v=>v>=15, d:'C1 25–32 / 40' }
+};
+const mTone = (k,v) => v==null||isNaN(v) ? '' : MET[k].good(v) ? 'ok' : MET[k].ok(v) ? 'warn' : 'bad';
+function parseMarks(s){ // [[text|K|Type|Fix|Explanation]] -> html with tappable tokens
+  const toks=[]; let html='', last=0; const re=/\[\[(.+?)\]\]/g; let m;
+  while((m=re.exec(s))){ html+=esc(s.slice(last,m.index)); last=re.lastIndex;
+    const p=m[1].split('|'); const k=(p[1]||'').trim().toUpperCase();
+    toks.push({ text:p[0], k, type:p[2], fix:p[3], why:p.slice(4).join('|') });
+    html+=`<button class="tok ${k==='S'?'s':'e'}" data-act="spkTok" data-n="${toks.length-1}">${esc(p[0])}</button>`; }
+  return { html:html+esc(s.slice(last)), toks };
+}
+function spkResult(){
+  const K=st.K, r=K.result, items=K.items, n=items.length, used=spkUsed(r);
+  const m=r.metrics||{}, words=m.words||0;
+  const vals={ epw:words?(m.errors_total||0)/words*100:null, fpw:words&&m.fillers!=null?m.fillers/words*100:null, mlu:m.mlu, lex:m.lexical_score };
+  K.toks=[];
+  const st3={ used:['ok','✓','Used well'], error:['warn','!','Used with an error'], avoided:['bad','–','Not used'] };
+  const pmax=Math.max(1,...(r.patterns||[]).map(p=>p.count||0));
+  return `<div class="stack spk-res">
+    <div class="summary-hero spk-sum">
+      <div class="eyebrow">${esc(K.scene?.cat||'')} · ${fmtSec(K.audio?.sec||K.sec||0)} · ${esc(r._provider||'')}</div>
+      <div class="n">${used}<small>/${n}</small></div><div class="muted">targets used well</div>
+      <div class="row" style="justify-content:center;gap:6px;margin-top:10px">${r.summary?.cefr?`<span class="pill ok">${esc(r.summary.cefr)}</span>`:''}${r._audio===false?'<span class="pill">Text-only analysis</span>':'<span class="pill">Audio analysed</span>'}</div>
+      ${r.summary?.headline?`<p class="spk-head">${esc(r.summary.headline)}</p>`:''}
+    </div>
+
+    <div class="spk-metrics">${Object.keys(MET).map(k=>`<div class="spk-m ${mTone(k,vals[k])}"><b>${vals[k]==null||isNaN(vals[k])?'–':(k==='lex'?Math.round(vals[k]):Number(vals[k]).toFixed(1))}</b><span>${MET[k].l}</span><small>${MET[k].d}</small></div>`).join('')}</div>
+
+    <section><h3 class="spk-h">Your targets</h3>
+    ${(r.targets||[]).map(t=>{ const s=st3[t.status]||st3.avoided; return `<div class="spk-t ${s[0]}"><div class="spk-ti">${s[1]}</div><div class="meta">
+      <div class="row" style="justify-content:space-between;gap:6px"><b class="serif">${esc(t.phrase)}</b><span class="pill ${s[0]==='warn'?'new':s[0]==='bad'?'due':'ok'}">${s[2]}${t.t?' · '+esc(t.t):''}</span></div>
+      ${t.quote?`<div class="spk-q">“${esc(t.quote)}”</div>`:''}${t.comment?`<div class="muted" style="font-size:.9rem;margin-top:4px">${esc(t.comment)}</div>`:''}
+      ${t.native?`<div class="spk-native"><span>Native</span>${esc(t.native)} ${audioBtn(t.native)}</div>`:''}</div></div>`; }).join('')}</section>
+
+    ${(r.wins||[]).length?`<section><h3 class="spk-h">What sounded native</h3>${r.wins.map(w=>`<div class="spk-win"><b>“${esc(w.quote)}”</b>${w.type?` <span class="pill">${esc(w.type)}</span>`:''}<div class="muted" style="font-size:.9rem;margin-top:3px">${esc(w.why)}</div></div>`).join('')}</section>`:''}
+
+    ${(r.patterns||[]).length?`<section><h3 class="spk-h">Patterns to fix</h3>${r.patterns.map(p=>`<details class="spk-p ${esc(p.impact||'')}"><summary><span class="code">${esc(p.code)}</span><span class="t">${esc(p.title)}</span><span class="c">×${p.count||1}</span><i style="width:${Math.round((p.count||1)/pmax*100)}%"></i></summary>
+      <div class="spk-pb">${p.hook?`<p>${esc(p.hook)}</p>`:''}${(p.examples||[]).length?`<div class="spk-ex">${p.examples.map(e=>`<span>${esc(e)}</span>`).join('')}</div>`:''}${p.fix?`<div class="spk-native"><span>Fix</span>${esc(p.fix)}</div>`:''}</div></details>`).join('')}</section>`:''}
+
+    ${(r.log||[]).length?`<section><h3 class="spk-h">Line by line <small class="muted">tap a highlight</small></h3>${r.log.map((l,j)=>{ const pm=parseMarks(l.original||''); const base=K.toks.length; K.toks.push(...pm.toks);
+      const html=pm.html.replace(/data-n="(\d+)"/g,(_,x)=>`data-n="${base+Number(x)}" data-l="${j}"`);
+      return `<div class="spk-line"><div class="spk-lt">${esc(l.t||'')}</div><div class="meta"><div class="spk-orig">${html}</div><div class="spk-tx" id="spkTx${j}" hidden></div>
+      ${l.native?`<div class="spk-native"><span>Native</span>${esc(l.native)} ${audioBtn(l.native)}</div>`:''}</div></div>`; }).join('')}</section>`:''}
+
+    ${(r.pronunciation||[]).length||(r.prosody||[]).length||(r.pron_risk||[]).length?`<section><h3 class="spk-h">Sound</h3>
+      ${(r.pronunciation||[]).map(p=>`<div class="spk-pr"><b>${esc(p.word)}</b> ${audioBtn(p.word)}<span class="ipa">${p.heard?`/${esc(p.heard)}/ → `:''}/${esc(p.target||'')}/</span>${p.risk?`<span class="pill ${p.risk==='high'?'due':''}">${esc(p.type||'')} · ${esc(p.risk)}</span>`:''}<div class="muted" style="font-size:.9rem;width:100%">${esc(p.tip)}</div></div>`).join('')}
+      ${(r.pron_risk||[]).length?`<div class="eyebrow" style="margin:8px 0 4px">Predicted risks (no audio was analysed)</div>${r.pron_risk.map(p=>`<div class="spk-pr"><b>${esc(p.word)}</b> ${audioBtn(p.word)}<span class="ipa">/${esc(p.target||'')}/</span><div class="muted" style="font-size:.9rem;width:100%">${esc(p.why)}</div></div>`).join('')}`:''}
+      ${(r.prosody||[]).map(p=>`<div class="note"><b>${esc(p.issue)}</b>${p.example?`<em>${esc(p.example)}</em><br>`:''}${esc(p.tip)}</div>`).join('')}</section>`:''}
+
+    ${r.native_version?`<section class="card spk-nv"><div class="row" style="justify-content:space-between"><h3>How a native would tell it</h3>${audioBtn(r.native_version)}</div><p class="serif">${esc(r.native_version)}</p></section>`:''}
+
+    ${(r.next||[]).length?`<section><h3 class="spk-h">Next three moves</h3><ol class="spk-next">${r.next.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></section>`:''}
+
+    ${(r.transcript||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Full transcript</summary><div class="spk-trans">${r.transcript.map(x=>`<p><span>${esc(x.t||'')}</span>${esc(x.text)}</p>`).join('')}</div></details>`:''}
+
+    ${r._applied?`<p class="hint" style="text-align:center">Review dates updated for ${n} cards.</p>`:''}
+    <div class="actions">${K.audio?'<button class="btn ghost" data-act="spkSave">'+ICON_SAVE+' Save audio</button>':''}<button class="btn" data-act="spkNew">New set</button></div>
+  </div>`;
+}
+
+// ---- 10d. Actions ----
+async function spkEnsureData(){
+  for(const d of ['phr','voc']) if(!data[d]) await loadDeck(d);
+}
+actions.openSpeak = () => { st.K=st.K&&st.K.phase!=='result'&&st.K.phase!=='start'?st.K:{phase:'start'}; go('speak'); };
+actions.spkNew = async () => {
+  if(st.K?.phase==='rec') return;
+  go('loading');
+  try{ await spkEnsureData(); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); }
+  const items=buildSet(); if(items.length<2){ toast('Not enough cards in scope. Check Settings > scope.'); return go('home'); }
+  if(st.K?.audio?.url) URL.revokeObjectURL(st.K.audio.url);
+  st.K={ phase:'cards', i:0, items, said:{}, scene:spkScene(items), at:Date.now() };
+  go('speak');
+};
+actions.spkNext = () => { const K=st.K; if(K.i<K.items.length-1){ K.i++; render(); } else { K.phase='ready'; go('speak'); } };
+actions.spkPrev = () => { const K=st.K; if(K.i>0){ K.i--; render(); } };
+actions.spkCardsAgain = () => { st.K.phase='cards'; st.K.i=0; go('speak'); };
+actions.spkSaid = (d,el) => { const K=st.K; K.said[d.i]=!K.said[d.i]; document.querySelectorAll(`.spk-chip[data-i="${d.i}"]`).forEach(x=>x.classList.toggle('on',!!K.said[d.i])); buzz(15); };
+actions.spkOpen = d => { const s=spkHist()[d.i]; if(!s) return; st.K={ phase:s.result?'result':'start', items:s.items, scene:{cat:s.scene}, result:s.result, sec:s.sec, histAt:s.at }; go('speak'); };
+actions.spkTok = (d) => {
+  const t=st.K.toks?.[d.n], box=$('#spkTx'+d.l); if(!t||!box) return;
+  const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
+  document.querySelectorAll(`.tok[data-l="${d.l}"]`).forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
+  box.className='spk-tx '+(t.k==='S'?'s':'e');
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b>${esc(t.text)}</b> → <b class="fix">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+};
+// Swipe between cards, arrows on a laptop
+let spkX=null;
+document.addEventListener('touchstart', e=>{ if(st.view==='speak'&&st.K?.phase==='cards'&&e.target.closest('#spkCard')) spkX=e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e=>{ if(spkX==null) return; const dx=e.changedTouches[0].clientX-spkX; spkX=null; if(Math.abs(dx)>60) (dx<0?actions.spkNext:actions.spkPrev)(); }, {passive:true});
+document.addEventListener('keydown', e=>{ if(st.view!=='speak'||e.target.matches('input,textarea')) return; const ph=st.K?.phase;
+  if(ph==='cards'){ if(e.key==='ArrowRight'||e.key==='Enter') actions.spkNext(); else if(e.key==='ArrowLeft') actions.spkPrev(); }
+  else if(ph==='rec' && e.code==='Space'){ e.preventDefault(); actions.spkPause(); } });
+
+// ---- 10e. Recorder: MediaRecorder + live level meter + wake lock ----
+const R = { mr:null, stream:null, chunks:[], t0:0, acc:0, tick:null, ac:null, an:null, raf:null, wake:null, levels:[] };
+function recElapsed(){ return R.acc + (st.K?.rec==='on' ? Date.now()-R.t0 : 0); }
+function recMime(){ return ['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus','audio/webm'].find(m=>window.MediaRecorder?.isTypeSupported?.(m))||''; }
+actions.spkRec = async () => {
+  if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return toast('This browser cannot record audio. Use the upload option instead.');
+  try{ R.stream=await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } }); }
+  catch(e){ return toast('Microphone access was blocked. Allow it for this site and try again.'); }
+  speechSynthesis?.cancel();
+  const mime=recMime(); R.mr=new MediaRecorder(R.stream, mime?{ mimeType:mime, audioBitsPerSecond:48000 }:{});
+  R.chunks=[]; R.mr.ondataavailable=e=>{ if(e.data.size) R.chunks.push(e.data); };
+  R.mr.onstop=()=>{ if(R.discard){ R.discard=false; recCleanup(); return; }
+    const type=(R.mr.mimeType||mime||'audio/webm').split(';')[0]; const blob=new Blob(R.chunks,{type});
+    const sec=Math.round(recElapsed()/1000); recCleanup();
+    st.K.audio={ blob, type, sec, url:URL.createObjectURL(blob) }; st.K.rec=null; st.K.phase='review'; spkSaveHist(); go('speak'); };
+  R.mr.start(1000); R.acc=0; R.t0=Date.now(); R.levels=[]; st.K.rec='on'; st.K.phase='rec'; buzz(40); go('speak');
+  try{ R.ac=new (window.AudioContext||window.webkitAudioContext)(); const src=R.ac.createMediaStreamSource(R.stream); R.an=R.ac.createAnalyser(); R.an.fftSize=1024; src.connect(R.an); }catch(e){}
+  try{ R.wake=await navigator.wakeLock?.request('screen'); }catch(e){}
+  R.tick=setInterval(()=>{ const s=recElapsed()/1000; const el=$('#spkTime'); if(el) el.textContent=fmtSec(s); if(s>=SPK.maxSec){ toast('15 minutes reached, stopping.'); actions.spkStop(); } }, 250);
+  recDraw();
+};
+function recDraw(){
+  const cv=$('#spkWave');
+  if(cv){
+    if(R.an){ const buf=new Uint8Array(R.an.fftSize); R.an.getByteTimeDomainData(buf);
+      let sum=0; for(const v of buf){ const x=(v-128)/128; sum+=x*x; }
+      const lvl=st.K?.rec==='on' ? Math.min(1, Math.sqrt(sum/buf.length)*4) : 0;
+      R.f=(R.f||0)+1; if(R.f%3===0){ R.levels.push(lvl); if(R.levels.length>400) R.levels.shift(); } }
+    const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight; if(cv.width!==w*dpr){ cv.width=w*dpr; cv.height=h*dpr; }
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+    const cs=getComputedStyle(document.documentElement), col=cs.getPropertyValue('--primary').trim()||'#E3120B', mute=cs.getPropertyValue('--line').trim()||'#ccc';
+    const bw=3, gap=2, nBars=Math.floor(w/(bw+gap)), L=R.levels.slice(-nBars);
+    for(let i=0;i<nBars;i++){ const v=L[i-(nBars-L.length)]; const x=i*(bw+gap);
+      if(v==null){ g.fillStyle=mute; g.fillRect(x,h/2-1,bw,2); continue; }
+      const bh=Math.max(2, v*(h-6)); g.fillStyle=st.K?.rec==='on'?col:mute; g.beginPath(); g.roundRect?g.roundRect(x,(h-bh)/2,bw,bh,1.5):g.rect(x,(h-bh)/2,bw,bh); g.fill(); }
+  }
+  if(st.K?.phase==='rec') R.raf=requestAnimationFrame(recDraw);
+}
+function recCleanup(){ clearInterval(R.tick); cancelAnimationFrame(R.raf); try{ R.stream?.getTracks().forEach(t=>t.stop()); }catch(e){} try{ R.ac?.close(); }catch(e){} try{ R.wake?.release(); }catch(e){} R.an=null; R.ac=null; R.wake=null; }
+actions.spkPause = () => { const K=st.K; if(!R.mr) return;
+  if(K.rec==='on'){ R.mr.pause(); R.acc+=Date.now()-R.t0; K.rec='paused'; } else if(K.rec==='paused'){ R.mr.resume(); R.t0=Date.now(); K.rec='on'; }
+  buzz(20); render(); recDraw(); };
+actions.spkStop = () => { if(R.mr && R.mr.state!=='inactive'){ if(st.K.rec==='on'){ R.acc+=Date.now()-R.t0; } st.K.rec='stopped'; R.mr.stop(); buzz(40); } };
+actions.spkDiscard = () => { if(!confirm('Discard this recording?')) return; R.discard=true; try{ R.mr.stop(); }catch(e){ recCleanup(); } st.K.rec=null; st.K.phase='ready'; go('speak'); };
+actions.spkRedo = () => { if(st.K.audio?.url) URL.revokeObjectURL(st.K.audio.url); st.K.audio=null; st.K.phase='ready'; go('speak'); };
+actions.spkSave = async () => {
+  const a=st.K.audio; if(!a) return toast('The audio of past sessions is not stored. Save it right after recording.');
+  const ext=/mp4|aac|m4a/.test(a.type)?'m4a':/ogg/.test(a.type)?'ogg':/wav/.test(a.type)?'wav':/mpeg|mp3/.test(a.type)?'mp3':'webm';
+  const d=new Date(st.K.at||Date.now()), name=`speak-${today(d)}-${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.${ext}`;
+  const file=new File([a.blob], name, {type:a.type});
+  if(navigator.canShare?.({files:[file]})){ try{ await navigator.share({files:[file], title:name}); return; }catch(e){ if(e.name==='AbortError') return; } }
+  const l=document.createElement('a'); l.href=a.url; l.download=name; document.body.appendChild(l); l.click(); l.remove(); toast('Saved as '+name);
+};
+function spkUpload(f){
+  if(!f) return; if(f.size>19e6) return toast('File is over 19 MB. Trim it or export at a lower bitrate.');
+  const url=URL.createObjectURL(f), au=new Audio(); au.preload='metadata'; au.src=url;
+  au.onloadedmetadata=()=>{ st.K.audio={ blob:f, type:f.type||'audio/mpeg', sec:Math.round(isFinite(au.duration)?au.duration:0), url }; st.K.phase='review'; spkSaveHist(); go('speak'); };
+  au.onerror=()=>{ st.K.audio={ blob:f, type:f.type||'audio/mpeg', sec:0, url }; st.K.phase='review'; go('speak'); };
+}
+function spkSaveHist(result, extra={}){
+  const K=st.K, h=spkHist(), at=K.histAt||K.at; let s=h.find(x=>x.at===at);
+  if(!s){ s={ at, items:K.items.map(i=>({deck:i.deck,id:i.id,en:i.en})), scene:K.scene?.cat||'' }; h.unshift(s); }
+  s.sec=K.audio?.sec||s.sec||0; if(result){ s.result=result; Object.assign(s,extra); }
+  LS.set(SPK.hist, h.slice(0,20)); K.histAt=at;
+}
+
+// ---- 10f. Analysis ----
+const spkKeysOk = () => aiKeysOk();
+function spkProvLine(){ const p=cfg.spkProv||'auto';
+  const g=aiKey('gemini')?'Gemini Flash (hears pronunciation)':'', q=aiKey('groq')?'Groq (Whisper + open model, text only)':'';
+  if(!g && !q) return syncOn()?'Keys will come from your Apps Script.':'';
+  return p==='gemini'?g||'Gemini key missing':p==='groq'?q||'Groq key missing':[g,q].filter(Boolean).join(', then ')||''; }
+const SPK_CHECK = `RU/UA interference codes (use these codes; add your own short code only if none fits):
+ART articles: zero article for known/specific nouns, "a" with uncountables, missing "the" with superlatives/ordinals/unique (the market, the CFO, the Q3 results).
+PERF Present Perfect vs Past Simple: "I work here since 2019" -> have worked; finished time (yesterday, in 2023) needs Past Simple.
+PREP calqued prepositions: depend from, discuss about, according to me, in the meeting/at the meeting, on the next week, to the 15th.
+SUBJ missing or dummy subject: "Is important to...", "Was decided..." -> It is / It was.
+UNC uncountables as countable: informations, advices, feedbacks, equipments, a research, financings.
+COMP verb patterns: suggest him to, explain me, let me to, make him to, insist to, agree this.
+WO word order: adverb between verb and object (I like very much it), questions in indirect speech (Tell me what is it), fronting.
+COND future in time/if clauses: "when it will close", "if we will refinance".
+NEG double negation, "nobody didn't".
+QUES question formation without auxiliary or with direct-question order.
+MOD modality too strong for business: must/should/need as orders; missing softeners (could we, would you mind).
+FF false friends: actual (=current), eventually (=possibly), realize (=implement), control (=check), sympathetic, fabric, perspective (=prospect), accurate (=neat), decade (=10 days), magazine (=shop), concurrent (=competitor).
+CLICHE literal calques: "as for me", "in my opinion" overuse, "it is not a secret", "on the one hand" without the other, "the question is in".
+REG register/directness: blunt imperatives, "you must", "no", too formal "hereby", missing hedges.
+LEX low-value words (very good, big problem, a lot of, do/make confusion) where a precise collocation exists.
+PRON (audio only) meaning-changing first: final devoicing (bag->back, need->neat), vowel length (ship/sheep, full/fool), /w/ vs /v/, th, /h/ as Russian [x], word stress in domain words (de-VE-lop-ment, e-co-NO-mics vs e-CO-no-my, PUR-chase, COM-pa-ny, a-NAL-y-sis, ca-PI-tal-ise, ma-TUR-i-ty).
+Prosody: syllable-timed rhythm instead of stress-timed, no thought groups, falling tone on requests (sounds like an order), no contrastive stress, filler density (ehm, eh, like, you know, actually, so).`;
+function spkPrompt(items, audio){
+  return {
+sys:`You are an elite speaking coach for a Russian/Ukrainian-speaking senior finance professional (corporate finance, DCM, liability management, Metals & Mining) aiming for C1 executive English. You analyse ONE learner's spoken take and return ONLY a JSON object.
+
+Hard rules
+1. Transcript: ${audio?'transcribe verbatim from the audio, keep every error, filler (um, uh, эээ), false start and repetition. Never correct the learner in the transcript.':'the transcript is given (machine ASR). It may have silently fixed small errors and cannot show pronunciation. Treat plausible ASR artefacts (homophones, cut words, names) as not-an-error.'} Timecodes mm:ss.
+2. Targets: for each target expression decide status: "used" (said with correct form, meaning, collocation and register, natural in context), "error" (attempted, but wrong form, meaning, preposition, collocation or register), "avoided" (not said). Accept normal inflection and the optional parts in [brackets]. Quote the exact words spoken and the timecode. "native" = one natural sentence showing how a native executive would have used it in THIS story.
+3. Patterns before instances: max 6 patterns, each with a code, a count, impact high/medium/low ranked by count x severity (severity 3: changes meaning or sounds rude: false friends, register, timeline-changing tense, devoicing; 2: articles, prepositions, uncountables, dummy subject; 1: cosmetic).
+4. Log: only turns with at least one error or one genuine C1+ success, max 15 entries, one "native" rewrite per entry. Inside "original" wrap every trigger as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = success, Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Pronunciation, Idiom, Discourse; Fix = corrected words, "—" for successes. Pipes only inside Explanation. The words must match the transcript exactly. Every E code must belong to a listed pattern.
+5. Explain like a coach, not a grammar book: every hook/explanation gives a reason the learner will remember (contrast with Russian structure, etymology, mnemonic, mini-story). Example: «Information — как «вода»: «много воды», но не «две воды». Нужен счётчик: a piece of information».
+6. No inflation: if unsure, leave it out. If the take is clean, say so. Praise is data: real C1/C2 moves only (precise collocations, hedging, discourse markers, register control, domain terms), about one win per three errors, never invented.
+7. ${audio?'Pronunciation and prosody: you can hear the audio. Report only what you actually hear, meaning-changing problems first, max 8 pronunciation items, max 4 prosody items. pron_risk = [].':'No audio: pronunciation = [], prosody = []. Fill pron_risk with up to 6 words from the transcript that are known traps for Russian speakers (labelled as predicted, not observed).'}
+8. Metrics: words = words spoken by the learner; errors_total = confirmed errors only; fillers = count of fillers; mlu = mean words per fluent run between pauses or self-corrections; lexical_score 0-40 (range, collocation, precision, register, 0-10 each, score the ceiling reached); cefr one of B1, B1+, B2, B2+, C1, C1+, C2.
+9. native_version: the same story as a native executive would say it, using every target naturally, max 170 words, spoken style.
+10. next: exactly 3 actions in Russian, each one concrete (what to do, a drill, how often).
+11. Language: summary, comment, why, hook, tip, explanation, next in Russian. transcript, quote, native, fix, examples, native_version in English.
+
+${SPK_CHECK}
+
+Return exactly this JSON shape (no markdown):
+{"summary":{"headline":"one sentence in Russian: the main takeaway","cefr":"B2+"},
+"metrics":{"words":0,"errors_total":0,"fillers":0,"mlu":0,"lexical_score":0},
+"targets":[{"id":"phr:12","phrase":"...","status":"used|error|avoided","quote":"...","t":"01:12","comment":"...","native":"..."}],
+"wins":[{"quote":"...","t":"00:40","type":"Hedging","why":"..."}],
+"patterns":[{"code":"ART","title":"...","count":3,"impact":"high","hook":"...","examples":["..."],"fix":"..."}],
+"log":[{"t":"00:31","original":"I sent you [[report|E|Article|the report|...]] yesterday","native":"..."}],
+"pronunciation":[{"word":"development","heard":"ˈdevələpmənt","target":"dɪˈveləpmənt","type":"stress","risk":"high","tip":"...","t":"01:05"}],
+"pron_risk":[{"word":"...","target":"...","why":"..."}],
+"prosody":[{"issue":"Terminal tone","example":"...","tip":"..."}],
+"native_version":"...",
+"next":["...","...","..."],
+"transcript":[{"t":"00:00","text":"..."}]}`,
+user:`Target expressions the learner had to use (id | expression | meaning):
+${items.map(i=>`${i.deck}:${i.id} | ${i.en} | ${i.ru}${i.note?' | '+String(i.note).slice(0,140):''}`).join('\n')}
+Context the learner was given: a business conversation, category "${st.K.scene?.cat||''}", 2-3 minutes, story beats: set the scene, make the case, handle push-back, land next steps.`
+  };
+}
+function spkStep(t){ st.K.step=t; const el=$('#spkStep'); if(el) el.textContent=t; }
+const b64 = blob => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); });
+function parseJSON(txt){ const s=String(txt||'').replace(/^\s*```(?:json)?/i,'').replace(/```\s*$/,''); const a=s.indexOf('{'), b=s.lastIndexOf('}'); return JSON.parse(s.slice(a,b+1)); }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+class SpkFatal extends Error{}
+
+// Gemini: discover every Flash model the key can use, newest full Flash first, Lite last, previews after stable.
+const GEM = 'https://generativelanguage.googleapis.com/v1beta';
+const isFlash = n => /flash/.test(n) && !/(^|-)pro(-|$)/.test(n) && !/image|tts|live|embed|native-audio|thinking-exp|robotics|computer-use|8b/.test(n);
+function gemRank(a,b){ const v=n=>parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||(/latest/.test(n)?99:0));
+  const lite=n=>/lite/.test(n)?1:0, pre=n=>/preview|exp/.test(n)?1:0;
+  return lite(a)-lite(b) || v(b)-v(a) || pre(a)-pre(b) || a.length-b.length; }
+async function gemModels(key){
+  const c=LS.get(SPK.models,null); if(c && c.k===key.slice(-6) && Date.now()-c.at<DAY) return c.list;
+  const r=await fetch(`${GEM}/models?pageSize=200`,{headers:{'x-goog-api-key':key}});
+  if(r.status===400||r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key. Check it in Settings.');
+  if(!r.ok) throw new Error('Gemini model list: HTTP '+r.status);
+  const j=await r.json(); const list=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,'')).filter(isFlash).sort(gemRank).slice(0,5);
+  if(!list.length) throw new SpkFatal('No Gemini Flash model is available for this key.');
+  LS.set(SPK.models,{k:key.slice(-6),at:Date.now(),list}); return list;
+}
+// Browsers record webm/opus (Chrome) or mp4/aac (Safari). If a model refuses the container, re-encode to 16 kHz mono WAV.
+async function toWav(blob){
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); const buf=await ac.decodeAudioData(await blob.arrayBuffer()); ac.close();
+  const rate=16000, len=Math.ceil(buf.duration*rate); const oc=new OfflineAudioContext(1,len,rate); const s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start();
+  const pcm=(await oc.startRendering()).getChannelData(0); const dv=new DataView(new ArrayBuffer(44+pcm.length*2)); const w=(o,t)=>[...t].forEach((c,i)=>dv.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF'); dv.setUint32(4,36+pcm.length*2,true); w(8,'WAVE'); w(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,rate,true); dv.setUint32(28,rate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); w(36,'data'); dv.setUint32(40,pcm.length*2,true);
+  for(let i=0;i<pcm.length;i++) dv.setInt16(44+i*2, Math.max(-1,Math.min(1,pcm[i]))*0x7fff, true);
+  return new Blob([dv],{type:'audio/wav'});
+}
+async function viaGemini(key, audio, P){
+  const models=await gemModels(key); let data64=await b64(audio.blob), mime=audio.type||'audio/webm', wavTried=false, lastErr='';
+  for(const m of models){
+    for(let attempt=0; attempt<3; attempt++){
+      spkStep(`Gemini · ${m}${attempt?` · retry ${attempt}`:''}`);
+      let r;
+      try{ r=await fetch(`${GEM}/models/${m}:generateContent`,{ method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({ systemInstruction:{parts:[{text:P.sys}]}, contents:[{role:'user',parts:[{inline_data:{mime_type:mime,data:data64}},{text:P.user}]}],
+          generationConfig:{ responseMimeType:'application/json', temperature:0.3, maxOutputTokens:32768 } }) }); }
+      catch(e){ lastErr='network'; await sleep(1500); continue; }
+      if(r.ok){
+        const j=await r.json(), c=j.candidates?.[0], txt=(c?.content?.parts||[]).map(p=>p.text||'').join('');
+        try{ const out=parseJSON(txt); out._provider='Gemini · '+m; out._audio=true; return out; }
+        catch(e){ lastErr=`${m}: ${c?.finishReason||'bad JSON'}`; break; }   // truncated or malformed: next model
+      }
+      const body=await r.text(); lastErr=`${m}: HTTP ${r.status}`;
+      if(r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key. Check it in Settings.');
+      if(r.status===400 && /mime|audio|unsupported|invalid argument/i.test(body) && !wavTried){ wavTried=true; spkStep('Converting audio to WAV…'); try{ const w=await toWav(audio.blob); data64=await b64(w); mime='audio/wav'; attempt--; continue; }catch(e){} }
+      if([429,500,502,503,504].includes(r.status)){ await sleep(r.status===429?4000:2000*(attempt+1)); if(r.status===429 && /quota|per day|PerDay/i.test(body)) break; continue; }
+      break;   // 404 / other 400: try the next model
+    }
+  }
+  throw new Error('Gemini: all Flash models failed ('+lastErr+')');
+}
+// Groq: Whisper large-v3 for a near-verbatim transcript (the prompt nudges it to keep fillers and errors),
+// then an open model with JSON mode does the coaching. No audio reaches the coach, so no pronunciation audit.
+async function viaGroq(key, audio, P){
+  const ext=/mp4|aac|m4a/.test(audio.type)?'m4a':/ogg/.test(audio.type)?'ogg':/wav/.test(audio.type)?'wav':/mpeg|mp3/.test(audio.type)?'mp3':'webm';
+  spkStep('Groq · Whisper transcript');
+  const fd=new FormData(); fd.append('file', audio.blob, 'take.'+ext); fd.append('model','whisper-large-v3'); fd.append('response_format','verbose_json');
+  fd.append('language','en'); fd.append('temperature','0'); fd.append('prompt','Umm, so, uh... I think we need to, like, discuss about the refinancing. Eh, he don\'t agree with this informations.');
+  let r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+key},body:fd});
+  if(r.status===401||r.status===403) throw new SpkFatal('Groq rejected the key. Check it in Settings.');
+  if(!r.ok) throw new Error('Groq Whisper: HTTP '+r.status);
+  const tr=await r.json();
+  const lines=(tr.segments||[]).map(s=>`[${fmtSec(s.start)}]${s.avg_logprob<-0.8?' (unclear)':''} ${s.text.trim()}`).join('\n') || tr.text;
+  let last='';
+  for(const model of ['openai/gpt-oss-120b','llama-3.3-70b-versatile','openai/gpt-oss-20b']){
+    spkStep('Groq · '+model.split('/').pop());
+    const body={ model, temperature:0.3, max_completion_tokens:12000, response_format:{type:'json_object'},
+      messages:[{role:'system',content:P.sys},{role:'user',content:P.user+'\n\nTranscript (Whisper, timecodes mm:ss):\n'+lines}] };
+    if(/gpt-oss/.test(model)) body.reasoning_effort='medium';
+    r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){ last=model+': HTTP '+r.status; if(r.status===429) await sleep(3000); continue; }
+    try{ const j=await r.json(); const out=parseJSON(j.choices[0].message.content); out._provider='Groq · '+model.split('/').pop(); out._audio=false;
+      if(!(out.transcript||[]).length) out.transcript=(tr.segments||[]).map(s=>({t:fmtSec(s.start),text:s.text.trim()})); return out; }
+    catch(e){ last=model+': bad JSON'; }
+  }
+  throw new Error('Groq: '+last);
+}
+function spkClean(r, items){
+  // keep the app in charge of arithmetic and of the target list: the model only judges
+  const byId=Object.fromEntries((r.targets||[]).map(t=>[String(t.id),t]));
+  r.targets=items.map(i=>{ const k=i.deck+':'+i.id, t=byId[k] || (r.targets||[]).find(x=>norm(x.phrase||'')===norm(i.en)) || {status:'avoided'};
+    return { ...t, id:k, phrase:i.en, status:['used','error','avoided'].includes(t.status)?t.status:'avoided' }; });
+  const m=r.metrics=r.metrics||{};
+  const tw=(r.transcript||[]).map(x=>x.text).join(' ').split(/\s+/).filter(Boolean).length; if(tw>20) m.words=tw;
+  ['patterns','log','wins','pronunciation','prosody','pron_risk','next'].forEach(k=>{ if(!Array.isArray(r[k])) r[k]=[]; });
+  r.patterns=r.patterns.slice(0,6); r.log=r.log.slice(0,15);
+  return r;
+}
+function spkApplySRS(r, items){
+  if(r._applied) return;
+  items.forEach(i=>{ const it=(data[i.deck]?.items||[]).find(x=>x.id===i.id); if(!it) return; const t=r.targets.find(x=>x.id===i.deck+':'+i.id);
+    if(t?.status==='used') grade(it,'good'); else if(t?.status==='error') grade(it,'hard'); else softLapse(it); });
+  r._applied=true;
+}
+actions.spkAnalyse = async () => {
+  const K=st.K, a=K.audio; if(!a) return;
+  if(a.sec && a.sec<20) return toast('The take is under 20 seconds. Record a bit more for a useful analysis.');
+  K.phase='analysing'; K.step='Preparing audio…'; go('speak');
+  const pref=cfg.spkProv||'auto'; const order=pref==='gemini'?['gemini']:pref==='groq'?['groq']:['gemini','groq'];
+  const errs=[]; await ensureKeys();
+  for(const p of order){
+    for(let pass=0; pass<2; pass++){
+      const key=aiKey(p); if(!key) break;
+      try{
+        const P=spkPrompt(K.items, p==='gemini');
+        let r=await (p==='gemini'?viaGemini(key,a,P):viaGroq(key,a,P));
+        r=spkClean(r, K.items); spkApplySRS(r, K.items); K.result=r; K.phase='result';
+        spkSaveHist(r,{provider:r._provider}); if(st.view==='speak') go('speak'); return;
+      }catch(e){
+        if(e instanceof SpkFatal && pass===0 && fromVault(p)){ await ensureKeys(true); continue; }
+        errs.push(e.message); break; }
+    }
+  }
+  if(!errs.length) errs.push('no API key. Connect sync or add a key in Settings');
+  K.phase='review'; if(st.view==='speak') go('speak'); toast('Analysis failed: '+errs.join(' | ').slice(0,220));
+};
+function spkBack(){
+  const ph=st.K?.phase;
+  if(ph==='rec'){ if(!confirm('Stop and discard the recording?')) return; R.discard=true; try{ R.mr.stop(); }catch(e){ recCleanup(); } st.K.rec=null; st.K.phase='ready'; return go('speak'); }
+  if(ph==='analysing') return toast('Analysis is running, one moment.');
+  if(ph==='cards'||ph==='ready'||ph==='review'||ph==='result'){ if(ph==='review' && !st.K.result && !confirm('Leave this take? Save it first if you want to keep the audio.')) return; st.K={phase:'start'}; return go('speak'); }
+  go('home');
+}
+
+// ---- 10g. Wiring into the existing app (home card, settings, back button, title) ----
+{ const _home=vHome; vHome=function(){ const k=spkHist()[0];
+    const tile=`<button class="deck" data-act="openSpeak">
+      <div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON_MIC}</div>
+      <div class="meta"><h3>${SPK_META.name}</h3><div class="muted" style="font-size:.85rem">${SPK_META.sub}</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">4–6 targets</span>${k?.result?`<span class="pill ok">last ${spkUsed(k.result)}/${k.items.length}</span>`:''}${spkKeysOk()?'':'<span class="pill new">add API key</span>'}</div></div></button>`;
+    return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
+{ const _set=vSettings; vSettings=function(){
+    const seg=`<div class="seg">${[['auto','Gemini → Groq'],['gemini','Gemini only'],['groq','Groq only']].map(([v,l])=>`<button class="${(cfg.spkProv||'auto')===v?'on':''}" data-act="set" data-k="spkProv" data-v="${v}">${l}</button>`).join('')}</div>`;
+    const vs = p => cfg[p==='gemini'?'gemKey':'groqKey'] ? 'typed on this device' : (p==='gemini'?cfg.vGem:cfg.vGroq) ? 'from your Apps Script ✓' : syncOn() ? 'not in Script Properties' : 'none';
+    const card=`<div class="card stack"><h3>AI coach · Modes 3 and 4</h3>
+      <div class="c-keys"><div><span>Gemini</span><b class="${aiKey('gemini')?'ok':''}">${vs('gemini')}</b></div><div><span>Groq</span><b class="${aiKey('groq')?'ok':''}">${vs('groq')}</b></div></div>
+      <p class="hint" style="margin:0">Recommended: keep the keys in your Apps Script (Project Settings &gt; Script Properties: <b>GEMINI_KEY</b>, optional <b>GROQ_KEY</b>). Every device connected to sync then gets them automatically. ${syncOn()?'':'Connect sync below first.'}</p>
+      ${syncOn()?'<button class="btn ghost small" data-act="vaultRefresh" style="align-self:flex-start">Reload keys from Apps Script</button>':''}
+      <div><div class="eyebrow" style="margin-bottom:6px">Provider order</div>${seg}</div>
+      <label class="stack" style="gap:6px"><span class="eyebrow">Your work context (the coach writes tasks in it)</span><textarea id="aiDomain" rows="3" spellcheck="false">${esc(cfg.aiDomain||C_DOMAIN)}</textarea></label>
+      <details><summary class="hint" style="cursor:pointer">Type a key on this device instead (overrides Apps Script)</summary><div class="stack" style="margin-top:10px">
+      <label class="stack" style="gap:6px"><span class="eyebrow">Gemini API key · <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio</a></span><input type="password" id="gemKey" autocomplete="off" placeholder="AIza…" value="${esc(cfg.gemKey||'')}" class="spk-in"></label>
+      <label class="stack" style="gap:6px"><span class="eyebrow">Groq API key (backup) · <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console</a></span><input type="password" id="groqKey" autocomplete="off" placeholder="gsk_…" value="${esc(cfg.groqKey||'')}" class="spk-in"></label>
+      <p class="hint" style="margin:0">Leave empty to use the Apps Script keys. Keys are never synced and never stored in the sheet.</p></div></details>
+      <p class="hint" style="margin:0">Gemini hears the audio, so Mode 3 also checks pronunciation and intonation; Groq is the text-only backup. With a paid Gemini project Google does not use your inputs for training; on free tiers it may, so keep real deal details out. Restrict the key in Google Cloud to the Generative Language API and to this site's address.</p></div>`;
+    return _set().replace(/<\/div>\s*$/, card+'</div>'); }; }
+{ const _ar=afterRender; afterRender=function(){ _ar();
+    if(st.view==='speak'){ $('#title').textContent='Speak'; const K=st.K;
+      bar(K?.phase==='cards'?(K.i+1)/K.items.length*100:K?.phase==='ready'||K?.phase==='rec'||K?.phase==='review'?100:0);
+      const f=$('#spkFile'); if(f) f.onchange=()=>spkUpload(f.files[0]);
+      if(K?.phase==='cards' && cfg.autoSpeak && K.spoke!==K.i){ K.spoke=K.i; speak(K.items[K.i].en); }
+      if(K?.phase==='rec') { cancelAnimationFrame(R.raf); recDraw(); } }
+    ['gemKey','groqKey'].forEach(id=>{ const el=$('#'+id); if(el) el.onchange=()=>{ cfg[id]=el.value.trim(); LS.set(K.cfg,cfg); localStorage.removeItem(SPK.models); toast(el.value.trim()?'Key saved on this device':'Using the Apps Script key'); render(); }; });
+  }; }
+{ const _back=actions.back; actions.back=()=>{ if(st.view==='speak') return spkBack(); if(st.view==='settings' && st.prev==='speak' && st.K && st.K.phase!=='start'){ return go('speak'); } _back(); }; }
+
+// ---------- 11. AI keys: one vault for every device ----------
+// Manual keys typed in Settings win. Otherwise the app asks the Apps Script (same URL + token as sync) for the keys
+// kept in its Script Properties and caches them on this device (never synced, never in the repo).
+const aiKey = p => p==='gemini' ? (cfg.gemKey||cfg.vGem||'') : (cfg.groqKey||cfg.vGroq||'');
+const aiKeysOk = () => !!(aiKey('gemini') || aiKey('groq') || syncOn());
+async function ensureKeys(force=false){
+  if(!syncOn()) return;
+  if(!force && cfg.vAt && Date.now()-cfg.vAt<3*DAY && (aiKey('gemini')||aiKey('groq'))) return;
+  try{ const r=await syncPost({action:'keys'});
+    if(r.ok && (r.gemini!==undefined || r.groq!==undefined)){
+      if(r.gemini!==cfg.vGem) localStorage.removeItem(SPK.models);
+      cfg.vGem=r.gemini||''; cfg.vGroq=r.groq||''; cfg.vAt=Date.now(); LS.set(K.cfg,cfg); }
+  }catch(e){ /* offline or old script without the keys action: keep what we have */ }
+}
+const fromVault = p => p==='gemini' ? !cfg.gemKey && !!cfg.vGem : !cfg.groqKey && !!cfg.vGroq;
+// Thinking costs output tokens and time. Drills need little of it; the speech audit keeps the model default.
+function thinkCfg(m, lvl){
+  if(!lvl) return {};
+  if(/gemini-2\.5/.test(m)) return { thinkingConfig:{ thinkingBudget: lvl==='low'?512:2048 } };
+  if(/gemini-[3-9]/.test(m)) return { thinkingConfig:{ thinkingLevel: lvl==='low'?'low':'medium' } };
+  return {};
+}
+// Text-only JSON call with the same provider order as Mode 3 (Gemini first, Groq as backup).
+async function aiJSON(P, { temp=0.5, max=8000, think='low', label='' }={}){
+  await ensureKeys();
+  const pref=cfg.spkProv||'auto', order=pref==='gemini'?['gemini']:pref==='groq'?['groq']:['gemini','groq'];
+  const errs=[];
+  for(const p of order){
+    for(let pass=0; pass<2; pass++){
+      const key=aiKey(p); if(!key) break;
+      try{ return p==='gemini' ? await gemText(key,P,{temp,max,think,label}) : await groqText(key,P,{temp,max}); }
+      catch(e){
+        if(e instanceof SpkFatal && pass===0 && fromVault(p) && syncOn()){ await ensureKeys(true); continue; }   // key rotated in the vault
+        errs.push(e.message); break; }
+    }
+  }
+  throw new Error(errs.join(' | ') || 'No API key. Connect sync or add a key in Settings.');
+}
+async function gemText(key, P, { temp, max, think, label }){
+  const models=await gemModels(key); let last='';
+  for(const m of models){
+    let noThink=false;
+    for(let attempt=0; attempt<3; attempt++){
+      coachStep(`${label}Gemini · ${m}${attempt?' · retry '+attempt:''}`);
+      let r;
+      try{ r=await fetch(`${GEM}/models/${m}:generateContent`,{ method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({ systemInstruction:{parts:[{text:P.sys}]}, contents:[{role:'user',parts:[{text:P.user}]}],
+          generationConfig:{ responseMimeType:'application/json', temperature:temp, maxOutputTokens:max, ...(noThink?{}:thinkCfg(m,think)) } }) }); }
+      catch(e){ last='network'; await sleep(1200); continue; }
+      if(r.ok){ const j=await r.json(), c=j.candidates?.[0], txt=(c?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join('');
+        try{ const out=parseJSON(txt); out._provider='Gemini · '+m; return out; }catch(e){ last=`${m}: ${c?.finishReason||'bad JSON'}`; break; } }
+      const body=await r.text(); last=`${m}: HTTP ${r.status}`;
+      if(r.status===401||r.status===403) throw new SpkFatal('Gemini rejected the key.');
+      if(r.status===400 && /thinking/i.test(body) && !noThink){ noThink=true; attempt--; continue; }
+      if([429,500,502,503,504].includes(r.status)){ if(r.status===429 && /quota|per day|PerDay/i.test(body)) break; await sleep(r.status===429?3500:1500*(attempt+1)); continue; }
+      break;
+    }
+  }
+  throw new Error('Gemini: '+last);
+}
+async function groqText(key, P, { temp, max }){
+  let last='';
+  for(const model of ['openai/gpt-oss-120b','llama-3.3-70b-versatile','openai/gpt-oss-20b']){
+    coachStep('Groq · '+model.split('/').pop());
+    const body={ model, temperature:temp, max_completion_tokens:max, response_format:{type:'json_object'}, messages:[{role:'system',content:P.sys},{role:'user',content:P.user}] };
+    if(/gpt-oss/.test(model)) body.reasoning_effort='low';
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.status===401||r.status===403) throw new SpkFatal('Groq rejected the key.');
+    if(!r.ok){ last=model+': HTTP '+r.status; if(r.status===429) await sleep(2500); continue; }
+    try{ const j=await r.json(); const out=parseJSON(j.choices[0].message.content); out._provider='Groq · '+model.split('/').pop(); return out; }
+    catch(e){ last=model+': bad JSON'; }
+  }
+  throw new Error('Groq: '+last);
+}
+
+// ---------- 12. Context Drills (Mode 4): pushed written output with AI feedback ----------
+// Method (why it is built this way):
+// · Retrieval + pushed output (Swain): the learner must produce the target, not recognise it.
+// · Task-based (TBLT): every item is a real work moment (email, call, board pack), not a grammar exercise.
+// · Four task types, interleaved in Mix: Respond (situation → reply), Translate (RU cue → EN, the learner's real job),
+//   Upgrade (fix a blunt or calqued line: register and collocation), Create (personal sentence: self-reference effect).
+// · Graded hints (scaffolding): each hint lowers the SRS credit, so the learner pays for help instead of skipping effort.
+// · Feedback = recast + metalinguistic hint: a minimal fix that keeps the learner's own words (noticing the gap),
+//   a native executive version (the model to imitate), one memorable rule per error, codes shared with Mode 3.
+// · Uptake: one rewrite per item, checked again. Error codes accumulate across sessions into a personal pattern list.
+const COACH = { hist:'bet3.coach', sizes:[3,5,7] };
+const C_DOMAIN = 'Corporate finance, debt capital markets (bonds, loans, liability management, rating agencies), strategy and investor relations in a Metals & Mining group (steel, iron ore, coal); board, banks, investors and auditors as counterparts';
+const FMT = {
+  scenario:{ l:'Respond', d:'Reply to a live work moment', ico:'↩' },
+  translate:{ l:'Translate', d:'Russian cue → natural English', ico:'⇄' },
+  upgrade:{ l:'Upgrade', d:'Fix a blunt or calqued line', ico:'↑' },
+  create:{ l:'Create', d:'Your own sentence about your work', ico:'✎' }
+};
+const ICON_COACH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+const coachHist = () => LS.get(COACH.hist, []);
+function coachStep(t){ if(st.C){ st.C.step=t; } const el=$('#coachStep'); if(el) el.textContent=t; }
+
+// ---- 12a. Picking targets and task types ----
+function coachBuild(fmt, src, n){
+  const P=(data.phr?.items||[]).filter(i=>inScope(i) && i.status!=='Alt');
+  const V=(data.voc?.items||[]).filter(inScope);
+  let nP = src==='phr' ? n : src==='voc' ? 0 : Math.ceil(n*0.6), nV=n-nP;
+  nP=Math.min(nP,P.length); nV=Math.min(n-nP,V.length); if(nP+nV<n) nP=Math.min(P.length,n-nV);
+  const prim=shuffle([...wpick(P,nP,spkWeight), ...wpick(V,nV,i=>spkWeight(i)*(rank(i)===0?1.2:1))]);
+  const kinds = fmt==='mix' ? (()=>{ const base=shuffle(Object.keys(FMT)); return prim.map((_,i)=>base[i%base.length]); })() : prim.map(()=>fmt);
+  const used=new Set(prim);
+  return prim.map((it,i)=>{
+    const t={ fmt:kinds[i], targets:[it], hints:0, tries:[] };
+    // A Respond task pairs a function phrase with one content chunk: frame + content in the same reply
+    if(t.fmt==='scenario' && it.deck==='phr' && src!=='phr'){ const c=wpick(V.filter(x=>!used.has(x)),1,spkWeight)[0]; if(c){ used.add(c); t.targets.push(c); } }
+    return t;
+  });
+}
+const tgtLine = it => `${it.deck}:${it.id} | ${it.en} | ${it.ru}${it.type?' | '+it.type:''}${it.register?' | register '+it.register:''}${it.note?' | '+String(it.note).slice(0,160):''}${it.examples?.[0]?' | e.g. '+it.examples[0]:''}`;
+
+// ---- 12b. Prompts ----
+function coachGenPrompt(tasks){
+  return {
+sys:`You write practice tasks for a Russian/Ukrainian-speaking senior finance professional aiming for C1 executive English. Context: ${cfg.aiDomain||C_DOMAIN}. Return ONLY JSON.
+
+Task types
+- scenario: a live work moment in English, 2-3 sentences, max 55 words. Name a person and role, one concrete detail (a number, a deadline, a covenant, a plant), a channel (email, call, meeting, chat). End with a direct question or request to the learner. The target expression(s) must be the natural thing to say in the reply, but never appear in the text. Add prompt_ru: a natural Russian translation (not word-for-word).
+- translate: ONE natural Russian sentence (12-28 words), as a Russian-speaking banker or CFO would really say or write it. The given English target must be the most natural way to render its key idea. Never include the English target, a transliteration or a calque that gives it away. Avoid Russian bureaucratese unless the target is formal.
+- upgrade: ONE English sentence (10-25 words) that a non-native professional might say: understandable but blunt, vague, too informal, or calqued from Russian, expressing the idea the target expresses better. It must not contain the target. Add flaw_ru: a short Russian hint of what is wrong with it (register, calque, vagueness), without giving the answer.
+- create: a one-line situation cue in Russian (max 20 words) from the learner's own work that invites using the target, e.g. «Расскажите банку, почему вы переносите выпуск».
+
+Rules: vary situations, channels and counterparts across tasks; no two tasks in the same scene; realistic numbers; no real company names except generic ones (the group, the bank, the plant). Keep the learner's register in mind: the targets marked Informal or Caution need an informal setting.
+
+Return: {"tasks":[{"n":1,"prompt":"...","prompt_ru":"...","flaw_ru":"..."}]} with one object per task in the same order.`,
+user:'Tasks:\n'+tasks.map((t,i)=>`${i+1}. type ${t.fmt}. Target(s): ${t.targets.map(tgtLine).join(' || ')}`).join('\n')
+  };
+}
+function coachEvalPrompt(t, answer, retry){
+  const task = t.fmt==='translate' ? `Russian source: «${t.prompt}»` : t.fmt==='upgrade' ? `Line to upgrade: "${t.prompt}"` : t.fmt==='scenario' ? `Situation: ${t.prompt}` : `Cue: ${t.prompt||'free sentence about the learner\'s work'}`;
+  return {
+sys:`You are a strict but encouraging executive English coach for a Russian/Ukrainian-speaking senior finance professional (C1 target). Context: ${cfg.aiDomain||C_DOMAIN}. You assess ONE written answer and return ONLY JSON.
+
+What to judge, in this order
+1. Task: did the answer do the job? translate: is the meaning of the Russian source fully and accurately rendered (no omissions, no added claims)? scenario: does it answer the question/request in a sensible way? upgrade: same meaning, better register and precision? create: a meaningful sentence on the cue?
+2. Targets: for each target id decide status "used" (correct form, meaning, collocation and register, natural in context; normal inflection and optional [bracketed] parts are fine), "error" (attempted but wrong form, meaning, preposition, collocation or register), "avoided" (not used, including a synonym instead).
+3. Language: grammar, articles, prepositions, tense, word order, collocation, register, false friends. Flag only real errors; a correct but less idiomatic choice is a note, not an error.
+
+Grade: "A" native-like and natural, no errors, targets used well; "B" correct and clear, only small non-native choices; "C" understandable, but errors or a target used wrongly; "D" meaning lost, task not done, or targets missing.
+
+Feedback rules
+- marked: the learner's answer copied EXACTLY, with every trigger wrapped as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = genuine C1 success (precise collocation, hedge, discourse marker). Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Idiom, Meaning, Spelling. Fix = corrected words ("—" for S). Explanation in Russian, one sentence. Use pipes only as separators.
+- fix: a minimal correction that keeps the learner's own words and structure, changing only what is wrong. If there is nothing to fix, repeat the answer.
+- native: how a senior native-speaking executive would say it in this exact situation, using every target naturally, max 45 words, spoken-natural, not flowery.
+- alts: 0-2 other natural ways to say the key part (short).
+- rules: one entry per distinct error type, max 3, each with a code from the list below and a Russian explanation that the learner will remember (contrast with Russian, a hook, an image), not a textbook definition.
+- praise: one real strength in Russian, or "" if there is none. Never invent praise.
+- Be precise and brief. If the answer is good, say so; do not hunt for problems.${retry?'\n- This is the learner\'s second attempt after feedback. In "comment" say in Russian what improved and what is still off.':''}
+
+${SPK_CHECK.split('\nPRON')[0]}
+
+Return exactly: {"grade":"A|B|C|D","task_ok":true,"comment":"one sentence in Russian, the main point","targets":[{"id":"phr:12","status":"used|error|avoided","note":"Russian, short"}],"marked":"...","fix":"...","native":"...","alts":["..."],"rules":[{"code":"ART","rule":"..."}],"praise":"..."}`,
+user:`Task type: ${t.fmt}
+${task}
+Target(s) the learner had to use (id | expression | meaning | ...):
+${t.targets.map(tgtLine).join('\n')}
+Hints used: ${t.hints}
+Learner's answer: "${answer}"`
+  };
+}
+
+// ---- 12c. Views ----
+function vCoach(){
+  const C=st.C||(st.C={phase:'start'});
+  return ({ start:coachStart, gen:coachWait, task:coachTask, check:coachWait, fb:coachTask, sum:coachSum })[C.phase]();
+}
+function coachPatterns(){
+  const tally={};
+  coachHist().slice(0,12).forEach(s=>(s.codes||[]).forEach(c=>{ tally[c]=(tally[c]||0)+1; }));
+  spkHist().slice(0,6).forEach(s=>(s.result?.patterns||[]).forEach(p=>{ tally[p.code]=(tally[p.code]||0)+(p.count||1); }));
+  return Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,6);
+}
+const CODE_RU = { ART:'Артикли', PERF:'Present Perfect / Past', PREP:'Предлоги-кальки', SUBJ:'Нет подлежащего', UNC:'Неисчисляемые', COMP:'Управление глаголов', WO:'Порядок слов', COND:'Будущее после if/when', NEG:'Отрицание', QUES:'Вопросы', MOD:'Модальность, жёсткость', FF:'Ложные друзья', CLICHE:'Кальки-клише', REG:'Регистр', LEX:'Бедная лексика', PRON:'Произношение' };
+function coachStart(){
+  const h=coachHist(), pats=coachPatterns(), pmax=Math.max(1,...pats.map(p=>p[1]));
+  const fmt=cfg.aiFmt||'mix', src=cfg.aiSrc||'mix', size=cfg.aiSize||5;
+  const seg=(k,v0,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${String(v0)===String(v)?'on':''}" data-act="coachSet" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  return `<div class="stack">
+    <div class="hero spk-hero">
+      <div class="lbl">Mode 4 · Context Drills</div>
+      <div class="q">Write it the way you would say it at work. A coach checks every line.</div>
+      <ol class="spk-how"><li>Targets come from both decks, weakest first</li><li>Answer one real work moment at a time</li><li>See a minimal fix, a native version and the rule</li><li>Rewrite once, then move on</li></ol>
+    </div>
+    <div class="card stack">
+      <div><div class="eyebrow" style="margin-bottom:8px">Task type</div>
+        <div class="c-fmts">${[['mix','Mix','All four, interleaved','◆'],...Object.entries(FMT).map(([k,v])=>[k,v.l,v.d,v.ico])].map(([k,l,d,ic])=>`<button class="c-fmt ${fmt===k?'on':''}" data-act="coachSet" data-k="aiFmt" data-v="${k}"><i>${ic}</i><b>${l}</b><span>${d}</span></button>`).join('')}</div></div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Targets from</div>${seg('aiSrc',src,[['mix','Both decks'],['phr','Phrases'],['voc','Chunks']])}</div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Items</div>${seg('aiSize',size,COACH.sizes.map(n=>[n,String(n)]))}</div>
+      <button class="btn spk-go" data-act="coachGo" ${aiKeysOk()?'':'disabled'}>${ICON_COACH} Start</button>
+    </div>
+    ${aiKeysOk()?'':`<div class="note warn-note"><b>Needs an AI key</b>Connect sync in <a href="#" data-act="settings">Settings</a> (the key then comes from your Apps Script), or paste a key there.</div>`}
+    ${pats.length?`<section><h3 class="spk-h">Your recurring patterns <small class="muted">drills + speaking</small></h3>
+      ${pats.map(([c,n])=>`<div class="c-pat"><span class="code">${esc(c)}</span><span class="t">${esc(CODE_RU[c]||c)}</span><span class="c">×${n}</span><i style="width:${Math.round(n/pmax*100)}%"></i></div>`).join('')}
+      <p class="hint" style="margin-top:8px">The coach sees these codes in every answer. Fix the top one first: it gives the biggest gain per hour.</p></section>`:''}
+    ${h.length?`<div class="eyebrow" style="margin-top:6px">Past sessions</div>${h.slice(0,6).map(s=>{ const ok=s.items.filter(x=>x.grade==='A'||x.grade==='B').length;
+      return `<div class="deck c-past"><div class="ico spk-score ${ok>=s.items.length-1?'ok':ok>=s.items.length/2?'warn':'bad'}">${ok}/${s.items.length}</div>
+      <div class="meta"><h3>${esc(s.fmt==='mix'?'Mix':FMT[s.fmt]?.l||s.fmt)}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${s.items.map(x=>x.grade||'–').join(' ')}</div>
+      <div class="row" style="margin-top:6px;gap:6px">${s.items.slice(0,3).map(x=>`<span class="pill">${esc(x.en.length>26?x.en.slice(0,24)+'…':x.en)}</span>`).join('')}</div></div></div>`; }).join('')}`:''}
+    <p class="hint">Grades update review dates: A or B = Good, C = Hard, target avoided = back tomorrow. Using hints caps the credit at Hard. Rewrites never change the grade.</p>
+  </div>`;
+}
+function coachWait(){
+  const C=st.C;
+  return `<div class="stack" style="text-align:center;padding-top:30px">
+    <div class="spk-orb"><span></span><span></span><span></span></div>
+    <h2>${C.phase==='gen'?'Writing your tasks':'Checking your answer'}</h2>
+    <p class="muted" id="coachStep">${esc(C.step||'')}</p>
+  </div>`;
+}
+const skelOf = t => stripBr(t).split(/\s+/).map(w=>w.replace(/[\p{L}\p{N}]/gu,(c,i)=>i===0?c:'·')).join(' ');
+function coachTargets(t, reveal){
+  const hidden = t.fmt==='translate' && !reveal;
+  return `<div class="c-tg">${t.targets.map(it=>`<div class="c-tgi"><span class="spk-kind" style="margin:0">${it.deck==='phr'?'Phrase':'Chunk'}${it.register&&it.register!=='Neutral'?' · '+esc(it.register):''}</span>
+    ${hidden ? (t.hints>=1?`<div class="phrase c-sk">${esc(t.hints>=2?it.en:skelOf(it.en))}</div>`:`<div class="muted" style="font-size:.9rem">Hidden: find the expression yourself</div>`)
+      : `<div class="phrase" style="font-size:1.2rem">${esc(it.en)}</div><div class="muted" style="font-size:.9rem">${esc(it.ru)}</div>`}
+    ${!hidden && t.hints>=1 && it.note?`<div class="note" style="margin-top:8px"><b>${it.deck==='phr'?'Intent':'Explanation'}</b>${esc(it.note)}</div>`:''}
+    ${!hidden && t.hints>=2 && it.examples?.[0]?`<div class="note" style="margin-top:8px"><b>Example</b><span class="serif">${hl(it.examples[0],it.en)}</span></div>`:''}</div>`).join('')}</div>`;
+}
+function coachPromptBox(t){
+  if(t.fmt==='translate') return `<div class="c-src ru">${esc(t.prompt)}</div>`;
+  if(t.fmt==='upgrade') return `<div class="c-src"><span class="c-strike">${esc(t.prompt)}</span>${audioBtn(t.prompt)}</div>${t.hints>=1&&t.flaw_ru?`<div class="note"><b>What is off</b>${esc(t.flaw_ru)}</div>`:''}`;
+  if(t.fmt==='scenario') return `<div class="c-src">${esc(t.prompt)} ${audioBtn(t.prompt)}</div>${t.prompt_ru?`<details class="c-ru"><summary>Перевод</summary>${esc(t.prompt_ru)}</details>`:''}`;
+  return `<div class="c-src ru">${esc(t.prompt||'Напишите одно-два предложения о своей работе, используя выражение.')}</div>`;
+}
+const GR = { A:['ok','Native-like'], B:['ok','Correct'], C:['warn','Needs work'], D:['bad','Missed'] };
+function coachTask(){
+  const C=st.C, t=C.tasks[C.i], f=C.phase==='fb', r=t.res, last=C.i===C.tasks.length-1;
+  const ask = { scenario:'Reply in English', translate:'Translate into natural English', upgrade:'Rewrite it with the target', create:'Write your sentence' }[t.fmt];
+  return `<div class="stack">
+    <div class="spk-dots">${C.tasks.map((x,i)=>`<span class="${x.res?(GR[x.res.grade]||GR.C)[0]==='ok'?'done':'warnd':i===C.i?'on':''}"></span>`).join('')}<em>${C.i+1} / ${C.tasks.length}</em></div>
+    <div class="card c-card">
+      <div class="spk-kind">${FMT[t.fmt].ico} ${FMT[t.fmt].l}</div>
+      ${coachPromptBox(t)}
+      ${coachTargets(t, f)}
+      ${f?'':`<div class="c-ask"><label class="eyebrow" for="cAns">${ask}</label>
+        <div class="c-in"><textarea id="cAns" rows="4" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="${t.fmt==='scenario'?'Your reply…':'Your sentence…'}">${esc(C.draft||'')}</textarea>
+        ${dictOk()?`<button class="c-mic ${C.dict?'on':''}" data-act="coachDict" aria-label="Dictate">${ICON_MIC}</button>`:''}</div>
+        <div class="actions">${t.hints<2?`<button class="btn ghost" data-act="coachHint" style="flex:0 0 auto">Hint ${t.hints+1}/2</button>`:''}<button class="btn ghost" data-act="coachSkip" style="flex:0 0 auto">Skip</button><button class="btn" data-act="coachCheck">Check</button></div>
+        <p class="hint" style="margin:0">${t.fmt==='translate'?'Hint 1 shows the first letters, hint 2 the expression.':'Hint 1 explains the expression, hint 2 shows an example.'} Ctrl + Enter checks.</p></div>`}
+    </div>
+    ${f?coachFeedback(t, last):''}
+  </div>`;
+}
+function coachFeedback(t, last){
+  const r=t.res, g=GR[r.grade]||GR.C, C=st.C; C.toks=[];
+  const pm=parseMarks(r.marked||t.tries[t.tries.length-1]); C.toks=pm.toks;
+  const st3={ used:['ok','✓','Used well'], error:['warn','!','Used with an error'], avoided:['bad','–','Not used'] };
+  return `<div class="card c-fb ${g[0]}">
+    <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap;gap:10px">
+      <div class="c-grade ${g[0]}">${esc(r.grade||'?')}</div>
+      <div style="flex:1;min-width:0"><b>${g[1]}</b>${r.task_ok===false?' <span class="pill due">task missed</span>':''}<div class="muted" style="font-size:.92rem">${esc(r.comment||'')}</div></div></div>
+    ${(r.targets||[]).map(x=>{ const s=st3[x.status]||st3.avoided, it=t.targets.find(i=>i.deck+':'+i.id===x.id);
+      return `<div class="spk-t ${s[0]}" style="padding:8px 0"><div class="spk-ti">${s[1]}</div><div class="meta"><b class="serif">${esc(it?.en||x.id)}</b> <span class="muted" style="font-size:.85rem">${s[2]}</span>${x.note?`<div class="muted" style="font-size:.88rem;margin-top:2px">${esc(x.note)}</div>`:''}</div></div>`; }).join('')}
+    <div><div class="eyebrow" style="margin:6px 0 6px">Your answer <small class="muted" style="text-transform:none;letter-spacing:0">tap a highlight</small></div>
+      <div class="spk-orig">${pm.html.replace(/data-act="spkTok"/g,'data-act="coachTok"')}</div><div class="spk-tx" id="cTx" hidden></div></div>
+    ${r.fix && norm(r.fix)!==norm(t.tries[t.tries.length-1]) ? `<div class="c-fix"><span>Minimal fix</span>${esc(r.fix)}</div>`:''}
+    ${r.native?`<div class="spk-native"><span>Native</span>${esc(r.native)} ${audioBtn(r.native)}</div>`:''}
+    ${(r.alts||[]).length?`<div class="muted" style="font-size:.9rem">Also: ${r.alts.map(a=>`<span class="serif">${esc(a)}</span>`).join(' · ')}</div>`:''}
+    ${(r.rules||[]).map(x=>`<div class="note"><b><span class="c-code">${esc(x.code||'')}</span> ${esc(CODE_RU[x.code]||'')}</b>${esc(x.rule)}</div>`).join('')}
+    ${r.praise?`<div class="spk-win" style="margin:0"><b>Сильная сторона</b><div class="muted" style="font-size:.9rem;margin-top:2px">${esc(r.praise)}</div></div>`:''}
+    ${t.tries.length>1?`<div class="hint" style="margin:0">Attempt ${t.tries.length}. The grade for review dates comes from your first attempt.</div>`:''}
+    ${C.retry?`<div class="c-in"><textarea id="cAns" rows="3" spellcheck="false" placeholder="Rewrite using the feedback…">${esc(C.draft||'')}</textarea>${dictOk()?`<button class="c-mic ${C.dict?'on':''}" data-act="coachDict" aria-label="Dictate">${ICON_MIC}</button>`:''}</div>
+      <div class="actions"><button class="btn ghost" data-act="coachRetryOff" style="flex:0 0 auto">Cancel</button><button class="btn" data-act="coachCheck">Check rewrite</button></div>`
+    :`<div class="actions">${t.tries.length<3&&r.grade!=='A'?'<button class="btn ghost" data-act="coachRetry" style="flex:0 0 auto">Rewrite</button>':''}<button class="btn" data-act="coachNext">${last?'See summary':'Next'}</button></div>`}
+  </div>`;
+}
+function coachSum(){
+  const C=st.C, done=C.tasks.filter(t=>t.res), n=C.tasks.length;
+  const good=done.filter(t=>t.first==='A'||t.first==='B').length;
+  const codes={}; done.forEach(t=>(t.res.rules||[]).forEach(r=>{ if(r.code) codes[r.code]=(codes[r.code]||0)+1; }));
+  const weak=C.tasks.filter(t=>!t.res || t.first==='C' || t.first==='D');
+  return `<div class="stack spk-res">
+    <div class="summary-hero spk-sum"><div class="eyebrow">Context Drills · ${C.fmt==='mix'?'Mix':FMT[C.fmt].l}</div>
+      <div class="n">${good}<small>/${n}</small></div><div class="muted">answers at A or B on the first try</div>
+      <div class="row" style="justify-content:center;gap:6px;margin-top:10px">${['A','B','C','D'].map(g=>{ const k=done.filter(t=>t.first===g).length; return k?`<span class="pill ${GR[g][0]==='ok'?'ok':GR[g][0]==='warn'?'new':'due'}">${g} × ${k}</span>`:''; }).join('')}</div></div>
+    <section><h3 class="spk-h">Item by item</h3>
+    ${C.tasks.map((t,i)=>{ const g=t.first?GR[t.first]:null; return `<div class="spk-t ${g?g[0]:'bad'}"><div class="spk-ti">${t.first||'–'}</div><div class="meta">
+      <div class="muted" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">${FMT[t.fmt].l}</div>
+      <b class="serif">${t.targets.map(x=>esc(x.en)).join(' + ')}</b>
+      ${t.res?.native?`<div class="spk-native"><span>Native</span>${esc(t.res.native)} ${audioBtn(t.res.native)}</div>`:`<div class="muted" style="font-size:.9rem">Skipped</div>`}</div></div>`; }).join('')}</section>
+    ${Object.keys(codes).length?`<section><h3 class="spk-h">What to watch</h3><div class="row" style="gap:6px">${Object.entries(codes).sort((a,b)=>b[1]-a[1]).map(([c,k])=>`<span class="pill"><b>${esc(c)}</b>&nbsp;${esc(CODE_RU[c]||'')} ×${k}</span>`).join('')}</div></section>`:''}
+    <p class="hint" style="text-align:center">Review dates updated for ${C.tasks.reduce((a,t)=>a+(t.res?t.targets.length:0),0)} cards.</p>
+    <div class="actions">${weak.length?`<button class="btn ghost" data-act="coachAgain">Again with ${weak.length} weak</button>`:''}<button class="btn" data-act="coachNew">New session</button></div>
+  </div>`;
+}
+
+// ---- 12d. Actions ----
+actions.openCoach = () => { if(!st.C || st.C.phase==='sum') st.C={phase:'start'}; go('coach'); };
+actions.coachSet = d => { let v=d.v; if(/^\d+$/.test(v)) v=+v; cfg[d.k]=v; touchCfg(); render(); };
+actions.coachNew = () => { st.C={phase:'start'}; go('coach'); };
+actions.coachGo = async () => {
+  go('loading');
+  try{ await spkEnsureData(); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); }
+  const fmt=cfg.aiFmt||'mix', tasks=coachBuild(fmt, cfg.aiSrc||'mix', cfg.aiSize||5);
+  if(!tasks.length) return toast('No cards in scope. Check Settings > scope.'), go('home');
+  coachStart2(fmt, tasks);
+};
+actions.coachAgain = () => { const C=st.C, items=C.tasks.filter(t=>!t.res||t.first==='C'||t.first==='D');
+  coachStart2(C.fmt, items.map(t=>({ fmt:t.fmt, targets:t.targets, hints:0, tries:[] }))); };
+async function coachStart2(fmt, tasks){
+  st.C={ phase:'gen', fmt, tasks, i:0, at:Date.now(), step:'' }; go('coach');
+  try{
+    const out=await aiJSON(coachGenPrompt(tasks), { temp:0.9, max:4000, label:'Tasks · ' });
+    (out.tasks||[]).forEach((g,i)=>{ const t=tasks[i]; if(!t||!g) return; t.prompt=String(g.prompt||''); t.prompt_ru=g.prompt_ru||''; t.flaw_ru=g.flaw_ru||''; });
+    const bad=tasks.filter(t=>t.fmt!=='create' && !t.prompt);
+    if(bad.length===tasks.length) throw new Error('the model returned no tasks');
+    bad.forEach(t=>{ t.fmt='create'; t.prompt=''; });   // a failed item still trains the target
+    st.C.phase='task'; st.C.provider=out._provider;
+  }catch(e){ toast('Could not create tasks: '+e.message.slice(0,180)); st.C={phase:'start'}; }
+  if(st.view==='coach') go('coach');
+}
+actions.coachHint = () => { const C=st.C, t=C.tasks[C.i]; C.draft=$('#cAns')?.value||''; t.hints=Math.min(2,t.hints+1); render(); $('#cAns')?.focus(); };
+actions.coachSkip = () => { const C=st.C; dictStop(); C.draft=''; C.tasks[C.i].targets.forEach(it=>{ const x=(data[it.deck]?.items||[]).find(y=>y.id===it.id); if(x) softLapse(x); }); coachAdvance(); };
+actions.coachRetry = () => { const C=st.C; C.retry=true; C.draft=C.tasks[C.i].tries.slice(-1)[0]||''; render(); const a=$('#cAns'); if(a){ a.focus(); a.setSelectionRange(a.value.length,a.value.length); } };
+actions.coachRetryOff = () => { st.C.retry=false; st.C.draft=''; dictStop(); render(); };
+actions.coachNext = () => { dictStop(); coachAdvance(); };
+function coachAdvance(){ const C=st.C; C.retry=false; C.draft=''; if(C.i<C.tasks.length-1){ C.i++; C.phase='task'; go('coach'); } else coachFinish(); }
+actions.coachCheck = async () => {
+  const C=st.C, t=C.tasks[C.i], el=$('#cAns'), ans=(el?.value||'').trim();
+  if(ans.split(/\s+/).length<3) return toast('Write at least a short sentence.');
+  dictStop(); const retry=t.tries.length>0; t.tries.push(ans); C.draft=ans;
+  const back=C.phase; C.phase='check'; C.step=''; go('coach');
+  try{
+    const r=await aiJSON(coachEvalPrompt(t, ans, retry), { temp:0.2, max:3000, label:'Check · ' });
+    r.grade=String(r.grade||'C').trim().toUpperCase()[0]; if(!GR[r.grade]) r.grade='C';
+    const ids=t.targets.map(i=>i.deck+':'+i.id);
+    r.targets=ids.map(id=>{ const x=(r.targets||[]).find(y=>String(y.id)===id) || (r.targets||[]).find(y=>norm(String(y.id))===norm(id)) || {status:'avoided'}; return { ...x, id, status:['used','error','avoided'].includes(x.status)?x.status:'avoided' }; });
+    ['alts','rules'].forEach(k=>{ if(!Array.isArray(r[k])) r[k]=[]; }); r.rules=r.rules.slice(0,3);
+    t.res=r; if(!retry){ t.first=r.grade; coachSRS(t); markActive(); }
+    C.phase='fb'; C.retry=false; C.draft='';
+    if(cfg.autoSpeak && r.native && (r.grade==='C'||r.grade==='D')) speak(r.native);
+  }catch(e){ t.tries.pop(); C.phase=retry?'fb':back; C.retry=retry; toast('Check failed: '+e.message.slice(0,180)); }
+  if(st.view==='coach') go('coach');
+};
+function coachSRS(t){
+  const r=t.res;
+  t.targets.forEach(it=>{ const x=(data[it.deck]?.items||[]).find(y=>y.id===it.id); if(!x) return; const s=r.targets.find(y=>y.id===it.deck+':'+it.id)?.status;
+    if(s==='avoided' || r.grade==='D') softLapse(x);
+    else if(s==='error' || r.grade==='C' || t.hints>0) grade(x,'hard');
+    else grade(x,'good'); });
+}
+function coachFinish(){
+  const C=st.C; C.phase='sum'; dictStop();
+  const codes=[]; C.tasks.forEach(t=>(t.res?.rules||[]).forEach(r=>r.code&&codes.push(String(r.code).toUpperCase())));
+  const h=coachHist(); h.unshift({ at:C.at, fmt:C.fmt, codes, items:C.tasks.map(t=>({ en:t.targets.map(x=>x.en).join(' + '), grade:t.first||'' })) });
+  LS.set(COACH.hist, h.slice(0,30)); go('coach');
+}
+actions.coachTok = d => {
+  const t=st.C.toks?.[d.n], box=$('#cTx'); if(!t||!box) return;
+  const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
+  document.querySelectorAll('.c-fb .tok').forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
+  box.className='spk-tx '+(t.k==='S'?'s':'e');
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b>${esc(t.text)}</b> → <b class="fix">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+};
+function coachBack(){
+  const ph=st.C?.phase;
+  if(ph==='gen'||ph==='check') return toast('One moment, the coach is working.');
+  if(ph==='task'||ph==='fb'){ if(st.C.tasks.some(t=>t.res)) return coachFinish(); if(!confirm('Leave this session?')) return; }
+  if(ph&&ph!=='start'){ st.C={phase:'start'}; return go('coach'); }
+  go('home');
+}
+
+// ---- 12e. Dictation (Web Speech API): speak the answer, then edit. Recognisers auto-correct, so the coach still sees clean text. ----
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const dictOk = () => !!SR;
+let dictRec=null;
+function dictStop(){ try{ dictRec?.stop(); }catch(e){} dictRec=null; if(st.C) st.C.dict=false; document.querySelectorAll('.c-mic').forEach(b=>b.classList.remove('on')); }
+actions.coachDict = () => {
+  if(dictRec) return dictStop();
+  const ta=$('#cAns'); if(!ta) return;
+  const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=true; r.continuous=true;
+  const base=ta.value.trim(); let fin='';
+  r.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const x=e.results[i]; if(x.isFinal) fin+=x[0].transcript+' '; else tmp+=x[0].transcript; }
+    const el=$('#cAns'); if(el){ el.value=(base?base+' ':'')+(fin+tmp).replace(/\s+/g,' ').trim(); st.C.draft=el.value; } };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); dictStop(); };
+  r.onend=()=>{ if(dictRec===r) dictStop(); };
+  try{ r.start(); dictRec=r; st.C.dict=true; document.querySelectorAll('.c-mic').forEach(b=>b.classList.add('on')); buzz(20); }catch(e){ toast('Dictation is not available here.'); }
+};
+
+// ---- 12f. One-tap setup for a new device: the sync link carries URL + token, keys then come from the vault ----
+function setupLink(){ return location.origin+location.pathname+'#setup='+btoa(unescape(encodeURIComponent(JSON.stringify({u:cfg.syncUrl,t:cfg.syncToken})))); }
+actions.copySetup = () => { if(!syncOn()) return toast('Connect sync first.'); copy(setupLink(), 'Setup link copied. Open it on your other device, only send it to yourself.'); };
+(function readSetup(){ const m=location.hash.match(/^#setup=([\w+/=%-]+)/); if(!m) return;
+  try{ const v=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if(v.u && v.t){ cfg.syncUrl=v.u; cfg.syncToken=v.t; cfg.vAt=0; LS.set(K.cfg,cfg); setTimeout(()=>toast('This device is connected. Syncing…'),400); } }catch(e){ toast('The setup link is damaged.'); }
+  history.replaceState(null,'',location.pathname+location.search); })();
+
+actions.vaultRefresh = async () => { cfg.vAt=0; await ensureKeys(true); render(); toast(cfg.vGem||cfg.vGroq?'Keys loaded from Apps Script':'No keys found. Add GEMINI_KEY in Script Properties and redeploy.'); };
+// After sync is saved, fetch the keys right away
+{ const _ss=actions.saveSync; actions.saveSync=async()=>{ await _ss(); cfg.vAt=0; await ensureKeys(true); if(st.view==='settings') render(); }; }
+
+// ---- 12g. Wiring ----
+SYNC_CFG_KEYS.push('aiFmt','aiSrc','aiSize','aiDomain','spkProv');
+{ const _home=vHome; vHome=function(){ const k=coachHist()[0];
+    const tile=`<button class="deck" data-act="openCoach">
+      <div class="ico" style="background:var(--primary-soft);color:var(--primary)">${ICON_COACH}</div>
+      <div class="meta"><h3>Context Drills</h3><div class="muted" style="font-size:.85rem">Mode 4 · respond, translate, upgrade with a coach</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">AI feedback</span>${k?`<span class="pill ok">last ${k.items.filter(x=>x.grade==='A'||x.grade==='B').length}/${k.items.length}</span>`:''}${aiKeysOk()?'':'<span class="pill new">connect AI</span>'}</div></div></button>`;
+    return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
+{ const _ar=afterRender; afterRender=function(){ _ar();
+    if(st.view==='coach'){ $('#title').textContent='Drills'; const C=st.C; bar(C?.tasks?((C.i+(C.phase==='fb'?1:0))/C.tasks.length*100):0);
+      const a=$('#cAns'); if(a){ a.oninput=()=>{ C.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); actions.coachCheck(); } }; if(C.phase==='task' && !('ontouchstart' in window)) a.focus(); } }
+    const dm=$('#aiDomain'); if(dm) dm.onchange=()=>{ cfg.aiDomain=dm.value.trim(); touchCfg(); toast('Context saved'); };
+  }; }
+{ const _back=actions.back; actions.back=()=>{ if(st.view==='coach') return coachBack(); if(st.view==='settings' && st.C && st.C.phase!=='start' && st.prev==='coach') return go('coach'); _back(); }; }
+
 render();
-if(syncOn()) syncNow({silent:true});
+if(syncOn()){ syncNow({silent:true}); ensureKeys(); }
 </script>
 </body>
 </html>
