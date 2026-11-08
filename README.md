@@ -29,6 +29,12 @@ each answer and pulls on open, on return to the tab and on reconnect. Cards: new
 5. On every other device: open Settings > Copy setup link for another device on a connected device, send the link to yourself
    and open it on the new device (or repeat step 4 by hand).
 
+## Speak & Record (Mode 3): two paths
+
+- **With my cards**: 4 to 6 targets from both decks, a business scene with four parts, 2 to 3 minutes. Review dates update from how each target was used.
+- **Free talk**: any topic (optional topic field and idea chips), no targets, up to 15 minutes, or upload a call/meeting (only the learner is analysed). Same Gemini analysis (audio-tutor rules: patterns before instances, no inflation, hooks, praise as data), no review-date changes. Mistakes go to the error journal with task `Free talk: <topic>`.
+- The result screen has **Main menu** next to New set / Talk again.
+
 ## AI keys (Mode 3 Speak & Record, Mode 4 Context Drills)
 
 The key lives only in the Script Properties of your Apps Script (`GEMINI_KEY`), never in the repo or the sheet. Use a key from a

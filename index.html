@@ -387,6 +387,13 @@ body.sess .actions .audio{width:54px;height:54px}
 
 /* ---- Mode 3 · Speak & Record. Same paper/ink/one-red language: red = live recording and errors, navy = what worked ---- */
 .spk-hero .q{font-size:clamp(1.25rem,5vw,1.6rem)}
+.spk-paths{display:grid;gap:10px}
+.spk-path{align-items:flex-start;text-align:left}
+.spk-path .meta h3{margin-bottom:3px}
+.spk-idea{cursor:pointer;border:1px solid var(--line);background:var(--surface);font:inherit;font-size:.8rem;text-align:left}
+.spk-idea:hover{border-color:var(--primary)}
+input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
+.spk-idea{border-radius:999px!important;padding:6px 12px}
 .spk-how{margin:10px 0 0;padding-left:1.2em;font-size:.9rem;color:var(--muted);display:grid;gap:2px}
 .spk-how li::marker{color:var(--primary);font-weight:700}
 .warn-note{border-left-color:var(--warn)!important;background:var(--warn-soft)}
@@ -1750,21 +1757,25 @@ function spkStart(){
   return `<div class="stack">
     <div class="hero spk-hero">
       <div class="lbl">Mode 3 · Speak & Record</div>
-      <div class="q">Use your phrases in live speech, then hear how a native would say it.</div>
-      <ol class="spk-how"><li>Get 4 to 6 targets from both decks</li><li>Study each card</li><li>Record a 2 to 3 minute story</li><li>Get a coach's breakdown</li></ol>
-      <div class="actions" style="margin-top:14px"><button class="btn" data-act="spkNew">${ICON_MIC} Generate my set</button></div>
+      <div class="q">Speak, record, and hear how a native would say it.</div>
+    </div>
+    <div class="spk-paths">
+      <button class="deck spk-path" data-act="spkNew"><div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON_MIC}</div>
+        <div class="meta"><h3>With my cards</h3><div class="muted" style="font-size:.88rem">4 to 6 targets from your decks, a business scene, 2 to 3 minutes. Review dates update from how you used them.</div></div></button>
+      <button class="deck spk-path" data-act="spkFree"><div class="ico" style="background:var(--primary-soft,#fbe3e1);color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></div>
+        <div class="meta"><h3>Free talk</h3><div class="muted" style="font-size:.88rem">Any topic, no targets. Talk as long as you like (up to 15 minutes) or upload a call. Same analysis, mistakes go to your error journal.</div></div></button>
     </div>
     ${keys?'':`<div class="note warn-note"><b>Analysis needs an AI key</b>Recording works without it. Connect sync in <a href="#" data-act="settings">Settings</a> (the key then comes from your Apps Script), or paste a key there.</div>`}
     ${h.length?`<div class="eyebrow" style="margin-top:6px">Past sessions</div>
     ${h.map((s,i)=>`<button class="deck spk-past" data-act="spkOpen" data-i="${i}">
-      <div class="ico spk-score ${spkTone(s)}">${s.result?spkUsed(s.result)+'/'+s.items.length:'–'}</div>
+      <div class="ico spk-score ${spkTone(s)}">${!s.result?'–':s.free?esc(s.result.summary?.cefr||'Free'):spkUsed(s.result)+'/'+s.items.length}</div>
       <div class="meta"><h3>${esc(s.scene||'Session')}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtSec(s.sec||0)}${s.result?` · ${esc(s.result.summary?.cefr||'')} · ${esc(s.provider||'')}`:' · not analysed'}</div>
       <div class="row" style="margin-top:6px;gap:6px">${s.items.slice(0,4).map(x=>`<span class="pill">${esc(x.en.length>26?x.en.slice(0,24)+'…':x.en)}</span>`).join('')}</div></div></button>`).join('')}`:''}
     <p class="hint">Targets come from both decks, weighted towards cards that are due or weak. The result updates their review dates: used well = Good, used with an error = Hard, avoided = back tomorrow.</p>
   </div>`;
 }
 const spkUsed = r => (r.targets||[]).filter(t=>t.status==='used').length;
-const spkTone = s => !s.result ? '' : spkUsed(s.result)>=s.items.length-1 ? 'ok' : spkUsed(s.result)>=Math.ceil(s.items.length/2) ? 'warn' : 'bad';
+const spkTone = s => !s.result ? '' : s.free ? (/C1|C2/.test(s.result.summary?.cefr||'')?'ok':'warn') : spkUsed(s.result)>=s.items.length-1 ? 'ok' : spkUsed(s.result)>=Math.ceil(s.items.length/2) ? 'warn' : 'bad';
 
 function spkCardBody(it){
   const dlg = it.dialogue ? `<div class="note"><b>In a conversation</b><div class="dlg">${fmtDialogue(/\*\*/.test(it.dialogue)?it.dialogue:blankByPhrase(it),'show')}</div></div>` : '';
@@ -1789,12 +1800,37 @@ function spkChips(K, live){
 // The conversation plan: four parts, each with its own targets as tappable chips (the same layout before and while recording)
 function spkSceneBox(K, compact){
   const s=K.scene, chip=i=>`<button class="spk-chip ${K.said?.[i]?'on':''}" data-act="spkSaid" data-i="${i}"><i></i><span>${esc(K.items[i].en)}</span></button>`;
-  return `<div class="card spk-scene ${compact?'compact':''}"><div class="eyebrow">Scene · ${esc(s.cat)}</div>
+  return `<div class="card spk-scene ${compact?'compact':''}"><div class="eyebrow">${s.free?'Free talk'+(s.topic?' · '+esc(s.topic):''):'Scene · '+esc(s.cat)}</div>
     ${s.desc&&!compact?`<p class="muted" style="margin:4px 0 10px;font-size:.92rem">${esc(s.desc)}</p>`:''}
-    <ol class="spk-beats">${s.beats.map(b=>`<li><b>${b.t}</b><span>${b.q}</span><div class="spk-bchips">${(b.use||[]).map(chip).join('')||'<small class="muted">Your own words</small>'}</div></li>`).join('')}</ol></div>`;
+    <ol class="spk-beats">${s.beats.map(b=>`<li><b>${b.t}</b><span>${b.q}</span>${s.free?'':`<div class="spk-bchips">${(b.use||[]).map(chip).join('')||'<small class="muted">Your own words</small>'}</div>`}</li>`).join('')}</ol></div>`;
+}
+const SPK_IDEAS = [
+  'A decision you made recently and why','Explain a market trend to a non-finance friend','What you would change in your team if you were CEO',
+  'Your last trip: what worked, what did not','Something you changed your mind about this year','How AI is changing your job',
+  'Walk a new colleague through a deal you worked on','A negotiation that taught you something','Pitch Amsterdam to someone who has never been',
+  'Your plan for the next twelve months','Defend an unpopular opinion you hold','The hardest feedback you have had to give'];
+function spkFreeScene(topic){
+  return { cat:'Free talk', free:true, topic:topic||'', desc:'', beats:[
+    { t:'Open', q:'Name the topic and why it matters to you right now.' },
+    { t:'Main point', q:'Say what you think, with one fact, number or reason.' },
+    { t:'Example', q:'Tell one concrete story or case. Details make it sound real.' },
+    { t:'Wrap up', q:'What follows from it: your conclusion, a question or a next step.' } ] };
+}
+function spkReadyFree(){
+  const K=st.K, ideas=K.ideas||(K.ideas=shuffle([...SPK_IDEAS]).slice(0,3));
+  return `<div class="stack">
+    <div><div class="eyebrow">Free talk</div><h2 style="margin-top:4px">Talk about anything</h2>
+    <p class="muted" style="margin:6px 0 0">Pick a topic or just start. The plan below is a loose guide, not a script.</p></div>
+    <label class="stack" style="gap:6px"><span class="eyebrow">Topic (optional, helps the coach judge register)</span>
+      <input id="spkTopic" class="spk-in spk-topic" maxlength="120" placeholder="e.g. Why we should refinance early" value="${esc(K.scene.topic||'')}"></label>
+    <div class="row" style="gap:6px;flex-wrap:wrap">${ideas.map((x,i)=>`<button class="pill spk-idea" data-act="spkIdea" data-i="${i}">${esc(x)}</button>`).join('')}<button class="pill" data-act="spkIdeas" aria-label="More ideas">↻ More</button></div>
+    ${spkSceneBox(K)}
+    <div class="spk-mic-wrap"><button class="spk-mic" data-act="spkRec" aria-label="Start recording">${ICON_MIC}</button><div class="muted" style="font-size:.86rem">Tap to start recording</div></div>
+    <label class="spk-upload">Or analyse an existing recording (a call, a meeting)<input type="file" id="spkFile" accept="audio/*,.m4a,.mp3,.wav,.ogg,.webm"></label>
+  </div>`;
 }
 function spkReady(){
-  const K=st.K;
+  const K=st.K; if(K.free) return spkReadyFree();
   return `<div class="stack">
     <div><div class="eyebrow">Your targets</div><h2 style="margin-top:4px">Tell the story out loud</h2>
     <p class="muted" style="margin:6px 0 0">Two to three minutes. Go part by part; tap a target when you've said it.</p></div>
@@ -1827,7 +1863,7 @@ function spkReview(){
       <audio controls src="${a.url}" preload="metadata"></audio>
       <div class="row" style="gap:8px"><button class="btn soft small" data-act="spkSave">${ICON_SAVE} Save recording</button><button class="btn ghost small" data-act="spkRedo">Record again</button></div>
     </div>
-    ${spkChips(K,true)}
+    ${K.free?'':spkChips(K,true)}
     <button class="btn spk-go" data-act="spkAnalyse" ${ready?'':'disabled'}>Analyse my English</button>
     ${ready?`<p class="hint" style="text-align:center">${spkProvLine()}</p>`:`<div class="note warn-note"><b>No AI key yet</b>Save the recording now, connect sync or add a key in <a href="#" data-act="settings">Settings</a>, then come back: the take stays here until you start a new set.</div>`}
   </div>`;
@@ -1867,19 +1903,19 @@ function spkResult(){
   const pmax=Math.max(1,...(r.patterns||[]).map(p=>p.count||0));
   return `<div class="stack spk-res">
     <div class="summary-hero spk-sum">
-      <div class="eyebrow">${esc(K.scene?.cat||'')} · ${fmtSec(K.audio?.sec||K.sec||0)} · ${esc(r._provider||'')}</div>
-      <div class="n">${used}<small>/${n}</small></div><div class="muted">targets used well</div>
-      <div class="row" style="justify-content:center;gap:6px;margin-top:10px">${r.summary?.cefr?`<span class="pill ok">${esc(r.summary.cefr)}</span>`:''}${r._audio===false?'<span class="pill">Text-only analysis</span>':'<span class="pill">Audio analysed</span>'}</div>
+      <div class="eyebrow">${K.free?'Free talk'+(K.scene?.topic?' · '+esc(K.scene.topic):''):esc(K.scene?.cat||'')} · ${fmtSec(K.audio?.sec||K.sec||0)} · ${esc(r._provider||'')}</div>
+      ${K.free?`<div class="n">${esc(r.summary?.cefr||'–')}</div><div class="muted">estimated level of this take</div>`:`<div class="n">${used}<small>/${n}</small></div><div class="muted">targets used well</div>`}
+      <div class="row" style="justify-content:center;gap:6px;margin-top:10px">${r.summary?.cefr&&!K.free?`<span class="pill ok">${esc(r.summary.cefr)}</span>`:''}${r._audio===false?'<span class="pill">Text-only analysis</span>':'<span class="pill">Audio analysed</span>'}</div>
       ${r.summary?.headline?`<p class="spk-head">${esc(r.summary.headline)}</p>`:''}
     </div>
 
     <div class="spk-metrics">${Object.keys(MET).map(k=>`<div class="spk-m ${mTone(k,vals[k])}"><b>${vals[k]==null||isNaN(vals[k])?'–':(k==='lex'?Math.round(vals[k]):Number(vals[k]).toFixed(1))}</b><span>${MET[k].l}</span><small>${MET[k].d}</small></div>`).join('')}</div>
 
-    <section><h3 class="spk-h">Your targets</h3>
+    ${K.free?'':`<section><h3 class="spk-h">Your targets</h3>
     ${(r.targets||[]).map(t=>{ const s=st3[t.status]||st3.avoided; return `<div class="spk-t ${s[0]}"><div class="spk-ti">${s[1]}</div><div class="meta">
       <div class="row" style="justify-content:space-between;gap:6px"><b class="serif">${esc(t.phrase)}</b><span class="pill ${s[0]==='warn'?'new':s[0]==='bad'?'due':'ok'}">${s[2]}${t.t?' · '+esc(t.t):''}</span></div>
       ${t.quote?`<div class="spk-q">“${esc(t.quote)}”</div>`:''}${t.comment?`<div class="muted" style="font-size:.9rem;margin-top:4px">${esc(t.comment)}</div>`:''}
-      ${t.native?`<div class="spk-native"><span>Native</span>${esc(t.native)} ${audioBtn(t.native)}</div>`:''}</div></div>`; }).join('')}</section>
+      ${t.native?`<div class="spk-native"><span>Native</span>${esc(t.native)} ${audioBtn(t.native)}</div>`:''}</div></div>`; }).join('')}</section>`}
 
     ${(r.wins||[]).length?`<section><h3 class="spk-h">What sounded native</h3>${r.wins.map(w=>`<div class="spk-win"><b>“${esc(w.quote)}”</b>${w.type?` <span class="pill">${esc(w.type)}</span>`:''}<div class="muted" style="font-size:.9rem;margin-top:3px">${esc(w.why)}</div></div>`).join('')}</section>`:''}
 
@@ -1902,8 +1938,9 @@ function spkResult(){
 
     ${(r.transcript||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Full transcript</summary><div class="spk-trans">${r.transcript.map(x=>`<p><span>${esc(x.t||'')}</span>${esc(x.text)}</p>`).join('')}</div></details>`:''}
 
-    ${r._applied?`<p class="hint" style="text-align:center">Review dates updated for ${n} cards.</p>`:''}
-    <div class="actions">${K.audio?'<button class="btn ghost" data-act="spkSave">'+ICON_SAVE+' Save audio</button>':''}<button class="btn" data-act="spkNew">New set</button></div>
+    ${r._applied&&n?`<p class="hint" style="text-align:center">Review dates updated for ${n} cards.</p>`:''}
+    ${K.audio?'<button class="btn soft small" data-act="spkSave" style="align-self:center">'+ICON_SAVE+' Save audio</button>':''}
+    <div class="actions"><button class="btn ghost" data-act="spkHome">Main menu</button><button class="btn" data-act="${K.free?'spkFree':'spkNew'}">${K.free?'Talk again':'New set'}</button></div>
   </div>`;
 }
 
@@ -1921,11 +1958,20 @@ actions.spkNew = async () => {
   st.K={ phase:'cards', i:0, items, said:{}, scene:spkScene(items), at:Date.now() };
   go('speak');
 };
+actions.spkFree = () => {
+  if(st.K?.phase==='rec') return;
+  if(st.K?.audio?.url) URL.revokeObjectURL(st.K.audio.url);
+  st.K={ phase:'ready', free:true, items:[], said:{}, scene:spkFreeScene(), at:Date.now() };
+  go('speak');
+};
+actions.spkIdea = d => { const K=st.K, t=K.ideas?.[d.i]; if(!t) return; K.scene.topic=t; render(); };
+actions.spkIdeas = () => { st.K.ideas=null; render(); };
+actions.spkHome = () => { if(st.K?.audio?.url) URL.revokeObjectURL(st.K.audio.url); st.K={phase:'start'}; go('home'); };
 actions.spkNext = () => { const K=st.K; if(K.i<K.items.length-1){ K.i++; render(); } else { K.phase='ready'; go('speak'); } };
 actions.spkPrev = () => { const K=st.K; if(K.i>0){ K.i--; render(); } };
 actions.spkCardsAgain = () => { st.K.phase='cards'; st.K.i=0; go('speak'); };
 actions.spkSaid = (d,el) => { const K=st.K; K.said[d.i]=!K.said[d.i]; document.querySelectorAll(`.spk-chip[data-i="${d.i}"]`).forEach(x=>x.classList.toggle('on',!!K.said[d.i])); buzz(15); };
-actions.spkOpen = d => { const s=spkHist()[d.i]; if(!s) return; st.K={ phase:s.result?'result':'start', items:s.items, scene:{cat:s.scene}, result:s.result, sec:s.sec, histAt:s.at }; go('speak'); };
+actions.spkOpen = d => { const s=spkHist()[d.i]; if(!s) return; st.K={ phase:s.result?'result':'start', free:!!s.free, items:s.items, scene:s.free?{...spkFreeScene(s.topic), }:{cat:s.scene}, result:s.result, sec:s.sec, histAt:s.at }; go('speak'); };
 actions.spkTok = (d) => {
   const t=st.K.toks?.[d.n], box=$('#spkTx'+d.l); if(!t||!box) return;
   const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
@@ -2002,7 +2048,8 @@ function spkUpload(f){
 }
 function spkSaveHist(result, extra={}){
   const K=st.K, h=spkHist(), at=K.histAt||K.at; let s=h.find(x=>x.at===at);
-  if(!s){ s={ at, items:K.items.map(i=>({deck:i.deck,id:i.id,en:i.en})), scene:K.scene?.cat||'' }; h.unshift(s); }
+  if(!s){ s={ at, items:K.items.map(i=>({deck:i.deck,id:i.id,en:i.en})), scene:K.free?'Free talk'+(K.scene?.topic?': '+K.scene.topic:''):K.scene?.cat||'' }; h.unshift(s); }
+  if(K.free){ s.free=true; s.topic=K.scene?.topic||''; s.scene='Free talk'+(s.topic?': '+s.topic:''); }
   s.sec=K.audio?.sec||s.sec||0; if(result){ s.result=result; Object.assign(s,extra); }
   LS.set(SPK.hist, h.slice(0,20)); K.histAt=at;
 }
@@ -2029,19 +2076,20 @@ LEX low-value words (very good, big problem, a lot of, do/make confusion) where 
 PRON (audio only) meaning-changing first: final devoicing (bag->back, need->neat), vowel length (ship/sheep, full/fool), /w/ vs /v/, th, /h/ as Russian [x], word stress in domain words (de-VE-lop-ment, e-co-NO-mics vs e-CO-no-my, PUR-chase, COM-pa-ny, a-NAL-y-sis, ca-PI-tal-ise, ma-TUR-i-ty).
 Prosody: syllable-timed rhythm instead of stress-timed, no thought groups, falling tone on requests (sounds like an order), no contrastive stress, filler density (ehm, eh, like, you know, actually, so).`;
 function spkPrompt(items, audio){
+  const free=!items.length, topic=st.K?.scene?.topic||'';
   return {
 sys:`You are an elite speaking coach for a Russian/Ukrainian-speaking senior finance professional (corporate finance, DCM, liability management, Metals & Mining) aiming for C1 executive English. Current level: about ${cfg.aiLevel||'B2+'}. ${LEVEL[cfg.aiLevel||'B2+'].speak} You analyse ONE learner's spoken take and return ONLY a JSON object.
 
 Hard rules
 1. Transcript: ${audio?'transcribe verbatim from the audio, keep every error, filler (um, uh, эээ), false start and repetition. Never correct the learner in the transcript.':'the transcript is given (machine ASR). It may have silently fixed small errors and cannot show pronunciation. Treat plausible ASR artefacts (homophones, cut words, names) as not-an-error.'} Timecodes mm:ss.
-2. Targets: for each target expression decide status: "used" (said with correct form, meaning, collocation and register, natural in context), "error" (attempted, but wrong form, meaning, preposition, collocation or register), "avoided" (not said). Accept normal inflection and the optional parts in [brackets]. Quote the exact words spoken and the timecode. "native" = one natural sentence showing how a native executive would have used it in THIS story.
+2. ${free?'Free talk: there is no target list, so "targets" = []. Judge the whole take on its own terms. If more than one person speaks (an uploaded call or meeting), analyse ONLY the learner (the Russian/Ukrainian-accented speaker, usually the one who talks most); other voices are context, never errors. Judge register against the setting the learner chose: casual topics may stay casual, but flag anything that would sound odd or blunt to a native in that setting.':`Targets: for each target expression decide status: "used" (said with correct form, meaning, collocation and register, natural in context), "error" (attempted, but wrong form, meaning, preposition, collocation or register), "avoided" (not said). Accept normal inflection and the optional parts in [brackets]. Quote the exact words spoken and the timecode. "native" = one natural sentence showing how a native executive would have used it in THIS story.`}
 3. Patterns before instances: max 6 patterns, each with a code, a count, impact high/medium/low ranked by count x severity (severity 3: changes meaning or sounds rude: false friends, register, timeline-changing tense, devoicing; 2: articles, prepositions, uncountables, dummy subject; 1: cosmetic).
 4. Log: only turns with at least one error or one genuine C1+ success, max 15 entries, one "native" rewrite per entry. Inside "original" wrap every trigger as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = success, Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Pronunciation, Idiom, Discourse; Fix = corrected words, "—" for successes. Pipes only inside Explanation. The words must match the transcript exactly. Every E code must belong to a listed pattern.
 5. Explain like a coach, not a grammar book: every hook/explanation gives a reason the learner will remember (contrast with Russian structure, etymology, mnemonic, mini-story). Example: «Information — как «вода»: «много воды», но не «две воды». Нужен счётчик: a piece of information».
 6. No inflation: if unsure, leave it out. If the take is clean, say so. Praise is data: real C1/C2 moves only (precise collocations, hedging, discourse markers, register control, domain terms), about one win per three errors, never invented.
 7. ${audio?'Pronunciation and prosody: you can hear the audio. Report only what you actually hear, meaning-changing problems first, max 8 pronunciation items, max 4 prosody items. pron_risk = [].':'No audio: pronunciation = [], prosody = []. Fill pron_risk with up to 6 words from the transcript that are known traps for Russian speakers (labelled as predicted, not observed).'}
 8. Metrics: words = words spoken by the learner; errors_total = confirmed errors only; fillers = count of fillers; mlu = mean words per fluent run between pauses or self-corrections; lexical_score 0-40 (range, collocation, precision, register, 0-10 each, score the ceiling reached); cefr one of B1, B1+, B2, B2+, C1, C1+, C2.
-9. native_version: the same story as a native executive would say it, using every target naturally, max 170 words, spoken style.
+9. native_version: ${free?'the same content as a native speaker would say it in this setting (keep the learner\'s ideas and facts, upgrade wording, linking and rhythm), max 170 words, spoken style.':'the same story as a native executive would say it, using every target naturally, max 170 words, spoken style.'}
 10. next: exactly 3 actions in Russian, each one concrete (what to do, a drill, how often).
 11. Language: summary, comment, why, hook, tip, explanation, next in Russian. transcript, quote, native, fix, examples, native_version in English.
 
@@ -2060,7 +2108,8 @@ Return exactly this JSON shape (no markdown):
 "native_version":"...",
 "next":["...","...","..."],
 "transcript":[{"t":"00:00","text":"..."}]}`,
-user:`Target expressions the learner had to use (id | expression | meaning):
+user: free ? `Free talk, no targets. Topic the learner chose: ${topic?'"'+topic+'"':'not given (infer it from the audio)'}. Any length up to 15 minutes. Suggested arc: open, main point, example, wrap up (a loose guide, do not penalise skipping it).` :
+`Target expressions the learner had to use (id | expression | meaning):
 ${items.map(i=>`${i.deck}:${i.id} | ${i.en} | ${i.ru}${i.note?' | '+String(i.note).slice(0,140):''}`).join('\n')}
 Context the learner was given: a business conversation, category "${st.K.scene?.cat||''}", 2-3 minutes, story beats: set the scene, make the case, handle push-back, land next steps.`
   };
@@ -2173,7 +2222,7 @@ function spkBack(){
     const tile=`<button class="deck" data-act="openSpeak">
       <div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON_MIC}</div>
       <div class="meta"><h3>${SPK_META.name}</h3><div class="muted" style="font-size:.85rem">${SPK_META.sub}</div>
-      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">4–6 targets</span>${k?.result?`<span class="pill ok">last ${spkUsed(k.result)}/${k.items.length}</span>`:''}${spkKeysOk()?'':'<span class="pill new">add API key</span>'}</div></div></button>`;
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">cards or free talk</span>${k?.result?`<span class="pill ok">last ${k.free?esc(k.result.summary?.cefr||'free talk'):spkUsed(k.result)+'/'+k.items.length}</span>`:''}${spkKeysOk()?'':'<span class="pill new">add API key</span>'}</div></div></button>`;
     return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
 { const _set=vSettings; vSettings=function(){
     const vs = cfg.gemKey ? 'typed on this device' : cfg.vGem ? 'from your Apps Script ✓' : syncOn() ? 'not in Script Properties' : 'not connected';
@@ -2193,6 +2242,7 @@ function spkBack(){
     if(st.view==='speak'){ $('#title').textContent='Speak'; const K=st.K;
       bar(K?.phase==='cards'?(K.i+1)/K.items.length*100:K?.phase==='ready'||K?.phase==='rec'||K?.phase==='review'?100:0);
       const f=$('#spkFile'); if(f) f.onchange=()=>spkUpload(f.files[0]);
+      const tp=$('#spkTopic'); if(tp) tp.oninput=()=>{ K.scene.topic=tp.value.trim(); const e=document.querySelector('.spk-scene .eyebrow'); if(e) e.textContent='Free talk'+(K.scene.topic?' · '+K.scene.topic:''); };
       if(K?.phase==='cards' && cfg.autoSpeak && K.spoke!==K.i){ K.spoke=K.i; speak(K.items[K.i].en); }
       if(K?.phase==='rec') { cancelAnimationFrame(R.raf); recDraw(); } }
     ['gemKey'].forEach(id=>{ const el=$('#'+id); if(el) el.onchange=()=>{ cfg[id]=el.value.trim(); LS.set(K.cfg,cfg); localStorage.removeItem(SPK.models); toast(el.value.trim()?'Key saved on this device':'Using the Apps Script key'); render(); }; });
@@ -2718,7 +2768,7 @@ function errFromSpeak(at, r, scene){
 }
 // Hooks: Speak result saved -> log once. Drills first attempt graded -> log once.
 { const _sh=spkSaveHist; spkSaveHist=function(result, extra={}){ _sh(result, extra);
-    if(result && !result._logged){ const K=st.K, at=K.histAt||K.at; errLog(errFromSpeak(at, result, K.scene?.cat)); result._logged=true; _sh(result, extra); } }; }
+    if(result && !result._logged){ const K=st.K, at=K.histAt||K.at; errLog(errFromSpeak(at, result, K.free?'Free talk'+(K.scene?.topic?': '+K.scene.topic:''):K.scene?.cat)); result._logged=true; _sh(result, extra); } }; }
 { const _cs=coachSRS; coachSRS=function(t){ _cs(t); const C=st.C, r=t.res;
     errLog(errRows(r.marked, { date:today(), mode:'drill', task:t.fmt, context:r.fix||'', target:t.targets.map(x=>x.deck+':'+x.id).join(' '), level:L().id })
       .map((x,j)=>({ ...x, key:`d${C.at}#${C.i}#${j}` }))); }; }
