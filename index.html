@@ -554,6 +554,11 @@ body.sess .actions .audio{width:54px;height:54px}
 .f-gap{display:inline-block;min-width:3.2em;padding:0 6px;margin:0 2px;border-bottom:2px solid var(--primary);text-align:center;color:var(--primary);font-weight:600;line-height:1.3}
 .f-gap.ok{color:var(--ok);border-color:var(--ok)}
 .f-gap.bad{color:var(--bad);border-color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
+
+.spk-beats .spk-bchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.spk-scene.compact .spk-beats{gap:14px}
+.spk-rec .spk-scene{text-align:left;width:100%}
+.spk-scene.compact .spk-beats span{font-size:.84rem}
 </style>
 </head>
 <body>
@@ -1719,8 +1724,19 @@ function spkScene(items){
     { t:'Handle push-back', q:'Imagine an objection. Acknowledge it, then hold or adjust your position.' },
     { t:'Land it', q:'Summarise and agree concrete next steps, owners and timing.' }
   ];
-  const order=shuffle(items.map((_,i)=>i));
-  order.forEach((ix,k)=>{ const b=beats[k%beats.length]; (b.use=b.use||[]).push(ix); });
+  // Each target goes to the part of the conversation where it is most natural (by its wording, intent and category),
+  // while every part keeps at least one target when there are enough of them.
+  const CUE=[ /\b(before i|how do you see|your (view|take|thoughts)|let me (start|set|frame)|background|context|to (start|begin)|as you know|the (real )?question|where we are|first of all|the reason (i|we)|steer|open)/i,
+    /\b(i (think|believe|would argue|'d argue)|the (point|data|numbers|evidence)|because|what (this|that) means|in (fact|practice)|to put (it|this) (in|into)|the key|clearly|bottom line|case for|driv|square the circle|trade-?off)/i,
+    /\b(i hear you|fair (point|enough)|i take your point|i('d| would) push back|with respect|that said|however|i understand|concern|risk|disagree|not (entirely|fully|quite) (convinced|sure)|i('m| am) not sure|on the other hand|i see (it|where)|animosity|tension|object|not always|in most cases|to be fair)/i,
+    /\b(next steps?|to (sum|wrap|recap)|so (let'?s|we)|agree (on|to)|action|follow[- ]up|owner|by (friday|monday|end)|land|close (the|this) loop|park|decision|let'?s (take|move|align))/i ];
+  const score=it=>{ const t=[it.en,it.note,it.type,it.cat].filter(Boolean).join(' '); return CUE.map((re,k)=>(re.test(it.en)?3:0)+(re.test(t)?1:0)+(it.deck==='voc'&&(k===1||k===2)?0.5:0)); };
+  const sc=items.map(score), done=new Set(), put=(i,k)=>{ (beats[k].use=beats[k].use||[]).push(i); done.add(i); };
+  // 1) fill every part with its best-fitting target, strongest matches first
+  const pairs=[]; items.forEach((_,i)=>beats.forEach((_,k)=>pairs.push([sc[i][k]+Math.random()*0.01,i,k]))); pairs.sort((x,y)=>y[0]-x[0]);
+  pairs.forEach(([v,i,k])=>{ if(v>=1 && !done.has(i) && !(beats[k].use||[]).length) put(i,k); });
+  // 2) the rest go where they fit best
+  items.forEach((_,i)=>{ if(done.has(i)) return; const m=Math.max(...sc[i]); put(i, m>=1 ? sc[i].indexOf(m) : ([1,2,0].find(k=>!(beats[k].use||[]).length) ?? sc[i].indexOf(m))); });
   return { cat:a?.cat||'Business conversation', desc:(typeof CAT_DESC!=='undefined' && CAT_DESC[a?.cat])||'', dialogue:a?.dialogue||'', beats };
 }
 
@@ -1770,18 +1786,18 @@ function spkCards(){
 function spkChips(K, live){
   return `<div class="spk-targets">${K.items.map((it,i)=>`<button class="spk-chip ${K.said?.[i]?'on':''}" data-act="spkSaid" data-i="${i}" ${live?'':'tabindex="-1"'}><i></i><span>${esc(it.en)}</span></button>`).join('')}</div>`;
 }
-function spkSceneBox(K){
-  const s=K.scene;
-  return `<div class="card spk-scene"><div class="eyebrow">Scene · ${esc(s.cat)}</div>
-    ${s.desc?`<p class="muted" style="margin:4px 0 10px;font-size:.92rem">${esc(s.desc)}</p>`:''}
-    <ol class="spk-beats">${s.beats.map(b=>`<li><b>${b.t}</b><span>${b.q}</span>${b.use?`<em>${b.use.map(i=>esc(K.items[i].en)).join(' · ')}</em>`:''}</li>`).join('')}</ol></div>`;
+// The conversation plan: four parts, each with its own targets as tappable chips (the same layout before and while recording)
+function spkSceneBox(K, compact){
+  const s=K.scene, chip=i=>`<button class="spk-chip ${K.said?.[i]?'on':''}" data-act="spkSaid" data-i="${i}"><i></i><span>${esc(K.items[i].en)}</span></button>`;
+  return `<div class="card spk-scene ${compact?'compact':''}"><div class="eyebrow">Scene · ${esc(s.cat)}</div>
+    ${s.desc&&!compact?`<p class="muted" style="margin:4px 0 10px;font-size:.92rem">${esc(s.desc)}</p>`:''}
+    <ol class="spk-beats">${s.beats.map(b=>`<li><b>${b.t}</b><span>${b.q}</span><div class="spk-bchips">${(b.use||[]).map(chip).join('')||'<small class="muted">Your own words</small>'}</div></li>`).join('')}</ol></div>`;
 }
 function spkReady(){
   const K=st.K;
   return `<div class="stack">
     <div><div class="eyebrow">Your targets</div><h2 style="margin-top:4px">Tell the story out loud</h2>
-    <p class="muted" style="margin:6px 0 0">Two to three minutes, in any order. Tap a target when you've said it.</p></div>
-    ${spkChips(K,true)}
+    <p class="muted" style="margin:6px 0 0">Two to three minutes. Go part by part; tap a target when you've said it.</p></div>
     ${spkSceneBox(K)}
     <div class="spk-mic-wrap"><button class="spk-mic" data-act="spkRec" aria-label="Start recording">${ICON_MIC}</button><div class="muted" style="font-size:.86rem">Tap to start recording</div></div>
     <label class="spk-upload">Or analyse an existing recording<input type="file" id="spkFile" accept="audio/*,.m4a,.mp3,.wav,.ogg,.webm"></label>
@@ -1799,8 +1815,7 @@ function spkRec(){
       <button class="spk-stop" data-act="spkStop" aria-label="Stop">${ICON_STOP}</button>
       <button class="spk-side" data-act="spkDiscard" aria-label="Discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><small>Discard</small></button>
     </div>
-    ${spkChips(K,true)}
-    <details class="card spk-peek"><summary>Story beats</summary>${spkSceneBox(K).replace('class="card spk-scene"','class="spk-scene"')}</details>
+    ${spkSceneBox(K,true)}
   </div>`;
 }
 function spkReview(){
