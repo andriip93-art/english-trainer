@@ -2803,7 +2803,7 @@ function fixLesson(){
 }
 function fixTask(){
   const F=st.F, t=F.tasks[F.i], r=t.res, last=F.i===F.tasks.length-1;
-  const gapFill = r ? (t.ans && t.ans!=='(shown)' ? (t.ans.trim()==='-'?'∅':t.ans) : t.answers[0].trim()==='-'?'∅':t.answers[0]) : '?';
+  const ref=String(t.answers?.[0]??''), gapFill = t.type!=='gap' ? '' : r ? (t.ans && t.ans!=='(shown)' ? (t.ans.trim()==='-'?'∅':t.ans) : ref.trim()==='-'?'∅':ref) : '?';
   const q = t.type==='gap' ? esc(t.q).replace(/_{2,}/,`<span class="f-gap ${r&&t.ans!=='(shown)'?(r.ok?'ok':'bad'):''}">${esc(gapFill)}</span>`) : esc(t.q);
   const zero=t.type==='gap' && t.answers.some(a=>a.trim()==='-');
   return `<div class="stack">
