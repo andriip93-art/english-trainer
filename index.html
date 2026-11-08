@@ -483,7 +483,11 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .spk-p summary i{position:absolute;left:0;bottom:6px;height:3px;border-radius:99px;background:var(--primary);opacity:.8}
 .spk-p:not(.high) summary i{background:var(--fg);opacity:.35}
 .spk-pb{padding:0 0 14px;font-size:.93rem}.spk-pb p{margin:0 0 8px}
-.spk-ex{display:flex;flex-wrap:wrap;gap:6px}.spk-ex span{font-family:var(--serif);font-size:.9rem;background:var(--bad-soft);border-radius:4px;padding:2px 8px;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 55%,transparent)}
+.spk-ex{display:flex;flex-wrap:wrap;gap:6px}
+.spk-ex span.x{font-family:var(--serif);font-size:.92rem;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:3px 9px;display:inline-flex;flex-wrap:wrap;gap:0 6px;align-items:baseline}
+.x-w{color:var(--bad);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 60%,transparent)}
+.x-a{color:var(--muted);font-family:var(--font);font-size:.85em}
+.x-r{color:var(--ok);font-weight:600;text-decoration:none}
 .spk-line{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .spk-line .meta{flex:1;min-width:0}
 .spk-lt{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:4px;width:38px;flex-shrink:0}
@@ -493,7 +497,7 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .tok.s{background:var(--navy-soft);box-shadow:inset 0 -2px 0 var(--navy)}
 .tok.open{outline:2px solid currentColor;outline-offset:1px}
 .spk-tx{margin-top:8px;font-size:.9rem;border-radius:4px;padding:10px 12px;background:var(--surface-2);border-left:3px solid var(--bad);animation:enter .2s var(--ease)}
-.spk-tx.s{border-left-color:var(--navy)}.spk-tx .fix{color:var(--ok)}
+.spk-tx.s{border-left-color:var(--navy)}.spk-tx .fix,.spk-tx .x-r{color:var(--ok)}
 .spk-pr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
 .spk-pr b{font-family:var(--serif);font-size:1.1rem}.spk-pr .audio{width:28px;height:28px}
 .spk-pr .ipa{font-family:var(--serif);color:var(--muted)}
@@ -535,8 +539,8 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .c-fb.ok{border-top-color:var(--ok)}.c-fb.warn{border-top-color:var(--warn)}.c-fb.bad{border-top-color:var(--bad)}
 .c-grade{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:1.6rem}
 .c-grade.ok{background:var(--ok-soft);color:var(--ok)}.c-grade.warn{background:var(--warn-soft);color:var(--warn)}.c-grade.bad{background:var(--bad-soft);color:var(--bad)}
-.c-fix{font-family:var(--serif);font-size:.98rem;border:1px dashed var(--line);border-radius:4px;padding:8px 10px}
-.c-fix>span{display:block;font-family:var(--font);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.c-fix{font-family:var(--serif);font-size:.98rem;color:var(--ok);font-weight:600;border:1px dashed var(--line);border-radius:4px;padding:8px 10px}
+.c-fix>span{display:block;font-weight:700!important;font-family:var(--font);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 .c-fb .note b .c-code{margin-right:4px}
 .spk-dots span.warnd{background:var(--warn)}
 .c-keys{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -552,7 +556,7 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .f-pair{display:grid;gap:3px;padding:10px 0;border-bottom:1px solid var(--line)}
 .f-pair:last-child{border-bottom:0}
 .f-pair .w{font-family:var(--serif);color:var(--bad);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 55%,transparent)}
-.f-pair .r{font-family:var(--serif);color:var(--navy);font-weight:600;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.f-pair .r{font-family:var(--serif);color:var(--ok);font-weight:600;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .f-pair .r .audio{width:30px;height:30px;flex-shrink:0}
 .f-mini{display:grid;gap:10px;background:var(--surface-2);border-radius:6px;padding:12px;animation:enter .2s var(--ease)}
 
@@ -1886,6 +1890,9 @@ const MET = {
   lex:{ l:'Lexical score', good:v=>v>=25, ok:v=>v>=15, d:'C1 25–32 / 40' }
 };
 const mTone = (k,v) => v==null||isNaN(v) ? '' : MET[k].good(v) ? 'ok' : MET[k].ok(v) ? 'warn' : 'bad';
+// "wrong -> right" (also → =>) as a struck red part and a green correct part
+function exPair(e){ const m=String(e||'').split(/\s*(?:->|→|=>)\s*/);
+  return m.length===2&&m[0]&&m[1] ? `<span class="x"><span class="x-w">${esc(m[0])}</span><span class="x-a">→</span><span class="x-r">${esc(m[1])}</span></span>` : `<span class="x"><span class="x-w">${esc(e)}</span></span>`; }
 function parseMarks(s){ // [[text|K|Type|Fix|Explanation]] -> html with tappable tokens
   const toks=[]; let html='', last=0; const re=/\[\[(.+?)\]\]/g; let m;
   while((m=re.exec(s))){ html+=esc(s.slice(last,m.index)); last=re.lastIndex;
@@ -1920,7 +1927,7 @@ function spkResult(){
     ${(r.wins||[]).length?`<section><h3 class="spk-h">What sounded native</h3>${r.wins.map(w=>`<div class="spk-win"><b>“${esc(w.quote)}”</b>${w.type?` <span class="pill">${esc(w.type)}</span>`:''}<div class="muted" style="font-size:.9rem;margin-top:3px">${esc(w.why)}</div></div>`).join('')}</section>`:''}
 
     ${(r.patterns||[]).length?`<section><h3 class="spk-h">Patterns to fix</h3>${r.patterns.map(p=>`<details class="spk-p ${esc(p.impact||'')}"><summary><span class="code">${esc(p.code)}</span><span class="t">${esc(p.title)}</span><span class="c">×${p.count||1}</span><i style="width:${Math.round((p.count||1)/pmax*100)}%"></i></summary>
-      <div class="spk-pb">${p.hook?`<p>${esc(p.hook)}</p>`:''}${(p.examples||[]).length?`<div class="spk-ex">${p.examples.map(e=>`<span>${esc(e)}</span>`).join('')}</div>`:''}${p.fix?`<div class="spk-native"><span>Fix</span>${esc(p.fix)}</div>`:''}</div></details>`).join('')}</section>`:''}
+      <div class="spk-pb">${p.hook?`<p>${esc(p.hook)}</p>`:''}${(p.examples||[]).length?`<div class="spk-ex">${p.examples.map(exPair).join('')}</div>`:''}${p.fix?`<div class="spk-native"><span>Fix</span>${esc(p.fix)}</div>`:''}</div></details>`).join('')}</section>`:''}
 
     ${(r.log||[]).length?`<section><h3 class="spk-h">Line by line <small class="muted">tap a highlight</small></h3>${r.log.map((l,j)=>{ const pm=parseMarks(l.original||''); const base=K.toks.length; K.toks.push(...pm.toks);
       const html=pm.html.replace(/data-n="(\d+)"/g,(_,x)=>`data-n="${base+Number(x)}" data-l="${j}"`);
@@ -1977,7 +1984,7 @@ actions.spkTok = (d) => {
   const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
   document.querySelectorAll(`.tok[data-l="${d.l}"]`).forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
   box.className='spk-tx '+(t.k==='S'?'s':'e');
-  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b>${esc(t.text)}</b> → <b class="fix">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
 };
 // Swipe between cards, arrows on a laptop
 let spkX=null;
@@ -2100,7 +2107,7 @@ Return exactly this JSON shape (no markdown):
 "metrics":{"words":0,"errors_total":0,"fillers":0,"mlu":0,"lexical_score":0},
 "targets":[{"id":"phr:12","phrase":"...","status":"used|error|avoided","quote":"...","t":"01:12","comment":"...","native":"..."}],
 "wins":[{"quote":"...","t":"00:40","type":"Hedging","why":"..."}],
-"patterns":[{"code":"ART","title":"...","count":3,"impact":"high","hook":"...","examples":["..."],"fix":"..."}],
+"patterns":[{"code":"ART","title":"...","count":3,"impact":"high","hook":"...","examples":["wrong words as spoken -> corrected words"],"fix":"..."}],
 "log":[{"t":"00:31","original":"I sent you [[report|E|Article|the report|...]] yesterday","native":"..."}],
 "pronunciation":[{"word":"development","heard":"ˈdevələpmənt","target":"dɪˈveləpmənt","type":"stress","risk":"high","tip":"...","t":"01:05"}],
 "pron_risk":[{"word":"...","target":"...","why":"..."}],
@@ -2608,7 +2615,7 @@ actions.coachTok = d => {
   const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
   document.querySelectorAll('.c-fb .tok').forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
   box.className='spk-tx '+(t.k==='S'?'s':'e');
-  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b>${esc(t.text)}</b> → <b class="fix">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
 };
 function coachBack(){
   const ph=st.C?.phase;
