@@ -74,8 +74,16 @@ Every mistake from Speak & Record (Mode 3) and the first attempt in Context Dril
 target, level, status, updated. Rows queue on the device while offline. Speak sessions already stored on a device are
 imported once.
 
-Fix My Errors groups open errors by code (ART, PREP, PERF, COMP, WO, REG, FF, LEX, GRAM, OTHER). A pattern with 3 or more
-open errors gets a short lesson written from your own mistakes (why Russian speakers make it, the rule, a pattern line,
-three of your errors corrected, the trap, a memory hook; cached for 30 days or until 5 new errors), then 8 tasks from easy
-to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate. Exact answers are checked in the app, others by Gemini.
-7 of 8 marks the errors behind the lesson as drilled; 7 of 8 again on a later day marks them fixed.
+Fix My Errors trains one rule at a time. A scheduled Claude run (every 3 days) reads every non-fixed error and clusters
+them into small topics in the `FixBank` tab, one row per topic (`ART.a-an`, `GRAM.no-any`, `LEX.make-do-take`; 3 to 15
+errors each, target 90% coverage). Grammar topics are "rule" lessons; collocations, idioms and false friends are "chunks"
+lessons (a phrase family, every phrase drilled). Each topic has a lesson (why Russian speakers make it, the rule, a pattern
+line, real errors corrected, the trap, a memory hook, the error keys it covers) and 16 tasks, 4 of each type. Topics are
+listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors that no topic covers
+yet (new since the last run) are grouped by code and get a Gemini lesson once a code has 3 of them.
+
+A session is a lesson plus 8 tasks from easy to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate, unseen
+tasks first. 7 of 8 marks the topic's errors as drilled. On a later day, Mixed review shuffles production tasks (fill the
+gap, fix, translate) from up to 4 drilled topics with no label saying which rule applies; the Rule button reveals it. A topic
+whose tasks are all right moves its drilled errors to fixed; a missed topic goes back to open for a fresh lesson. A plain
+7 of 8 on the same topic on another day also marks it fixed. Exact answers are checked in the app, others by Gemini.

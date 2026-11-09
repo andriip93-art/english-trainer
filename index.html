@@ -2794,10 +2794,29 @@ function errBackfill(){
 const FIX_MIN = 3;
 const ICON_FIX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>';
 const FTYPE = { choose:'Choose', gap:'Fill the gap', fix:'Fix the mistake', translate:'Translate' };
+// Groups: the scheduled run clusters every non-fixed error into teachable topics (FixBank rows "ART.a-an"; lesson.keys = errors covered).
+// Errors no topic covers yet (new since the last run) fall back to one group per code, with a Gemini lesson.
+const bankTopics = () => Object.entries(BANK||{}).filter(([id])=>id.includes('.')).map(([id,b])=>({ id, ...b }));
 function fixGroups(){
-  const g={};
-  errAll().filter(r=>r.status!=='fixed').forEach(r=>{ const c=r.code||'OTHER'; (g[c]=g[c]||{ code:c, rows:[], drilled:0, last:'' }).rows.push(r); if(r.status==='drilled') g[c].drilled++; if(String(r.date)>g[c].last) g[c].last=String(r.date); });
-  return Object.values(g).map(x=>({ ...x, n:x.rows.length, rows:x.rows.slice().reverse() })).sort((a,b)=>b.n-a.n);
+  const live=errAll().filter(r=>r.status!=='fixed'), byKey=new Map(live.map(r=>[r.key,r])), used=new Set(), out=[], now=Date.now();
+  const rec=d=>{ const a=(now-new Date(d||0).getTime())/DAY; return a<=14?1:a<=60?.7:.5; };
+  const mk=(id,code,title,rows,bank)=>{ const drilled=rows.filter(r=>r.status==='drilled').length, last=rows.reduce((m,r)=>String(r.date)>m?String(r.date):m,'');
+    return { id, code, title, bank, rows:rows.slice().reverse(), n:rows.length, drilled, last, min:bank?1:FIX_MIN,
+      score:rows.reduce((t,r)=>t+(r.status==='drilled'?.3:1)*rec(r.date),0) }; };
+  bankTopics().forEach(t=>{ const rows=(t.lesson.keys||[]).map(k=>byKey.get(k)).filter(Boolean); rows.forEach(r=>used.add(r.key));
+    if(rows.length) out.push(mk(t.id, t.id.split('.')[0], t.lesson.title_ru||t.id, rows, true)); });
+  const g={}; live.filter(r=>!used.has(r.key)).forEach(r=>{ const c=r.code||'OTHER'; (g[c]=g[c]||[]).push(r); });
+  const topics=out.length>0;
+  Object.entries(g).forEach(([c,rows])=>out.push(mk(c, c, (CODE_RU[c]||c)+(topics?' · not in a lesson yet':''), rows, false)));
+  out.forEach(x=>x.ready=x.n>=x.min);
+  return out.sort((a,b)=>(b.ready-a.ready)||(b.score-a.score));
+}
+// Mixed review: interleaved tasks from several topics you already drilled on an earlier day. Retrieval without knowing the rule in advance is the real test.
+function mixTopics(){
+  const t=today();
+  return fixGroups().filter(g=>g.bank && g.rows.some(r=>r.status==='drilled' && String(r.updated||r.date)<t))
+    .map(g=>({ ...g, since:g.rows.filter(r=>r.status==='drilled').reduce((m,r)=>String(r.updated||r.date)<m?String(r.updated||r.date):m,'9999') }))
+    .sort((a,b)=>a.since.localeCompare(b.since));
 }
 function fixLessonPrompt(code, rows){
   return {
@@ -2832,25 +2851,26 @@ Return {"ok":true,"why_ru":"one short sentence in Russian; if wrong, name the pr
 
 function vFix(){ const F=st.F||(st.F={phase:'start'}); return ({ start:fixStart, wait:fixWait, lesson:fixLesson, task:fixTask, sum:fixSum })[F.phase](); }
 function fixStart(){
-  const gs=fixGroups(), all=errAll(), ready=gs.filter(g=>g.n>=FIX_MIN), top=ready[0], h=LS.get(ERR.hist,[]);
+  const gs=fixGroups(), all=errAll(), ready=gs.filter(g=>g.ready), top=ready[0], h=LS.get(ERR.hist,[]), mx=mixTopics();
   const cnt=s=>all.filter(r=>r.status===s).length, max=Math.max(1,...gs.map(g=>g.n));
   return `<div class="stack">
     <div class="hero spk-hero">
       <div class="lbl">Mode 5 · Fix My Errors</div>
       <div class="q">Your own mistakes, one rule at a time.</div>
-      <ol class="spk-how"><li>A short lesson built from your real errors</li><li>Eight tasks: choose, fill the gap, fix, translate</li><li>7 of 8 right marks the errors as drilled; again on another day, fixed</li></ol>
+      <ol class="spk-how"><li>One rule at a time, built from your real errors, the most frequent and recent first</li><li>Eight tasks: choose, fill the gap, fix, translate. 7 of 8 marks them drilled</li><li>Mixed review on a later day: rules shuffled, no hint which one. Pass it and they are fixed</li></ol>
     </div>
-    ${top?`<button class="btn spk-go" data-act="fixGo" data-c="${esc(top.code)}">${ICON_FIX} Train: ${esc(CODE_RU[top.code]||top.code)} · ${top.n}</button>`
+    ${mx.length>=2?`<button class="btn spk-go" data-act="fixMix">${ICON_FIX} Mixed review · ${Math.min(4,mx.length)} rules</button>`:''}
+    ${top?`<button class="btn ${mx.length>=2?'ghost':'spk-go'}" data-act="fixGo" data-c="${esc(top.id)}">${mx.length>=2?'':ICON_FIX+' '}Train: ${esc(top.title)} · ${top.n}</button>`
       :`<div class="note"><b>Not enough errors yet</b>A lesson needs at least ${FIX_MIN} open errors of one kind. Errors are collected automatically from Speak & Record and Context Drills.</div>`}
-    ${gs.length?`<section><h3 class="spk-h">Your error patterns <small class="muted">tap to train</small></h3>
-      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.code)}" ${g.n<FIX_MIN?'disabled':''}><span class="code">${esc(g.code)}</span><span class="t">${esc(CODE_RU[g.code]||g.code)}<small class="muted"> · ${g.drilled?g.drilled+' drilled · ':''}last ${esc(g.last)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
+    ${gs.length?`<section><h3 class="spk-h">Your rules <small class="muted">by priority · tap to train</small></h3>
+      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.id)}" ${g.ready?'':'disabled'}><span class="code">${esc(g.code)}</span><span class="t">${esc(g.title)}<small class="muted"> · ${g.drilled?g.drilled+' drilled · ':''}last ${esc(g.last)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
     </section>`:''}
     ${(()=>{ const q=LS.get(ERR.q,[]).length, x=LS.get('bet3.errstat',null);
       if(!syncOn()) return '<div class="note warn-note"><b>Sync is off</b>Errors stay on this device until you connect sync in Settings.</div>';
       return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
         : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
     <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.title||'')}</small></span><span class="pill ${x.score>=7?'ok':x.score>=5?'new':'due'}">${x.score}/8</span></div>`).join('')}`:''}
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=(x.of||8)-1?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
     <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
     <p class="hint">Every mistake from Speak and Drills is saved to the "Errors" tab of vocabulary_v2 (one row per mistake), so you can also filter or pivot it there.</p>
   </div>`;
@@ -2867,7 +2887,7 @@ function lessonBody(ls, compact){
 function fixLesson(){
   const F=st.F, ls=F.lesson;
   return `<div class="stack"><div class="card c-card">
-    <div class="spk-kind">Lesson · ${esc(F.code)} · ${F.fromBank?`deep review of all your errors${typeof F.fromBank==='string'?' · '+esc(F.fromBank):''}`:`from ${F.rows.length} of your errors`}</div>
+    <div class="spk-kind">Lesson · ${esc(F.cat||F.code)} · ${F.fromBank?`covers ${F.rows.length} of your errors${typeof F.fromBank==='string'?' · '+esc(F.fromBank):''}`:`from ${F.rows.length} of your errors`}</div>
     <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
     ${lessonBody(ls,false)}
     <div class="actions"><button class="btn ghost" data-act="fixRelesson" style="flex:0 0 auto">New lesson</button><button class="btn" data-act="fixTasks">Start 8 tasks</button></div>
@@ -2881,8 +2901,8 @@ function fixTask(){
   return `<div class="stack">
     <div class="spk-dots">${F.tasks.map((x,i)=>`<span class="${x.res?(x.res.ok?'done':'warnd'):i===F.i?'on':''}"></span>`).join('')}<em>${F.i+1} / ${F.tasks.length}</em></div>
     <div class="card c-card">
-      <div class="row" style="justify-content:space-between"><div class="spk-kind" style="margin:0">${FTYPE[t.type]}</div><button class="btn ghost small" data-act="fixRule">${F.showRule?'Hide rule':'Rule'}</button></div>
-      ${F.showRule?`<div class="f-mini">${lessonBody(F.lesson,true)}</div>`:''}
+      <div class="row" style="justify-content:space-between"><div class="spk-kind" style="margin:0">${F.mix?'Mixed · ':''}${FTYPE[t.type]}</div><button class="btn ghost small" data-act="fixRule">${F.showRule?'Hide rule':'Rule'}</button></div>
+      ${F.showRule?`<div class="f-mini">${F.mix?`<div class="eyebrow">${esc(lsOf(t).title_ru||'')}</div>`:''}${lessonBody(lsOf(t),true)}</div>`:''}
       <div class="f-q ${t.type==='translate'||t.type==='choose'?'ru':''}">${q}</div>
       ${t.type==='choose' ? `<div class="stack" style="gap:10px">${t.options.map((o,n)=>`<button class="opt ${r?(n===t.answer?'right':n===t.pick?'wrong':''):''}" data-act="fixPick" data-n="${n}" ${r?'disabled':''}><span class="k">${n+1}</span><span class="serif">${esc(o)}</span></button>`).join('')}</div>`
       : r ? (t.ans && t.ans!=='(shown)' && t.type!=='gap' ? `<div class="c-fix"><span>Your answer</span>${esc(t.ans)}</div>` : '')
@@ -2899,17 +2919,22 @@ function fixTask(){
 }
 const fillGap = (q,a) => q.replace(/_{2,}/, a.trim()==='-'?'':a).replace(/\s+/g,' ').replace(/\s+([.,;:!?])/g,'$1').trim();
 function fixSum(){
-  const F=st.F, n=F.tasks.length, ok=F.tasks.filter(t=>t.res?.ok).length;
+  const F=st.F, n=F.tasks.length, ok=F.tasks.filter(t=>t.res?.ok).length, P=F.promoted||{};
+  const note = F.mix
+    ? `<div class="note ${P.back?'warn-note':''}"><b>${P.fixed?P.fixed+' errors fixed':'Nothing fixed this time'}${P.back?` · ${P.back} back to training`:''}</b>A rule passes when every task on it is right. A missed rule goes back to the list for a fresh lesson.</div>
+       <section><h3 class="spk-h">By rule</h3>${(F.mixRes||[]).map(m=>`<div class="spk-t ${m.ok?'ok':'bad'}"><div class="spk-ti">${m.ok?'✓':'×'}</div><div class="meta"><span>${esc(m.title)}</span><div class="muted" style="font-size:.85rem">${m.ok?(m.fixed?m.fixed+' fixed':'right, confirm again on another day'):m.back+' back to training'}</div></div></div>`).join('')}</section>`
+    : `<div class="note ${ok>=7?'':'warn-note'}"><b>${ok>=7?(P.fixed?`${P.fixed} errors marked fixed`:`${P.drilled||0} errors marked drilled`):'Not yet'}</b>${ok>=7?(P.fixed?'You got it right on two different days. These errors leave your training list.':'They come back in a Mixed review on another day. Pass it and they are fixed.'):'Re-read the rule and try a new set. 7 of 8 moves the errors forward.'}</div>`;
   return `<div class="stack spk-res">
-    <div class="summary-hero spk-sum"><div class="eyebrow">Fix My Errors · ${esc(CODE_RU[F.code]||F.code)}</div>
-      <div class="n">${ok}<small>/${n}</small></div><div class="muted">${esc(F.lesson.title_ru||'')}</div></div>
-    <div class="note ${ok>=7?'':'warn-note'}"><b>${ok>=7?(F.promoted?.fixed?`${F.promoted.fixed} errors marked fixed`:`${F.promoted?.drilled||0} errors marked drilled`):'Not yet'}</b>${ok>=7?(F.promoted?.fixed?'You got it right on two different days. These errors leave your training list.':'Repeat on another day with 7 or more to mark them fixed.'):'Re-read the rule and try a new set. 7 of 8 moves the errors forward.'}</div>
-    <section><h3 class="spk-h">Task by task</h3>${F.tasks.map(t=>`<div class="spk-t ${t.res?.ok?'ok':'bad'}"><div class="spk-ti">${t.res?.ok?'✓':'×'}</div><div class="meta"><div class="muted" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">${FTYPE[t.type]}</div>
+    <div class="summary-hero spk-sum"><div class="eyebrow">Fix My Errors · ${esc(F.mix?'Mixed review':F.cat||F.code)}</div>
+      <div class="n">${ok}<small>/${n}</small></div><div class="muted">${esc(F.mix?(F.mixRes||[]).length+' rules':F.lesson.title_ru||'')}</div></div>
+    ${note}
+    <section><h3 class="spk-h">Task by task</h3>${F.tasks.map(t=>`<div class="spk-t ${t.res?.ok?'ok':'bad'}"><div class="spk-ti">${t.res?.ok?'✓':'×'}</div><div class="meta"><div class="muted" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">${FTYPE[t.type]}${F.mix?' · '+esc(lsOf(t).title_ru||''):''}</div>
       <span class="serif">${esc(t.type==='choose'?t.options[t.answer]:t.type==='gap'?fillGap(t.q,t.answers[0]):t.answers[0])}</span></div></div>`).join('')}</section>
-    <div class="actions"><button class="btn ghost" data-act="fixLessonAgain">Read the rule</button><button class="btn" data-act="fixMore">New 8 tasks</button></div>
-    <button class="btn ghost" data-act="fixHome">All patterns</button>
+    <div class="actions">${F.mix?'':'<button class="btn ghost" data-act="fixLessonAgain">Read the rule</button>'}<button class="btn" data-act="${F.mix?'fixMix':'fixMore'}">${F.mix?'Another mixed set':'New 8 tasks'}</button></div>
+    <button class="btn ghost" data-act="fixHome">All rules</button>
   </div>`;
 }
+const lsOf = t => (st.F.mix ? BANK?.[t.topic]?.lesson : null) || st.F.lesson;
 
 
 // ---- 16d. FixBank: lessons and task banks prepared every 3 days by a scheduled Claude run (tab "FixBank": code | updated | basis | lesson | tasks).
@@ -2926,34 +2951,37 @@ async function bankLoad(force){
     rows.slice(1).forEach(r=>{ try{ const code=r[col('code')].trim(); if(!code) return;
       const lesson=JSON.parse(r[col('lesson')]), tasks=JSON.parse(r[col('tasks')]);
       if(lesson?.title_ru && Array.isArray(tasks) && tasks.length) v[code]={ updated:r[col('updated')]||'', lesson, tasks }; }catch(e){} });
+    if(Object.keys(v).some(k=>k.includes('.'))) Object.keys(v).forEach(k=>{ if(!k.includes('.')) delete v[k]; });   // topic rows replace the old one-row-per-code bank
     LS.set('bet3.bank',{ at:Date.now(), v }); return (BANK=v); }
   catch(e){ return (BANK=c?.v||{}); }
 }
-function bankPick(code){
+const bankTask = t => ({ ...t, type:String(t.type).toLowerCase(), answers:(t.answers||[]).map(String), options:(t.options||[]).map(String), answer:+t.answer||0, res:null, pick:undefined, ans:undefined });
+function bankPick(code, want){
   const b=BANK?.[code]; if(!b) return null;
   const all=b.tasks.map((t,i)=>({ ...t, id:t.id||code+'-'+i })), seen=LS.get('bet3.fixseen',{}), mine=new Set(seen[code]||[]);
   let pool=all.filter(t=>!mine.has(t.id)); if(pool.length<8){ mine.clear(); pool=all; }
   const by=k=>shuffle(pool.filter(t=>t.type===k)), pick=[];
-  ['choose','gap','fix','translate'].forEach(k=>pick.push(...by(k).slice(0,2)));
-  if(pick.length<8) pick.push(...shuffle(pool.filter(t=>!pick.includes(t))).slice(0,8-pick.length));
+  const plan=want||{choose:2,gap:2,fix:2,translate:2}, total=Object.values(plan).reduce((a,b)=>a+b,0);
+  Object.entries(plan).forEach(([k,m])=>pick.push(...by(k).slice(0,m)));
+  if(pick.length<total) pick.push(...shuffle(pool.filter(t=>!pick.includes(t))).slice(0,total-pick.length));
   pick.forEach(t=>mine.add(t.id)); seen[code]=[...mine]; LS.set('bet3.fixseen',seen);
   const order={choose:0,gap:1,fix:2,translate:3}; return pick.sort((a,b)=>order[a.type]-order[b.type]);
 }
 
 // ---- 16b. Actions ----
-const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); bankLoad(); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
+const fixOpen = () => { if(!st.F || st.F.phase==='sum') st.F={phase:'start'}; go('fix'); bankLoad().then(()=>{ if(st.view==='fix' && st.F.phase==='start') render(); }); if(syncOn() && st.F.phase==='start') errPull().then(ok=>{ if(ok && st.view==='fix' && st.F.phase==='start') render(); }); };
 actions.openFix = fixOpen;
 actions.fixHome = () => { st.F={phase:'start'}; go('fix'); };
 actions.fixPull = async () => { toast('Updating…'); await bankLoad(true); const ok=await errPull(); const x=LS.get('bet3.errstat',null); toast(x&&!x.ok?x.msg:ok?'Errors updated from the sheet':'Could not reach the sheet'); render(); };
 actions.fixGo = async d => {
-  const g=fixGroups().find(x=>x.code===d.c); if(!g || g.n<FIX_MIN) return;
-  const rows=g.rows.slice(0,15), cache=LS.get(ERR.lessons,{}), c=cache[d.c];
-  st.F={ phase:'wait', wait:'Writing your lesson', code:d.c, rows };
+  const g=fixGroups().find(x=>x.id===d.c); if(!g || !g.ready) return;
+  const rows=g.bank?g.rows:g.rows.slice(0,15), cache=LS.get(ERR.lessons,{}), c=cache[d.c];
+  st.F={ phase:'wait', wait:'Writing your lesson', code:d.c, cat:g.code, rows };
   await bankLoad(); const bk=BANK?.[d.c];
   if(bk && !d.fresh){ st.F.lesson=bk.lesson; st.F.fromBank=bk.updated||true; st.F.phase='lesson'; return go('fix'); }
   if(c && Date.now()-c.at<30*DAY && g.n-c.n<5 && !d.fresh){ st.F.lesson=c.lesson; st.F.phase='lesson'; return go('fix'); }
   go('fix');
-  try{ const ls=await aiJSON(fixLessonPrompt(d.c, rows), { temp:0.3, max:2500, label:'Lesson · ', kind:'eval' });
+  try{ const ls=await aiJSON(fixLessonPrompt(g.code, rows), { temp:0.3, max:2500, label:'Lesson · ', kind:'eval' });
     ['rule_ru','pairs','keys'].forEach(k=>{ if(!Array.isArray(ls[k])) ls[k]=[]; });
     if(!ls.title_ru || !ls.rule_ru.length) throw new Error('empty lesson');
     cache[d.c]={ at:Date.now(), n:g.n, lesson:ls }; LS.set(ERR.lessons, cache);
@@ -2966,7 +2994,7 @@ actions.fixLessonAgain = () => { st.F.phase='lesson'; go('fix'); };
 actions.fixMore = () => actions.fixTasks();
 actions.fixTasks = async () => {
   const F=st.F;
-  if(F.fromBank){ const bt=bankPick(F.code); if(bt){ Object.assign(F,{ tasks:bt.map(t=>({ ...t, type:String(t.type).toLowerCase(), answers:(t.answers||[]).map(String), options:(t.options||[]).map(String), answer:+t.answer||0, res:null, pick:undefined, ans:undefined })), i:0, phase:'task', draft:'', showRule:false, at:Date.now() }); return go('fix'); } }
+  if(F.fromBank){ const bt=bankPick(F.code); if(bt){ Object.assign(F,{ tasks:bt.map(bankTask), i:0, phase:'task', draft:'', showRule:false, at:Date.now() }); return go('fix'); } }
   F.phase='wait'; F.wait='Writing 8 tasks'; F.step=''; go('fix');
   try{ const out=await aiJSON(fixTasksPrompt(F.lesson), { temp:0.7, max:4000, label:'Tasks · ', kind:'eval' });
     const tasks=(out.tasks||[]).map(t=>({ ...t, type:String(t.type||'').toLowerCase(), q:String(t.q||''), answers:(Array.isArray(t.answers)?t.answers:[t.answers]).filter(a=>a!=null).map(String), options:Array.isArray(t.options)?t.options.map(String):[], answer:+t.answer||0 }))
@@ -2976,6 +3004,13 @@ actions.fixTasks = async () => {
     Object.assign(F, { tasks, i:0, phase:'task', draft:'', showRule:false, at:Date.now() }); }
   catch(e){ toast('Could not write tasks: '+e.message.slice(0,160)); F.phase='lesson'; }
   if(st.view==='fix') go('fix');
+};
+actions.fixMix = async () => {
+  await bankLoad(); const mx=mixTopics().slice(0,4); if(mx.length<2) return toast('Mixed review needs two rules drilled on an earlier day.');
+  const per = mx.length>=4 ? {fix:1,translate:1} : mx.length===3 ? {gap:1,fix:1,translate:1} : {gap:1,fix:2,translate:1};   // production tasks: recall without options
+  const tasks=[]; mx.forEach(g=>(bankPick(g.id, per)||[]).forEach(t=>tasks.push({ ...bankTask(t), topic:g.id })));
+  if(tasks.length<4) return toast('Not enough tasks in the bank yet.');
+  st.F={ phase:'task', mix:true, code:'MIX', cat:'Mixed review', rows:[], lesson:{}, tasks:shuffle(tasks), i:0, draft:'', showRule:false, at:Date.now() }; go('fix');
 };
 actions.fixRule = () => { st.F.draft=$('#fAns')?.value||st.F.draft; st.F.showRule=!st.F.showRule; render(); };
 actions.fixPick = d => { const t=st.F.tasks[st.F.i]; if(t.res) return; t.pick=+d.n; t.res={ ok:t.pick===t.answer }; buzz(t.res.ok?15:[30,40,30]); render(); };
@@ -2988,34 +3023,41 @@ actions.fixCheck = async () => {
   const z=x=>norm(x.trim()==='-'?'':x), hit=t.answers.some(a=> t.type==='gap' ? (z(a)===z(ans==='—'||ans==='0'?'-':ans)) : norm(a)===norm(ans));
   if(hit || t.type==='gap'){ t.res={ ok:hit }; buzz(hit?15:[30,40,30]); return render(); }
   const btn=document.querySelector('[data-act="fixCheck"]'); if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
-  try{ const r=await aiJSON(fixCheckPrompt(F.lesson,t,ans), { temp:0, max:600, label:'Check · ', kind:'gen' }); t.res={ ok:!!r.ok, why:r.why_ru||'' }; }
+  try{ const r=await aiJSON(fixCheckPrompt(lsOf(t),t,ans), { temp:0, max:600, label:'Check · ', kind:'gen' }); t.res={ ok:!!r.ok, why:r.why_ru||'' }; }
   catch(e){ t.res={ ok:false, why:'Не удалось проверить автоматически. Сравните с ответом и нажмите «My answer is also right», если совпадает по смыслу.' }; }
   buzz(t.res.ok?15:[30,40,30]); if(st.view==='fix') render();
 };
 actions.fixNext = () => { const F=st.F; if(F.i<F.tasks.length-1){ F.i++; F.showRule=false; return go('fix'); } fixFinish(); };
 function fixFinish(){
   const F=st.F, ok=F.tasks.filter(t=>t.res?.ok).length; F.phase='sum'; F.promoted={ drilled:0, fixed:0 };
+  if(F.mix){ const t0=today(), live=errAll(); F.promoted.back=0; F.mixRes=[];
+    [...new Set(F.tasks.map(t=>t.topic))].forEach(id=>{ const ls=BANK?.[id]?.lesson||{}, keys=new Set(ls.keys||[]), pass=F.tasks.filter(t=>t.topic===id).every(t=>t.res?.ok);
+      const dr=live.filter(r=>keys.has(r.key) && r.status==='drilled'), fix=pass?dr.filter(r=>String(r.updated||r.date)<t0).map(r=>r.key):[], back=pass?[]:dr.map(r=>r.key);
+      errSetStatus(fix,'fixed'); errSetStatus(back,'open'); F.promoted.fixed+=fix.length; F.promoted.back+=back.length;
+      F.mixRes.push({ id, title:ls.title_ru||id, ok:pass, fixed:fix.length, back:back.length }); });
+    const h=LS.get(ERR.hist,[]); h.unshift({ at:F.at, code:'MIX', title:'Mixed review', score:ok, of:F.tasks.length }); LS.set(ERR.hist, h.slice(0,30));
+    markActive(); return go('fix'); }
   if(ok>=7){
     const keys=new Set(F.lesson.keys?.length?F.lesson.keys:F.rows.map(r=>r.key)), rows=errAll().filter(r=>keys.has(r.key) && r.status!=='fixed');
     const toFix=rows.filter(r=>r.status==='drilled' && String(r.updated||r.date)<today()).map(r=>r.key), toDrill=rows.filter(r=>r.status!=='drilled').map(r=>r.key);
     errSetStatus(toFix,'fixed'); errSetStatus(toDrill,'drilled'); F.promoted={ drilled:toDrill.length, fixed:toFix.length };
   }
-  const h=LS.get(ERR.hist,[]); h.unshift({ at:F.at, code:F.code, title:F.lesson.title_ru, score:ok }); LS.set(ERR.hist, h.slice(0,30));
+  const h=LS.get(ERR.hist,[]); h.unshift({ at:F.at, code:F.cat||F.code, title:F.lesson.title_ru, score:ok }); LS.set(ERR.hist, h.slice(0,30));
   markActive(); go('fix');
 }
 function fixBack(){
   const ph=st.F?.phase;
   if(ph==='wait') return toast('One moment, the coach is working.');
-  if(ph==='task'){ if(!confirm('Leave this set?')) return; st.F.phase='lesson'; return go('fix'); }
+  if(ph==='task'){ if(!confirm('Leave this set?')) return; if(st.F.mix) st.F={phase:'start'}; else st.F.phase='lesson'; return go('fix'); }
   if(ph==='lesson'||ph==='sum'){ st.F={phase:'start'}; return go('fix'); }
   go('home');
 }
 
 // ---- 16c. Wiring ----
-{ const _home=vHome; vHome=function(){ const open=errAll().filter(r=>r.status!=='fixed').length, ready=fixGroups().some(g=>g.n>=FIX_MIN);
+{ const _home=vHome; vHome=function(){ const open=errAll().filter(r=>r.status!=='fixed').length, ready=fixGroups().some(g=>g.ready);
     const tile=`<button class="deck" data-act="openFix">
       <div class="ico" style="background:var(--surface-2);color:var(--fg)">${ICON_FIX}</div>
-      <div class="meta"><h3>Fix My Errors</h3><div class="muted" style="font-size:.85rem">Mode 5 · a lesson and 8 tasks on your own mistakes</div>
+      <div class="meta"><h3>Fix My Errors</h3><div class="muted" style="font-size:.85rem">Mode 5 · one rule at a time from your own mistakes</div>
       <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${open?'due':''}">${open} open errors</span>${ready?'<span class="pill ok">lesson ready</span>':''}</div></div></button>`;
     return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
 { const _ar=afterRender; afterRender=function(){ _ar();
