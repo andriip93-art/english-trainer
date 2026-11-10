@@ -74,13 +74,20 @@ Every mistake from Speak & Record (Mode 3) and the first attempt in Context Dril
 target, level, status, updated. Rows queue on the device while offline. Speak sessions already stored on a device are
 imported once.
 
-Fix My Errors trains one rule at a time. A scheduled Claude run (every 3 days) reads every non-fixed error and clusters
-them into small topics in the `FixBank` tab, one row per topic (`ART.a-an`, `GRAM.no-any`, `LEX.make-do-take`; 3 to 15
-errors each, target 90% coverage). Grammar topics are "rule" lessons; collocations, idioms and false friends are "chunks"
-lessons (a phrase family, every phrase drilled). Each topic has a lesson (why Russian speakers make it, the rule, a pattern
-line, real errors corrected, the trap, a memory hook, the error keys it covers) and 16 tasks, 4 of each type. Topics are
-listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors that no topic covers
-yet (new since the last run) are grouped by code and get a Gemini lesson once a code has 3 of them.
+Fix My Errors trains one rule at a time. Every error carries a topic id in the `type` column (`ART.a-an-adj`,
+`NEG.no-any`, `LEX.make-do-take`; the `code` column is the prefix). There are 42 topics, each one rule a learner can state in
+a line; grammar topics are "rule" lessons, collocations, idioms, false friends, calques and terms are "chunks" lessons (a
+phrase family, every phrase drilled). The Speak and Drills coaches get the topic list and tag new errors with an id directly.
+
+The bank has two layers. `fixbank.json` in this repo holds the base lesson and 12 tasks (3 of each type) for every topic.
+The `FixBank` tab of vocabulary_v2 is a layer on top, one row per topic id: a newer lesson replaces the base one, tasks are
+added by id (same id replaces). The `Topics` tab lists the valid ids with title, coach hint, task count and how many errors
+the lesson was written from. A scheduled Claude run every 3 days classifies errors that arrived without a valid id (writes
+`code` and `type` only), opens a new topic when 3 or more errors share a rule no topic covers, refreshes a lesson when a topic
+gains 3 or more new errors, and adds 4 tasks at a time to topics with 5 or more live errors until they have 24.
+
+Topics are listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors with no known
+topic fall back to one group per code with a Gemini lesson once a code has 3 of them.
 
 A session is a lesson plus 8 tasks from easy to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate, unseen
 tasks first. 7 of 8 marks the topic's errors as drilled. On a later day, Mixed review shuffles production tasks (fill the

@@ -1984,7 +1984,7 @@ actions.spkTok = (d) => {
   const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
   document.querySelectorAll(`.tok[data-l="${d.l}"]`).forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
   box.className='spk-tx '+(t.k==='S'?'s':'e');
-  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(typeLabel(t.type))}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
 };
 // Swipe between cards, arrows on a laptop
 let spkX=null;
@@ -2091,7 +2091,7 @@ Hard rules
 1. Transcript: ${audio?'transcribe verbatim from the audio, keep every error, filler (um, uh, эээ), false start and repetition. Never correct the learner in the transcript.':'the transcript is given (machine ASR). It may have silently fixed small errors and cannot show pronunciation. Treat plausible ASR artefacts (homophones, cut words, names) as not-an-error.'} Timecodes mm:ss.
 2. ${free?'Free talk: there is no target list, so "targets" = []. Judge the whole take on its own terms. If more than one person speaks (an uploaded call or meeting), analyse ONLY the learner (the Russian/Ukrainian-accented speaker, usually the one who talks most); other voices are context, never errors. Judge register against the setting the learner chose: casual topics may stay casual, but flag anything that would sound odd or blunt to a native in that setting.':`Targets: for each target expression decide status: "used" (said with correct form, meaning, collocation and register, natural in context), "error" (attempted, but wrong form, meaning, preposition, collocation or register), "avoided" (not said). Accept normal inflection and the optional parts in [brackets]. Quote the exact words spoken and the timecode. "native" = one natural sentence showing how a native executive would have used it in THIS story.`}
 3. Patterns before instances: max 6 patterns, each with a code, a count, impact high/medium/low ranked by count x severity (severity 3: changes meaning or sounds rude: false friends, register, timeline-changing tense, devoicing; 2: articles, prepositions, uncountables, dummy subject; 1: cosmetic).
-4. Log: only turns with at least one error or one genuine C1+ success, max 15 entries, one "native" rewrite per entry. Inside "original" wrap every trigger as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = success, Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Pronunciation, Idiom, Discourse; Fix = corrected words, "—" for successes. Pipes only inside Explanation. The words must match the transcript exactly. Every E code must belong to a listed pattern.
+4. Log: only turns with at least one error or one genuine C1+ success, max 15 entries, one "native" rewrite per entry. Inside "original" wrap every trigger as [[exact words|E or S|Type|Fix|Explanation]]: E = error, S = success, ${topicRule()} Fix = corrected words, "—" for successes. Pipes only inside Explanation. The words must match the transcript exactly. Every E code must belong to a listed pattern.
 5. Explain like a coach, not a grammar book: every hook/explanation gives a reason the learner will remember (contrast with Russian structure, etymology, mnemonic, mini-story). Example: «Information — как «вода»: «много воды», но не «две воды». Нужен счётчик: a piece of information».
 6. No inflation: if unsure, leave it out. If the take is clean, say so. Praise is data: real C1/C2 moves only (precise collocations, hedging, discourse markers, register control, domain terms), about one win per three errors, never invented.
 7. ${audio?'Pronunciation and prosody: you can hear the audio. Report only what you actually hear, meaning-changing problems first, max 8 pronunciation items, max 4 prosody items. pron_risk = [].':'No audio: pronunciation = [], prosody = []. Fill pron_risk with up to 6 words from the transcript that are known traps for Russian speakers (labelled as predicted, not observed).'}
@@ -2415,7 +2415,8 @@ sys:`You check one written answer by a ${L().id} English learner (Russian native
 - fix: the answer with only the errors corrected
 - native: how a native executive would say it, max ${L().native} words, simple reusable words
 - rules: max ${L().rules}, [{"code":"...","rule":"in Russian, short and memorable"}]; codes ART, PREP, PERF, COMP, FF, REG, LEX, OTHER
-Flag only real errors. If the answer is good, say so.`,
+Flag only real errors. If the answer is good, say so.
+In "marked": ${topicRule()}`,
 user:`Task: ${task}
 Target(s): ${t.targets.map(it=>`${it.deck}:${it.id} = "${it.en}" (${it.ru})`).join('; ')}
 Hints used: ${t.hints}
@@ -2615,7 +2616,7 @@ actions.coachTok = d => {
   const same=!box.hidden && box.dataset.n===d.n; box.hidden=same; box.dataset.n=d.n;
   document.querySelectorAll('.c-fb .tok').forEach(x=>x.classList.toggle('open', !same && x.dataset.n===d.n));
   box.className='spk-tx '+(t.k==='S'?'s':'e');
-  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(t.type||'')}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
+  box.innerHTML=`<div class="row" style="gap:6px"><span class="pill ${t.k==='S'?'ok':'due'}">${esc(typeLabel(t.type))}</span>${t.k==='S'?'':`<b class="x-w">${esc(t.text)}</b> <span class="x-a">→</span> <b class="x-r">${esc(t.fix)}</b>`}</div><div style="margin-top:6px">${esc(t.why)}</div>`;
 };
 function coachBack(){
   const ph=st.C?.phase;
@@ -2728,10 +2729,17 @@ const ERR = { all:'bet3.errs', q:'bet3.errq', up:'bet3.errup', lessons:'bet3.les
 const TYPE_CODE = [[/article/i,'ART'],[/prepos/i,'PREP'],[/tense|aspect|perfect/i,'PERF'],[/verb pattern|complement|gerund|infinitive/i,'COMP'],
   [/word order/i,'WO'],[/register|tone|polite/i,'REG'],[/false friend/i,'FF'],[/lexis|lexical|collocation|idiom|meaning|word choice|vocab/i,'LEX'],
   [/spell/i,'OTHER'],[/grammar|agreement|plural|countable|conditional|question|negat|modal|subject/i,'GRAM']];
-const typeCode = t => (TYPE_CODE.find(([re])=>re.test(t||''))||[0,'OTHER'])[1];
+// Topic ids ("ART.a-an-adj") live in the type column. The coaches tag errors with them; the code is the prefix.
+const isTopic = s => /^[A-Z]+\.[a-z0-9-]+$/.test(String(s||'').trim());
+const typeLabel = s => (isTopic(s) && BANK?.[String(s).trim()]?.lesson?.title_ru) || s || '';
+const topicList = () => Object.entries(BANK||{}).map(([id,b])=>`${id}: ${b.lesson?.hint_en||b.lesson?.title_en||''}`).join('\n');
+const topicRule = () => BANK && Object.keys(BANK).length
+  ? `Type for an error (E) = the id of the topic below whose rule was broken. If none fits, use <CODE>.other with the closest code (ART, PREP, NEG, GRAM, COND, PERF, QUES, UNC, COMP, WO, FF, LEX, REG). For a success (S) use one of Grammar, Lexis, Idiom, Register, Discourse.\nTopics:\n${topicList()}`
+  : 'Type one of Grammar, Lexis, Preposition, Article, Tense, Register, Word order, False friend, Idiom, Discourse.';
+const typeCode = t => isTopic(t) ? String(t).trim().split('.')[0] : (TYPE_CODE.find(([re])=>re.test(t||''))||[0,'OTHER'])[1];
 const stripMarks = s => String(s||'').replace(/\[\[(.+?)\]\]/g,(m,x)=>x.split('|')[0]);
 const errAll = () => LS.get(ERR.all, []);
-function errRows(text, base){
+function errRows(text, base){ // type = topic id when the coach used one
   return parseMarks(text||'').toks.filter(t=>t.k==='E' && t.text && t.fix && t.fix.trim()!=='—' && norm(t.text)!==norm(t.fix))
     .map(t=>({ ...base, type:(t.type||'').trim(), code:typeCode(t.type), wrong:t.text.trim(), fix:t.fix.trim(), why_ru:(t.why||'').trim() }));
 }
@@ -2794,20 +2802,17 @@ function errBackfill(){
 const FIX_MIN = 3;
 const ICON_FIX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>';
 const FTYPE = { choose:'Choose', gap:'Fill the gap', fix:'Fix the mistake', translate:'Translate' };
-// Groups: the scheduled run clusters every non-fixed error into teachable topics (FixBank rows "ART.a-an"; lesson.keys = errors covered).
-// Errors no topic covers yet (new since the last run) fall back to one group per code, with a Gemini lesson.
-const bankTopics = () => Object.entries(BANK||{}).filter(([id])=>id.includes('.')).map(([id,b])=>({ id, ...b }));
+// Groups: every error carries a topic id in its type column ("ART.a-an-adj"); the bank (fixbank.json in the repo + FixBank tab) holds
+// one lesson and a task set per topic. Errors with no known topic (rare: new ones the coach could not place) fall back to one group per code.
 function fixGroups(){
-  const live=errAll().filter(r=>r.status!=='fixed'), byKey=new Map(live.map(r=>[r.key,r])), used=new Set(), out=[], now=Date.now();
+  const live=errAll().filter(r=>r.status!=='fixed'), now=Date.now(), by={}, rest={};
   const rec=d=>{ const a=(now-new Date(d||0).getTime())/DAY; return a<=14?1:a<=60?.7:.5; };
   const mk=(id,code,title,rows,bank)=>{ const drilled=rows.filter(r=>r.status==='drilled').length, last=rows.reduce((m,r)=>String(r.date)>m?String(r.date):m,'');
     return { id, code, title, bank, rows:rows.slice().reverse(), n:rows.length, drilled, last, min:bank?1:FIX_MIN,
       score:rows.reduce((t,r)=>t+(r.status==='drilled'?.3:1)*rec(r.date),0) }; };
-  bankTopics().forEach(t=>{ const rows=(t.lesson.keys||[]).map(k=>byKey.get(k)).filter(Boolean); rows.forEach(r=>used.add(r.key));
-    if(rows.length) out.push(mk(t.id, t.id.split('.')[0], t.lesson.title_ru||t.id, rows, true)); });
-  const g={}; live.filter(r=>!used.has(r.key)).forEach(r=>{ const c=r.code||'OTHER'; (g[c]=g[c]||[]).push(r); });
-  const topics=out.length>0;
-  Object.entries(g).forEach(([c,rows])=>out.push(mk(c, c, (CODE_RU[c]||c)+(topics?' · not in a lesson yet':''), rows, false)));
+  live.forEach(r=>{ const t=String(r.type||'').trim(); if(isTopic(t) && BANK?.[t]) (by[t]=by[t]||[]).push(r); else { const c=r.code||'OTHER'; (rest[c]=rest[c]||[]).push(r); } });
+  const out=Object.entries(by).map(([id,rows])=>mk(id, id.split('.')[0], BANK[id].lesson.title_ru||id, rows, true)), topics=out.length>0;
+  Object.entries(rest).forEach(([c,rows])=>out.push(mk(c, c, (CODE_RU[c]||c)+(topics?' · not in a lesson yet':''), rows, false)));
   out.forEach(x=>x.ready=x.n>=x.min);
   return out.sort((a,b)=>(b.ready-a.ready)||(b.score-a.score));
 }
@@ -2941,19 +2946,25 @@ const lsOf = t => (st.F.mix ? BANK?.[t.topic]?.lesson : null) || st.F.lesson;
 // The app prefers the bank (deeper analysis of all errors, instant start); Gemini is the fallback when a pattern has no bank yet.
 let BANK=null;
 async function bankLoad(force){
+  // Base bank: fixbank.json shipped with the app. Layer: FixBank tab, written by the scheduled run (new topics, new or corrected
+  // tasks by id, a newer lesson). Rows whose code has no "." are from the old one-row-per-code bank and are ignored.
   if(BANK && !force) return BANK;
-  const id=sheetId(cfg.sheet)||sheetId(LIB_URL), c=LS.get('bet3.bank',null);
+  const c=LS.get('bet3.bank2',null);
   if(c && !force && Date.now()-c.at<6*3600e3) return (BANK=c.v);
-  try{ const r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=FixBank`,{cache:'no-store'});
+  const v={}; let got=false;
+  try{ const r=await fetch('fixbank.json',{cache:'no-store'}); if(r.ok){ Object.assign(v, await r.json()); got=true; } }catch(e){}
+  try{ const id=sheetId(cfg.sheet)||sheetId(LIB_URL), r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=FixBank`,{cache:'no-store'});
     const t=await r.text(); if(!r.ok || /^\s*<(!doctype|html)/i.test(t)) throw 0;
-    const rows=splitTSV(t), h=(rows[0]||[]).map(x=>x.trim().toLowerCase()), col=n=>h.indexOf(n), v={};
-    if(col('code')<0) throw 0;
-    rows.slice(1).forEach(r=>{ try{ const code=r[col('code')].trim(); if(!code) return;
-      const lesson=JSON.parse(r[col('lesson')]), tasks=JSON.parse(r[col('tasks')]);
-      if(lesson?.title_ru && Array.isArray(tasks) && tasks.length) v[code]={ updated:r[col('updated')]||'', lesson, tasks }; }catch(e){} });
-    if(Object.keys(v).some(k=>k.includes('.'))) Object.keys(v).forEach(k=>{ if(!k.includes('.')) delete v[k]; });   // topic rows replace the old one-row-per-code bank
-    LS.set('bet3.bank',{ at:Date.now(), v }); return (BANK=v); }
-  catch(e){ return (BANK=c?.v||{}); }
+    const rows=splitTSV(t), h=(rows[0]||[]).map(x=>x.trim().toLowerCase()), col=n=>h.indexOf(n);
+    if(col('code')>=0){ got=true; rows.slice(1).forEach(r=>{ try{ const code=(r[col('code')]||'').trim(); if(!isTopic(code)) return;
+      const lesson=r[col('lesson')]?JSON.parse(r[col('lesson')]):{}, tasks=r[col('tasks')]?JSON.parse(r[col('tasks')]):[];
+      const base=v[code]||{ updated:'', lesson:{}, tasks:[] }, m=new Map(base.tasks.map(x=>[x.id,x]));
+      (Array.isArray(tasks)?tasks:[]).forEach(x=>{ if(x&&x.id&&x.type) m.set(x.id,x); });
+      const ls=lesson?.title_ru ? { ...lesson, hint_en:lesson.hint_en||base.lesson.hint_en } : base.lesson, up=String(r[col('updated')]||'');
+      if(ls?.title_ru && m.size) v[code]={ updated:up>base.updated?up:base.updated, lesson:ls, tasks:[...m.values()] }; }catch(e){} }); } }
+  catch(e){}
+  if(!got) return (BANK=c?.v||{});
+  LS.set('bet3.bank2',{ at:Date.now(), v }); return (BANK=v);
 }
 const bankTask = t => ({ ...t, type:String(t.type).toLowerCase(), answers:(t.answers||[]).map(String), options:(t.options||[]).map(String), answer:+t.answer||0, res:null, pick:undefined, ans:undefined });
 function bankPick(code, want){
@@ -3031,14 +3042,14 @@ actions.fixNext = () => { const F=st.F; if(F.i<F.tasks.length-1){ F.i++; F.showR
 function fixFinish(){
   const F=st.F, ok=F.tasks.filter(t=>t.res?.ok).length; F.phase='sum'; F.promoted={ drilled:0, fixed:0 };
   if(F.mix){ const t0=today(), live=errAll(); F.promoted.back=0; F.mixRes=[];
-    [...new Set(F.tasks.map(t=>t.topic))].forEach(id=>{ const ls=BANK?.[id]?.lesson||{}, keys=new Set(ls.keys||[]), pass=F.tasks.filter(t=>t.topic===id).every(t=>t.res?.ok);
-      const dr=live.filter(r=>keys.has(r.key) && r.status==='drilled'), fix=pass?dr.filter(r=>String(r.updated||r.date)<t0).map(r=>r.key):[], back=pass?[]:dr.map(r=>r.key);
+    [...new Set(F.tasks.map(t=>t.topic))].forEach(id=>{ const ls=BANK?.[id]?.lesson||{}, pass=F.tasks.filter(t=>t.topic===id).every(t=>t.res?.ok);
+      const dr=live.filter(r=>String(r.type).trim()===id && r.status==='drilled'), fix=pass?dr.filter(r=>String(r.updated||r.date)<t0).map(r=>r.key):[], back=pass?[]:dr.map(r=>r.key);
       errSetStatus(fix,'fixed'); errSetStatus(back,'open'); F.promoted.fixed+=fix.length; F.promoted.back+=back.length;
       F.mixRes.push({ id, title:ls.title_ru||id, ok:pass, fixed:fix.length, back:back.length }); });
     const h=LS.get(ERR.hist,[]); h.unshift({ at:F.at, code:'MIX', title:'Mixed review', score:ok, of:F.tasks.length }); LS.set(ERR.hist, h.slice(0,30));
     markActive(); return go('fix'); }
   if(ok>=7){
-    const keys=new Set(F.lesson.keys?.length?F.lesson.keys:F.rows.map(r=>r.key)), rows=errAll().filter(r=>keys.has(r.key) && r.status!=='fixed');
+    const keys=new Set(F.rows.map(r=>r.key)), rows=errAll().filter(r=>(keys.has(r.key) || (F.fromBank && String(r.type).trim()===F.code)) && r.status!=='fixed');
     const toFix=rows.filter(r=>r.status==='drilled' && String(r.updated||r.date)<today()).map(r=>r.key), toDrill=rows.filter(r=>r.status!=='drilled').map(r=>r.key);
     errSetStatus(toFix,'fixed'); errSetStatus(toDrill,'drilled'); F.promoted={ drilled:toDrill.length, fixed:toFix.length };
   }
@@ -3067,6 +3078,7 @@ function fixBack(){
 
 errBackfill();
 render();
+bankLoad();
 if(syncOn()){ syncNow({silent:true}); ensureKeys(); errFlush(); }
 addEventListener('online', ()=>errFlush());
 </script>
