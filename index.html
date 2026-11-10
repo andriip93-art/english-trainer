@@ -2855,10 +2855,16 @@ Return {"ok":true,"why_ru":"one short sentence in Russian; if wrong, name the pr
 }
 
 function vFix(){ const F=st.F||(st.F={phase:'start'}); return ({ start:fixStart, wait:fixWait, lesson:fixLesson, task:fixTask, sum:fixSum })[F.phase](); }
+// Focus filter: train one family of rules at a time. Affects the rule list, the Train button and Mixed review.
+const FIX_CATS=[['all','All'],['gram','Grammar',/^(GRAM|NEG|COND|PERF|QUES|UNC|COMP)$/],['art','Articles',/^ART$/],['prep','Prepositions',/^PREP$/],['wo','Word order',/^WO$/],['lex','Vocabulary',/^(LEX|FF|REG|CLICHE)$/]];
+const fixCat = () => LS.get('bet3.fixcat','all');
+const inCat = (g, c=fixCat()) => c==='all' || !!FIX_CATS.find(x=>x[0]===c)?.[2]?.test(g.code);
 function fixStart(){
-  const gs=fixGroups(), all=errAll(), ready=gs.filter(g=>g.ready), top=ready[0], h=LS.get(ERR.hist,[]), mx=mixTopics();
+  const gAll=fixGroups(), cat=fixCat(), gs=gAll.filter(g=>inCat(g,cat)), all=errAll(), ready=gs.filter(g=>g.ready), top=ready[0], h=LS.get(ERR.hist,[]), mx=mixTopics().filter(g=>inCat(g,cat));
+  const catN=c=>gAll.filter(g=>inCat(g,c)).reduce((t,g)=>t+g.n,0);
   const cnt=s=>all.filter(r=>r.status===s).length, max=Math.max(1,...gs.map(g=>g.n));
   return `<div class="stack">
+    <div class="chips">${FIX_CATS.map(([c,l])=>`<button class="chip ${cat===c?'on':''}" data-act="fixCat" data-c="${c}">${l} <span class="muted">${catN(c)}</span></button>`).join('')}</div>
     <div class="hero spk-hero">
       <div class="lbl">Mode 5 · Fix My Errors</div>
       <div class="q">Your own mistakes, one rule at a time.</div>
@@ -2866,7 +2872,7 @@ function fixStart(){
     </div>
     ${mx.length>=2?`<button class="btn spk-go" data-act="fixMix">${ICON_FIX} Mixed review · ${Math.min(4,mx.length)} rules</button>`:''}
     ${top?`<button class="btn ${mx.length>=2?'ghost':'spk-go'}" data-act="fixGo" data-c="${esc(top.id)}">${mx.length>=2?'':ICON_FIX+' '}Train: ${esc(top.title)} · ${top.n}</button>`
-      :`<div class="note"><b>Not enough errors yet</b>A lesson needs at least ${FIX_MIN} open errors of one kind. Errors are collected automatically from Speak & Record and Context Drills.</div>`}
+      :cat!=='all'&&gAll.some(g=>g.ready)?`<div class="note"><b>Nothing to train in this group</b>Pick another group above or All.</div>`:`<div class="note"><b>Not enough errors yet</b>A lesson needs at least ${FIX_MIN} open errors of one kind. Errors are collected automatically from Speak & Record and Context Drills.</div>`}
     ${gs.length?`<section><h3 class="spk-h">Your rules <small class="muted">by priority · tap to train</small></h3>
       ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.id)}" ${g.ready?'':'disabled'}><span class="code">${esc(g.code)}</span><span class="t">${esc(g.title)}<small class="muted"> · ${g.drilled?g.drilled+' drilled · ':''}last ${esc(g.last)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
     </section>`:''}
@@ -3016,8 +3022,9 @@ actions.fixTasks = async () => {
   catch(e){ toast('Could not write tasks: '+e.message.slice(0,160)); F.phase='lesson'; }
   if(st.view==='fix') go('fix');
 };
+actions.fixCat = d => { LS.set('bet3.fixcat', d.c); render(); };
 actions.fixMix = async () => {
-  await bankLoad(); const mx=mixTopics().slice(0,4); if(mx.length<2) return toast('Mixed review needs two rules drilled on an earlier day.');
+  await bankLoad(); const mx=mixTopics().filter(g=>inCat(g)).slice(0,4); if(mx.length<2) return toast('Mixed review needs two rules drilled on an earlier day.');
   const per = mx.length>=4 ? {fix:1,translate:1} : mx.length===3 ? {gap:1,fix:1,translate:1} : {gap:1,fix:2,translate:1};   // production tasks: recall without options
   const tasks=[]; mx.forEach(g=>(bankPick(g.id, per)||[]).forEach(t=>tasks.push({ ...bankTask(t), topic:g.id })));
   if(tasks.length<4) return toast('Not enough tasks in the bank yet.');

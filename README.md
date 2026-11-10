@@ -86,7 +86,7 @@ the lesson was written from. A scheduled Claude run every 3 days classifies erro
 `code` and `type` only), opens a new topic when 3 or more errors share a rule no topic covers, refreshes a lesson when a topic
 gains 3 or more new errors, and adds 4 tasks at a time to topics with 5 or more live errors until they have 24.
 
-Topics are listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors with no known
+Chips at the top narrow everything to one family (Grammar, Articles, Prepositions, Word order, Vocabulary): the rule list, the Train button and Mixed review; the choice is remembered. Topics are listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors with no known
 topic fall back to one group per code with a Gemini lesson once a code has 3 of them.
 
 A session is a lesson plus 8 tasks from easy to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate, unseen
