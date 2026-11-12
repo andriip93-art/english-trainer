@@ -598,6 +598,40 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .f-say:last-child{border-bottom:0}
 .f-more{border-top:1px solid var(--line);padding-top:10px}
 .f-more summary{cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* ---- v3.1 · interactive lesson, progress, roleplay ---- */
+.f-blank{display:inline-block;min-width:4.5em;border-bottom:2px solid var(--line);text-align:center;color:var(--primary);font-weight:700;line-height:1.2;margin:0 2px}
+.f-blank.cur{border-color:var(--primary);background:var(--primary-soft);border-radius:3px 3px 0 0}
+.f-in{color:var(--ok)!important;animation:pop .3s var(--ease)}
+.f-bank{display:flex;flex-wrap:wrap;gap:8px}
+.f-bank .chip{font-family:var(--serif);font-size:1rem;min-height:40px}
+.f-shake{animation:fshake .3s;border-color:var(--bad)!important;color:var(--bad)!important}
+@keyframes fshake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.f-sayx{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.f-sayx:last-of-type{border-bottom:0}
+.f-sayx .audio{width:36px;height:36px;flex-shrink:0}
+.f-rec svg{width:18px;height:18px}
+.f-rec.on{background:var(--primary);color:var(--primary-ink);animation:pop .6s var(--ease) infinite alternate}
+.s-bars{display:flex;gap:6px;align-items:flex-end;min-height:96px}
+.s-bars>div{flex:1;display:grid;justify-items:center;gap:3px;min-width:0}
+.s-bars span{width:100%;max-width:34px;background:var(--fg);border-radius:2px 2px 0 0}
+.s-bars>div:last-child span{background:var(--primary)}
+.s-bars em{font-style:normal;font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.s-bars small{font-size:.66rem;color:var(--muted);white-space:nowrap}
+.s-big{display:flex;align-items:baseline;gap:12px}.s-big b{font-family:var(--serif);font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.s-up{color:var(--ok);font-weight:600}.s-down{color:var(--bad);font-weight:600}
+.s-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;font-size:.9rem;padding:7px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.s-row:has(>[style*="grid-column"]){grid-template-columns:auto 1fr}.s-row>[style*="grid-column"]{grid-column:auto!important}
+.s-track{position:relative;width:90px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.s-track i{position:absolute;inset:0 auto 0 0;background:var(--primary)}
+.s-heat{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+.s-heat i{aspect-ratio:1;border-radius:3px;background:var(--surface-2)}
+.s-heat .h1{background:color-mix(in srgb,var(--primary) 30%,var(--surface-2))}.s-heat .h2{background:color-mix(in srgb,var(--primary) 62%,var(--surface-2))}.s-heat .h3{background:var(--primary)}
+.t-chat{display:grid;gap:10px}
+.t-msg{max-width:88%;padding:10px 12px;border-radius:14px;font-family:var(--serif);line-height:1.45;display:flex;gap:8px;align-items:flex-end}
+.t-msg.ai{background:var(--surface-2);border-bottom-left-radius:4px;justify-self:start}
+.t-msg.me{background:var(--navy-soft);border-bottom-right-radius:4px;justify-self:end}
+.t-msg .audio{width:28px;height:28px;flex-shrink:0}
+.t-typing{display:flex;gap:4px;padding:6px 2px}.t-typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:pop .6s var(--ease) infinite alternate}.t-typing i:nth-child(2){animation-delay:.15s}.t-typing i:nth-child(3){animation-delay:.3s}
 </style>
 </head>
 <body>
@@ -3118,7 +3152,7 @@ function fixBack(){
 //   contrast pairs, fine points, a text in context, lines to say aloud), your own errors as tasks, missed tasks come
 //   back at the end of the set (mastery), and a spaced schedule per rule: reviews after 1, 3 and 7 days, then fixed.
 // · Stutter filter for the error journal, offline app shell (service worker).
-const V3 = '3.0';
+const V3 = '3.1';
 const FIX_STEPS = [1, 3, 7];            // days until the review after: the lesson, review 1, review 2. Passing the last review marks the errors fixed.
 FTYPE.mine = 'Your own words';
 const dayLog = f => { const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t][f]=(log[t][f]||0)+1; LS.set(K.log,log); queueSync(); };
@@ -3337,7 +3371,7 @@ actions.todayFixMix = async () => { st.F={phase:'start'}; go('fix'); await actio
     return h.replace(a, todayPlan()+a.replace('Your decks','All modes')).replace('<p class="hint">','<p class="hint">Version 3 preview. The previous version stays at <a href="../">the old address</a> with the same progress. '); }; }
 { const _set=vSettings; vSettings=function(){
     const card=`<div class="card stack"><h3>Version ${V3} · preview</h3>
-      <p class="hint" style="margin:0">Adds the Today plan, deeper Fix My Errors lessons with a diagnostic on your own sentences, spaced rule reviews (1, 3, 7 days) and an offline app shell. Cards, progress, errors and sync are shared with the previous version, so you can switch back at any time.</p>
+      <p class="hint" style="margin:0">Adds the Today plan, step-by-step interactive lessons in Fix My Errors, spaced rule reviews (1, 3, 7 days), Live Roleplay, the Progress page, an optional FSRS scheduler and an offline app shell. Cards, progress, errors and sync are shared with the previous version, so you can switch back at any time.</p>
       <a class="btn ghost small" href="../" style="align-self:flex-start">Open the previous version</a></div>`;
     return _set().replace(/<\/div>\s*$/, card+'</div>'); }; }
 { const _ar=afterRender; afterRender=function(){ _ar(); if(st.view==='fix' && st.F?.phase==='diag'){ bar((st.F.diag.i+(st.F.diag.items[st.F.diag.i].res?1:0))/st.F.diag.items.length*100);
@@ -3345,6 +3379,314 @@ actions.todayFixMix = async () => { st.F={phase:'start'}; go('fix'); await actio
 
 // ---- 17k. Offline shell: the page itself opens with no network (v2 kept only the data offline)
 if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load', ()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// ---------- 18. v3.1 layer: interactive lessons, Progress, Live Roleplay, FSRS ----------
+// · Lesson = a sequence of short screens, each one ends with something to do (test-teach-test, one idea per screen):
+//   rule > spot the right one > contrasts (predict, then reveal) > fill the text from a word bank > say it aloud (scored) > fine points.
+// · Progress: is the error rate in speech going down, which rule families move, how the cards and the daily plan are doing.
+// · Live Roleplay (Mode 6): a turn-by-turn conversation with a partner who pushes back; corrections come after, not during.
+// · FSRS-4.5 as an optional scheduler (Settings); the classic intervals stay the default.
+
+// ---- 18a. Extra views (the v2 router only knows its own)
+const X_VIEWS = { stats:{ title:'Progress', v:()=>vStats() }, talk:{ title:'Roleplay', v:()=>vTalk() } };
+{ const _r=render; render=function(){ const X=X_VIEWS[st.view]; if(!X) return _r();
+    stopBulletTimer(); document.body.classList.remove('sess','bul'); const b=$('#backBtn'); b.hidden=false; b.setAttribute('aria-label','Back');
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+    bar(0); $('#title').textContent=X.title; $('#app').innerHTML=X.v(); if(st.view==='talk') talkAfter(); }; }
+{ const _b=actions.back; actions.back=()=>{ if(st.view==='stats') return go('home'); if(st.view==='talk') return talkBack(); _b(); }; }
+
+// ---- 18b. Interactive lesson
+const fixLessonAll = fixLesson;                       // the one-page version stays as the reference view
+const lsParts = s => String(s||'').split(/\*\*(.+?)\*\*/g);   // even index = plain text, odd index = target
+function lessonSteps(ls){
+  const d=ls.deep||{}, out=['rule'];
+  if((ls.pairs||[]).length) out.push('spot');
+  if((d.contrast||[]).length) out.push('contrast');
+  if(d.text && lsParts(d.text).length>=5) out.push('text');
+  if((d.say||[]).length) out.push('say');
+  out.push('more'); return out;
+}
+function lessonInit(F){
+  const ls=F.lesson, d=ls.deep||{}, parts=lsParts(d.text), tg=parts.map((x,i)=>i%2?i:-1).filter(i=>i>=0), blanks=shuffle(tg).slice(0,6).sort((a,b)=>a-b);
+  F.L={ i:0, steps:lessonSteps(ls),
+    spot:shuffle(ls.pairs||[]).slice(0,4).map(p=>({ p, flip:Math.random()<.5, pick:null })), si:0,
+    con:(d.contrast||[]).map(()=>false),
+    parts, blanks, fill:{}, bank:shuffle(blanks.map(i=>({ i, t:parts[i] }))), miss:0, bad:-1,
+    say:(d.say||[]).map(t=>({ t, heard:'', score:null, self:false })) };
+}
+const sayScore = (target, heard) => { const a=norm(target).split(' ').filter(Boolean), h=norm(heard).split(' '); let n=0; a.forEach(w=>{ const j=h.indexOf(w); if(j>=0){ n++; h.splice(j,1); } }); return a.length?Math.round(n/a.length*100):0; };
+fixLesson = function(){
+  const F=st.F; if(F.lmode==='all') return fixLessonAll().replace('<div class="actions">','<button class="btn ghost small" data-act="lsMode" style="align-self:flex-start">Back to the step-by-step lesson</button><div class="actions">');
+  if(!F.L) lessonInit(F);
+  const L=F.L, ls=F.lesson, d=ls.deep||{}, step=L.steps[L.i], last=L.i===L.steps.length-1, D=F.diag, done=D?D.items.filter(x=>x.res):[], hit=done.filter(x=>x.res.ok).length;
+  const eb=t=>`<div class="eyebrow" style="margin-bottom:6px">${t}</div>`;
+  let body='', ready=true;
+  if(step==='rule'){
+    body=`${done.length?`<div class="note ${hit===done.length?'':'warn-note'}"><b>Diagnostic: ${hit} of ${done.length} repaired without the rule</b>${hit===done.length?'Правило вы знаете. Цель урока: автоматизм в речи.':'Правило ещё не автоматическое. Пройдите шаги по порядку.'}</div>`:''}
+      <div class="note"><b>В чём ошибка</b>${esc(ls.why_ru||'')}</div>
+      <div>${eb('Правило')}<ul class="f-rule">${(ls.rule_ru||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      ${ls.formula?`<div class="spk-native"><span>Pattern</span>${esc(ls.formula)}</div>`:''}
+      ${d.steps_ru?.length?`<div>${eb('Как решать: по шагам')}<ol class="f-steps">${d.steps_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:''}`;
+  } else if(step==='spot'){
+    const q=L.spot[L.si], opts=q.flip?[q.p.right,q.p.wrong]:[q.p.wrong,q.p.right], ok=q.pick!==null && opts[q.pick]===q.p.right; ready=L.si===L.spot.length-1 && q.pick!==null;
+    body=`${eb(`Which one is correct? · ${L.si+1} of ${L.spot.length}`)}
+      <div class="stack" style="gap:10px">${opts.map((o,n)=>`<button class="opt ${q.pick===null?'':o===q.p.right?'right':n===q.pick?'wrong':''}" data-act="lsSpot" data-n="${n}" ${q.pick===null?'':'disabled'}><span class="k">${n+1}</span><span class="serif">${esc(o)}</span></button>`).join('')}</div>
+      ${q.pick===null?'':`<div class="note ${ok?'':'warn-note'}"><b>${ok?'Right':'Not this one'}</b>${esc(q.p.note_ru||'')} ${audioBtn(q.p.right)}</div>
+        ${L.si<L.spot.length-1?'<button class="btn" data-act="lsSpotNext">Next pair</button>':''}`}`;
+  } else if(step==='contrast'){
+    body=`${eb('Сравните · сначала подумайте, в чём разница, потом откройте')}
+      ${d.contrast.map((c,i)=>`<div class="f-con"><div class="ab"><span>${esc(c.a)}</span><span>${esc(c.b)}</span></div>${L.con[i]?`<div class="muted" style="font-size:.9rem">${esc(c.note_ru||'')}</div>`:`<button class="btn ghost small" data-act="lsCon" data-n="${i}" style="justify-self:start">В чём разница?</button>`}</div>`).join('')}`;
+    ready=L.con.every(Boolean);
+  } else if(step==='text'){
+    const left=L.bank.filter(b=>L.fill[b.i]===undefined), cur=L.blanks.find(i=>L.fill[i]===undefined); ready=!left.length;
+    body=`${eb('In context · fill the gaps in order from the word bank')}
+      <div class="f-text">${L.parts.map((x,i)=>i%2===0?esc(x):!L.blanks.includes(i)?`<b class="f-t">${esc(x)}</b>`:L.fill[i]!==undefined?`<b class="f-t f-in">${esc(x)}</b>`:`<span class="f-blank ${i===cur?'cur':''}">${i===cur?'?':'&nbsp;'}</span>`).join('')}</div>
+      ${left.length?`<div class="f-bank">${L.bank.map((b,n)=>L.fill[b.i]!==undefined?'':`<button class="chip ${L.bad===n?'f-shake':''}" data-act="lsFill" data-n="${n}">${esc(b.t)}</button>`).join('')}</div>`
+        :`<div class="note ${L.miss?'':''}"><b>${L.miss?`Done · ${L.miss} wrong tap${L.miss===1?'':'s'}`:'Done · no mistakes'}</b>Послушайте текст целиком и прочитайте его вслух. ${audioBtn(L.parts.join(''))}</div>`}`;
+  } else if(step==='say'){
+    body=`${eb('Say it aloud · listen, then record yourself')}
+      ${L.say.map((s,i)=>`<div class="f-sayx"><div class="row" style="gap:10px;flex-wrap:nowrap;justify-content:space-between;align-items:center"><span class="serif">${esc(s.t)}</span><span class="row" style="gap:6px;flex-wrap:nowrap">${audioBtn(s.t)}${SR?`<button class="audio f-rec ${L.rec===i?'on':''}" data-act="lsSay" data-n="${i}" aria-label="Record">${ICON_MIC}</button>`:''}</span></div>
+        ${s.score!==null?`<div class="muted" style="font-size:.88rem"><b style="color:var(--${s.score>=80?'ok':'warn'})">${s.score}%</b> · heard: ${esc(s.heard||'nothing')}</div>`:L.rec===i?'<div class="muted" style="font-size:.88rem">Listening…</div>':''}
+        ${!SR&&!s.self?`<button class="btn ghost small" data-act="lsSelf" data-n="${i}" style="justify-self:start">I said it aloud</button>`:''}</div>`).join('')}
+      ${SR?'<p class="hint" style="margin:0">The score shows how many words the recogniser caught. 80% or more counts as clear.</p>':'<p class="hint" style="margin:0">Speech recognition is not available in this browser, so mark each line yourself.</p>'}`;
+    ready=L.say.every(s=>s.score!==null||s.self);
+  } else {
+    const mine=F.rows.filter(r=>r.wrong&&r.fix);
+    body=`${d.more_ru?.length?`<div>${eb('Тонкости и исключения')}<ul class="f-rule">${d.more_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${ls.trap_ru?`<div class="note warn-note"><b>Ловушка</b>${esc(ls.trap_ru)}</div>`:''}
+      ${ls.hook_ru?`<div class="spk-win" style="margin:0"><b>Как запомнить</b><div class="muted" style="font-size:.92rem;margin-top:2px">${esc(ls.hook_ru)}</div></div>`:''}
+      ${mine.length?`<details class="f-more"><summary>All your errors on this rule · ${mine.length}</summary><div style="margin-top:6px">${mine.slice(0,40).map(r=>`<div class="f-pair"><div class="w">${esc(unstutter(r.wrong))}</div><div class="r">${esc(r.fix)} ${audioBtn(r.fix)}</div></div>`).join('')}</div></details>`:''}`;
+  }
+  return `<div class="stack">
+    <div class="spk-dots">${L.steps.map((x,i)=>`<span class="${i<L.i?'done':i===L.i?'on':''}"></span>`).join('')}<em>${L.i+1} / ${L.steps.length}</em></div>
+    <div class="card c-card">
+      <div class="spk-kind">Lesson · ${esc(F.cat||F.code)} · ${F.rows.length} of your errors</div>
+      <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
+      ${body}
+      <div class="actions">${L.i?'<button class="btn ghost" data-act="lsPrev" style="flex:0 0 auto">Back</button>':''}
+        ${last?'<button class="btn" data-act="fixTasks">Start practice</button>':`<button class="btn ${ready?'':'ghost'}" data-act="lsNext">${ready?'Next':'Skip'}</button>`}</div>
+    </div>
+    <button class="btn ghost small" data-act="lsMode" style="align-self:center">Whole lesson on one page</button>
+  </div>`;
+};
+let lsRec=null;
+const lsStopRec = () => { try{ lsRec?.abort(); }catch(e){} lsRec=null; if(st.F?.L) st.F.L.rec=undefined; };
+actions.lsNext = () => { lsStopRec(); const L=st.F.L; if(L.i<L.steps.length-1) L.i++; go('fix'); };
+actions.lsPrev = () => { lsStopRec(); const L=st.F.L; if(L.i>0) L.i--; go('fix'); };
+actions.lsMode = () => { lsStopRec(); st.F.lmode=st.F.lmode==='all'?'':'all'; go('fix'); };
+actions.lsSpot = d => { const L=st.F.L, q=L.spot[L.si]; if(q.pick!==null) return; q.pick=+d.n; const ok=(q.flip?[q.p.right,q.p.wrong]:[q.p.wrong,q.p.right])[q.pick]===q.p.right; buzz(ok?15:[30,40,30]); render(); };
+actions.lsSpotNext = () => { st.F.L.si++; render(); };
+actions.lsCon = d => { st.F.L.con[+d.n]=true; render(); };
+actions.lsFill = d => { const L=st.F.L, b=L.bank[+d.n], cur=L.blanks.find(i=>L.fill[i]===undefined); if(cur===undefined||!b) return;
+  if(norm(b.t)===norm(L.parts[cur])){ const same=L.bank.find(x=>x.i===cur); if(same && same!==b){ same.i=b.i; b.i=cur; } L.fill[cur]=true; L.bad=-1; buzz(15); }   // identical words are interchangeable
+  else { L.miss++; L.bad=+d.n; buzz([30,40,30]); }
+  render(); };
+actions.lsSelf = d => { st.F.L.say[+d.n].self=true; render(); };
+actions.lsSay = d => { const L=st.F.L, i=+d.n, s=L.say[i]; if(!SR) return; if(lsRec){ const same=L.rec===i; lsStopRec(); render(); if(same) return; }
+  speechSynthesis?.cancel(); const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=false; r.maxAlternatives=3;
+  r.onresult=e=>{ const alts=[...e.results[0]].map(a=>a.transcript), best=alts.map(a=>[sayScore(s.t,a),a]).sort((a,b)=>b[0]-a[0])[0]; s.score=best[0]; s.heard=best[1]; buzz(s.score>=80?15:[30,40,30]); };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); else if(e.error==='no-speech'){ s.score=0; s.heard=''; } };
+  r.onend=()=>{ if(lsRec===r){ lsRec=null; L.rec=undefined; if(st.view==='fix' && st.F?.phase==='lesson') render(); } };
+  try{ r.start(); lsRec=r; L.rec=i; render(); }catch(e){ toast('Recording is not available here.'); } };
+{ const _a=actions.fixLessonAgain; actions.fixLessonAgain=()=>{ st.F.lmode='all'; _a(); }; }
+{ const _t=actions.fixTasks; actions.fixTasks=async()=>{ lsStopRec(); return _t(); }; }
+
+// ---- 18c. Progress
+const wkStart = d => { const x=new Date(d); x.setHours(12,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return today(x); };
+function vStats(){
+  const errs=errAll(), now=Date.now(), bars=(vals,labels,fmt)=>{ const mx=Math.max(1,...vals); return `<div class="s-bars">${vals.map((v,i)=>`<div><em>${fmt?fmt(v):v}</em><span style="height:${4+Math.round(v/mx*56)}px"></span><small>${labels[i]}</small></div>`).join('')}</div>`; };
+  // 1. speech accuracy: errors per 100 words, per recorded session
+  const sp=spkHist().filter(s=>s.result?.metrics?.words>30).map(s=>({ at:s.at, r:(s.result.metrics.errors_total||0)/s.result.metrics.words*100 })).reverse().slice(-10);
+  const tk=LS.get('bet3.talkhist',[]).filter(t=>t.words>30).map(t=>({ at:t.at, r:t.errors/t.words*100 })).reverse().slice(-10);
+  const acc=[...sp,...tk].sort((a,b)=>a.at-b.at).slice(-10), half=Math.floor(acc.length/2), avg=a=>a.reduce((t,x)=>t+x.r,0)/Math.max(1,a.length);
+  const a0=avg(acc.slice(0,half)), a1=avg(acc.slice(half)), dl=a0?Math.round((a1-a0)/a0*100):0;
+  // 2. new errors per week, last 6 weeks
+  const weeks=[...Array(6)].map((_,i)=>wkStart(now-(5-i)*7*DAY)), perW=weeks.map(w=>errs.filter(r=>wkStart(r.date)===w).length);
+  // 3. rule families: last 14 days vs the 14 before
+  const inWin=(r,a,b)=>{ const t=(now-new Date(r.date).getTime())/DAY; return t>=a && t<b; };
+  const fam=FIX_CATS.slice(1).map(([c,l,re])=>({ l, now:errs.filter(r=>re.test(r.code)&&inWin(r,0,14)).length, was:errs.filter(r=>re.test(r.code)&&inWin(r,14,28)).length, live:errs.filter(r=>re.test(r.code)&&r.status!=='fixed').length }));
+  // 4. rules pipeline
+  const cnt=s=>errs.filter(r=>r.status===s).length, cards=Object.entries(srs).filter(([k,c])=>k.startsWith('fix:')&&c.stage>=0), stg=n=>cards.filter(([k,c])=>c.stage===n).length;
+  // 5. cards + activity
+  const deck=k=>{ const it=(data[k]?.items||[]).filter(inScope); return { n:it.length, seen:it.filter(i=>!isNew(i)).length, mat:it.filter(i=>(card(i)?.ivl||0)>=21).length }; };
+  const d30=[...Array(30)].map((_,i)=>log[today(new Date(now-i*DAY))]).filter(Boolean), rev=d30.reduce((t,x)=>t+(x.rev||0),0), ok=d30.reduce((t,x)=>t+(x.ok||0),0);
+  const full=d30.filter(x=>(x.rev||0)>0&&(x.fix||0)>0&&(x.out||0)>0).length;
+  const heat=[...Array(42)].map((_,i)=>{ const x=log[today(new Date(now-(41-i)*DAY))]; return !x?0:((x.rev||0)>0)+((x.fix||0)>0)+((x.out||0)>0)||1; });
+  const dk=k=>{ const x=deck(k); return x.n?`<div class="s-row"><span>${DECKS[k].short}</span><span class="s-track"><i style="width:${x.seen/x.n*100}%;opacity:.35"></i><i style="width:${x.mat/x.n*100}%"></i></span><span class="muted">${x.mat} mature · ${x.seen}/${x.n} seen</span></div>`:`<div class="s-row"><span>${DECKS[k].short}</span><span class="muted" style="grid-column:2/4">open the deck once to load it</span></div>`; };
+  return `<div class="stack">
+    <div class="card stack"><div class="eyebrow">Accuracy in speech · errors per 100 words</div>
+      ${acc.length>=2?`<div class="s-big"><b>${a1.toFixed(1)}</b><span class="${dl<0?'s-up':dl>0?'s-down':''}">${dl<0?'▼ '+(-dl)+'% fewer than before':dl>0?'▲ '+dl+'% more than before':'no change'}</span></div>${bars(acc.map(x=>+x.r.toFixed(1)),acc.map(x=>new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}).replace(' ',' ')))}
+        <p class="hint" style="margin:0">Last ${acc.length} recorded sessions on this device (Speak and Roleplay). Lower is better. This is the number to watch: it shows whether the rules reach your live speech.</p>`
+       :`<div class="note"><b>Not enough recordings yet</b>Two Speak or Roleplay sessions are needed for a trend.</div>`}</div>
+    <div class="card stack"><div class="eyebrow">New errors logged per week</div>${bars(perW,weeks.map(w=>w.slice(8)+'.'+w.slice(5,7)))}
+      <p class="hint" style="margin:0">Depends on how much you speak and write, so read it together with the rate above.</p></div>
+    <div class="card stack"><div class="eyebrow">Rule families · last 14 days vs the 14 before</div>
+      ${fam.map(f=>`<div class="s-row"><span>${f.l}</span><span class="muted">${f.live} live</span><span class="${f.now<f.was?'s-up':f.now>f.was?'s-down':'muted'}">${f.was} → ${f.now} ${f.now<f.was?'▼':f.now>f.was?'▲':''}</span></div>`).join('')}</div>
+    <div class="card stack"><div class="eyebrow">Errors by stage</div>
+      <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
+      <div class="s-row"><span>Review schedule</span><span class="muted" style="grid-column:2/4;text-align:right">${FIX_STEPS.map((d,i)=>`${stg(i)} waiting ${d}d`).join(' · ')}</span></div></div>
+    <div class="card stack"><div class="eyebrow">Cards</div>${dk('phr')}${dk('voc')}
+      <div class="s-row"><span>Recall, last 30 days</span><span class="muted" style="grid-column:2/4;text-align:right">${rev?Math.round(ok/rev*100)+'% of '+rev+' reviews':'no reviews yet'}</span></div></div>
+    <div class="card stack"><div class="eyebrow">Activity · last 6 weeks</div>
+      <div class="s-heat">${heat.map(v=>`<i class="h${v}"></i>`).join('')}</div>
+      <div class="s-row"><span>Streak</span><span class="muted" style="grid-column:2/4;text-align:right">${streak()} days · full Today plan on ${full} of the last 30 days</span></div>
+      <p class="hint" style="margin:0">Darker = more of the three steps done that day (review, fix, produce).</p></div>
+  </div>`;
+}
+actions.openStats = () => { go('stats'); if(syncOn()) errPull().then(ok=>{ if(ok && st.view==='stats') render(); }); };
+
+// ---- 18d. Live Roleplay (Mode 6): you speak or type, the partner answers in character and pushes back; the debrief comes at the end
+const TALK = [
+  { id:'lender', t:'Call with a lender', you:'You represent the company on a call with a relationship banker.', them:'a senior banker at a European bank, polite but sceptical about the refinancing timeline and the covenant headroom', open:'Thanks for joining. Before we go into the numbers: how confident are you that the refinancing can close before the notes mature?' },
+  { id:'rating', t:'Rating agency Q&A', you:'You answer an analyst during the annual rating review.', them:'a rating agency analyst who asks precise follow-up questions on liquidity, logistics and capex and does not accept vague answers', open:'Let us start with liquidity. What does your cash position look like today, and how much of it is actually available?' },
+  { id:'board', t:'Pushback from a board member', you:'You present a liability management proposal to the board.', them:'a non-executive director who thinks the transaction is premature and too expensive, and interrupts with objections', open:'I have read the paper. Frankly, I do not see why we should pay a premium to buy back bonds right now. Convince me.' },
+  { id:'investor', t:'Investor one-on-one', you:'You meet a bond investor during a non-deal roadshow.', them:'a portfolio manager at a credit fund who holds the bonds and worries about asset risk and transparency', open:'Thanks for the time. My first question is simple: what has changed since the last results that I should know about?' },
+  { id:'waiver', t:'Negotiating a covenant waiver', you:'You ask a lender for a temporary covenant waiver.', them:'a credit officer who is willing to help but wants a fee, tighter reporting and a clear recovery plan', open:'We have received your waiver request. Help me understand why the covenant is under pressure and how long you need.' },
+  { id:'team', t:'Aligning a cross-functional team', you:'You run a kick-off call for a transaction workstream.', them:'a legal counsel who thinks the timeline is unrealistic and pushes responsibilities back to finance', open:'I have looked at the timeline and, honestly, the documentation alone takes six weeks. Who signed off on this plan?' },
+  { id:'ceo', t:'Two-minute update for the CEO', you:'The CEO stops you in the corridor and wants a fast, clear update.', them:'a direct, impatient CEO who wants the bottom line first and cuts off long explanations', open:'I have two minutes. Where are we on the refinancing, and what do you need from me?' },
+  { id:'smalltalk', t:'Small talk before a meeting', you:'You are early for a meeting and chat with a counterpart you have met once.', them:'a friendly British lawyer who makes light conversation about travel, the weekend and life in Amsterdam, and expects you to ask questions back', open:'Morning! You made it before everyone else. Did you fly in today or were you already in town?' }
+];
+const talkHist = () => LS.get('bet3.talkhist', []);
+const wc = s => norm(s).split(' ').filter(Boolean).length;
+function talkTargets(){ const it=(data.phr?.items||[]).filter(inScope).filter(i=>i.en && i.en.length<60); if(it.length<3) return [];
+  return shuffle(shuffle(it.filter(isDue)).concat(shuffle(it.filter(i=>!isDue(i)&&!isNew(i))), shuffle(it.filter(isNew))).slice(0,9)).slice(0,3).map(i=>({ deck:i.deck, id:i.id, en:i.en, ru:i.ru })); }
+function talkTurnPrompt(T){
+  return { sys:`You are playing a role in a spoken business English practice for a Russian-speaking finance professional (level ${L().id}). Stay in character at all times.
+Your character: ${T.sc.them}. Tone: ${T.tough?'tough: challenge weak or vague answers, ask for specifics, interrupt politely when the answer is long':'professional and cooperative, but ask one real follow-up question each time'}.
+Rules: answer in 1 to 3 natural spoken sentences. React to what the learner actually said. Never correct their English and never explain language. Do not repeat your earlier questions. Use realistic detail from this context: ${cfg.aiDomain||C_DOMAIN}. No long dash.
+When the learner has given ${T.max} answers, close the conversation naturally in one sentence. Return ONLY JSON: {"reply":"your next line"}`,
+    user:`Scene: ${T.sc.t}. ${T.sc.you}\nConversation so far:\n${T.turns.map(x=>(x.who==='ai'?'YOU: ':'LEARNER: ')+x.text).join('\n')}\nLearner answers given: ${T.turns.filter(x=>x.who==='me').length} of ${T.max}.` };
+}
+function talkDebriefPrompt(T){
+  return { sys:`You are an English coach for a Russian-speaking finance professional, level ${L().id}, goal C1. Analyse ONLY the LEARNER lines of this role-play. Be strict and concrete; no praise inflation. Russian for explanations, English for examples. No long dash in English.
+Return ONLY JSON:
+{"headline_ru":"one sentence: the main takeaway","task":"achieved|partly|not","errors":[{"wrong":"the learner's exact words (short fragment)","fix":"corrected fragment","why_ru":"one short sentence","type":"topic id"}],"upgrades":[{"said":"a correct but plain or wordy line of the learner","better":"how a native executive would say it","why_ru":"one short sentence"}],"targets":[{"phrase":"...","used":true}],"next_ru":"one thing to do differently next time"}
+errors: real mistakes only (grammar, prepositions, articles, collocations, false friends), max 8, most important first. If the text came from speech recognition, ignore punctuation and capital letters. upgrades: max 3.
+${topicRule().replace(/ For a success \(S\)[^\n]*/,'')}`,
+    user:`Scene: ${T.sc.t}. ${T.sc.you}\nTarget phrases the learner was asked to use: ${T.targets.map(x=>x.en).join(' | ')||'none'}\n\n${T.turns.map(x=>(x.who==='ai'?'PARTNER: ':'LEARNER: ')+x.text).join('\n')}` };
+}
+function vTalk(){ const T=st.T||(st.T={phase:'start'}); return ({ start:talkStart, live:talkLive, wait:()=>`<div class="stack" style="text-align:center;padding-top:30px"><div class="spk-orb"><span></span><span></span><span></span></div><h2>Preparing the debrief</h2><p class="muted" id="coachStep"></p></div>`, sum:talkSum })[T.phase](); }
+function talkStart(){
+  const T=st.T, h=talkHist(), tough=LS.get('bet3.talktough',false);
+  return `<div class="stack">
+    <div class="hero spk-hero"><div class="lbl">Mode 6 · Live Roleplay</div><div class="q">A real conversation. The other side pushes back.</div>
+      <ol class="spk-how"><li>Pick a scene. Your partner opens, you answer by voice or keyboard</li><li>Six exchanges, no corrections while you talk: keep the conversation going</li><li>Debrief at the end: errors go to your journal, plus how an executive would have said it</li></ol></div>
+    ${aiKeysOk()?'':'<div class="note warn-note"><b>AI key needed</b>Connect sync or add a Gemini key in Settings.</div>'}
+    <div class="seg"><button class="${tough?'':'on'}" data-act="talkTough" data-v="0">Cooperative partner</button><button class="${tough?'on':''}" data-act="talkTough" data-v="1">Tough partner</button></div>
+    <section><h3 class="spk-h">Scenes</h3>${TALK.map(s=>`<button class="c-pat f-row" data-act="talkGo" data-id="${s.id}"><span class="t">${esc(s.t)}<small class="muted"> · ${esc(s.you)}</small></span></button>`).join('')}
+      <button class="btn ghost" data-act="talkGo" data-id="" style="margin-top:12px;width:100%">Surprise me</button></section>
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title)} <small class="muted">${new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></span><span class="pill ${x.errors<=2?'ok':x.errors<=5?'new':'due'}">${x.errors} errors · ${x.words} words</span></div>`).join('')}`:''}
+  </div>`;
+}
+function talkLive(){
+  const T=st.T, n=T.turns.filter(x=>x.who==='me').length;
+  return `<div class="stack">
+    <div class="spk-dots">${[...Array(T.max)].map((_,i)=>`<span class="${i<n?'done':i===n?'on':''}"></span>`).join('')}<em>${Math.min(n+1,T.max)} / ${T.max}</em></div>
+    <div class="note"><b>${esc(T.sc.t)}</b>${esc(T.sc.you)}${T.targets.length?`<div class="row" style="gap:6px;margin-top:8px">${T.targets.map(x=>`<span class="pill ${T.turns.some(y=>y.who==='me'&&norm(y.text).includes(norm(x.en).replace(/\[.*?\]/g,'').trim()))?'ok':''}" title="${esc(x.ru||'')}">${esc(x.en)}</span>`).join('')}</div>`:''}</div>
+    <div class="t-chat" id="tChat">${T.turns.map(x=>`<div class="t-msg ${x.who}"><div>${esc(x.text)}</div>${x.who==='ai'?audioBtn(x.text):''}</div>`).join('')}${T.busy?'<div class="t-msg ai"><div class="t-typing"><i></i><i></i><i></i></div></div>':''}</div>
+    ${T.over?`<button class="btn spk-go" data-act="talkEnd">See the debrief</button>`
+      :`<div class="c-in"><textarea id="tAns" rows="3" spellcheck="false" autocomplete="off" placeholder="${SR?'Tap the mic and answer aloud, or type':'Type your answer'}" ${T.busy?'disabled':''}>${esc(T.draft||'')}</textarea>${SR?`<button class="c-mic ${T.dict?'on':''}" data-act="talkDict" aria-label="Dictate">${ICON_MIC}</button>`:''}</div>
+        <div class="actions"><button class="btn ghost" data-act="talkEnd" style="flex:0 0 auto" ${n?'':'disabled'}>End now</button><button class="btn" data-act="talkSend" ${T.busy?'disabled':''}>Send</button></div>`}
+  </div>`;
+}
+function talkSum(){
+  const T=st.T, R=T.res||{}, E=R.errors||[], U=R.upgrades||[], TG=R.targets||[], words=T.words||0;
+  return `<div class="stack spk-res">
+    <div class="summary-hero spk-sum"><div class="eyebrow">Roleplay · ${esc(T.sc.t)}</div><div class="n">${words?(E.length/words*100).toFixed(1):'–'}<small> errors / 100 words</small></div>
+      <div class="muted">${E.length} errors · ${words} words · task ${esc(R.task||'–')}</div></div>
+    ${R.headline_ru?`<div class="note"><b>Главное</b>${esc(R.headline_ru)}</div>`:''}
+    ${E.length?`<section><h3 class="spk-h">Errors · saved to your journal</h3>${E.map(e=>`<div class="f-pair"><div class="w">${esc(e.wrong)}</div><div class="r">${esc(e.fix)} ${audioBtn(e.fix)}</div><div class="muted" style="font-size:.88rem">${esc(e.why_ru||'')}${isTopic(e.type)?` · <span class="c-code">${esc(e.type)}</span>`:''}</div></div>`).join('')}</section>`:'<div class="note"><b>No errors found</b>Clean session.</div>'}
+    ${U.length?`<section><h3 class="spk-h">Say it like an executive</h3>${U.map(u=>`<div class="f-con"><div class="ab"><span>${esc(u.said)}</span><span>${esc(u.better)}</span></div><div class="muted" style="font-size:.88rem">${esc(u.why_ru||'')}</div></div>`).join('')}</section>`:''}
+    ${TG.length?`<section><h3 class="spk-h">Target phrases</h3>${TG.map(t=>`<div class="spk-t ${t.used?'ok':'bad'}"><div class="spk-ti">${t.used?'✓':'×'}</div><div class="meta"><span class="serif">${esc(t.phrase)}</span></div></div>`).join('')}</section>`:''}
+    ${R.next_ru?`<div class="spk-win" style="margin:0"><b>В следующий раз</b><div class="muted" style="font-size:.92rem;margin-top:2px">${esc(R.next_ru)}</div></div>`:''}
+    <details class="f-more"><summary>Transcript</summary><div class="t-chat" style="margin-top:8px">${T.turns.map(x=>`<div class="t-msg ${x.who}"><div>${esc(x.text)}</div></div>`).join('')}</div></details>
+    <div class="actions"><button class="btn ghost" data-act="talkHome">Scenes</button><button class="btn" data-act="talkGo" data-id="${esc(T.sc.id)}">Same scene again</button></div>
+    ${E.length?'<button class="btn ghost" data-act="openFix">Fix My Errors</button>':''}
+  </div>`;
+}
+let talkRec=null;
+function talkDictStop(){ try{ talkRec?.stop(); }catch(e){} talkRec=null; if(st.T) st.T.dict=false; document.querySelectorAll('.c-mic').forEach(b=>b.classList.remove('on')); }
+function talkAfter(){ const T=st.T, a=$('#tAns'); if(a){ a.oninput=()=>{ T.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); actions.talkSend(); } }; }
+  const c=$('#tChat'); if(c) c.lastElementChild?.scrollIntoView({ block:'nearest' }); bar(T?.phase==='live'?T.turns.filter(x=>x.who==='me').length/T.max*100:T?.phase==='sum'?100:0); }
+function talkBack(){ const T=st.T; if(T?.phase==='wait') return toast('One moment, the coach is working.');
+  if(T?.phase==='live'){ if(T.turns.some(x=>x.who==='me') && !confirm('Leave this conversation? Nothing will be saved.')) return; talkDictStop(); speechSynthesis?.cancel(); st.T={phase:'start'}; return go('talk'); }
+  if(T?.phase==='sum'){ st.T={phase:'start'}; return go('talk'); } go('home'); }
+actions.openTalk = () => { if(!st.T || st.T.phase==='sum') st.T={phase:'start'}; go('talk'); };
+actions.talkHome = () => { st.T={phase:'start'}; go('talk'); };
+actions.talkTough = d => { LS.set('bet3.talktough', d.v==='1'); render(); };
+actions.talkGo = d => { if(!aiKeysOk()) return toast('Add a Gemini key or connect sync in Settings first.');
+  const sc=TALK.find(s=>s.id===d.id) || TALK[Math.floor(Math.random()*TALK.length)];
+  st.T={ phase:'live', sc, tough:LS.get('bet3.talktough',false), max:6, at:Date.now(), targets:talkTargets(), turns:[{ who:'ai', text:sc.open }], draft:'' };
+  go('talk'); if(cfg.autoSpeak) speak(sc.open); };
+actions.talkDict = () => { if(talkRec) return talkDictStop(); const ta=$('#tAns'); if(!ta||!SR) return; speechSynthesis?.cancel();
+  const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=true; r.continuous=true; const base=ta.value.trim(); let fin='';
+  r.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const x=e.results[i]; if(x.isFinal) fin+=x[0].transcript+' '; else tmp+=x[0].transcript; }
+    const el=$('#tAns'); if(el){ el.value=(base?base+' ':'')+(fin+tmp).replace(/\s+/g,' ').trim(); st.T.draft=el.value; } };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); talkDictStop(); };
+  r.onend=()=>{ if(talkRec===r) talkDictStop(); };
+  try{ r.start(); talkRec=r; st.T.dict=true; document.querySelectorAll('.c-mic').forEach(b=>b.classList.add('on')); buzz(20); }catch(e){ toast('Dictation is not available here.'); } };
+actions.talkSend = async () => { const T=st.T, text=($('#tAns')?.value||T.draft||'').trim(); if(T.busy) return; if(!text) return toast('Say or type your answer first.');
+  talkDictStop(); T.turns.push({ who:'me', text }); T.draft=''; T.busy=true; render();
+  try{ const r=await aiJSON(talkTurnPrompt(T), { temp:0.8, max:400, label:'', kind:'gen' }); const reply=String(r.reply||'').trim(); if(!reply) throw new Error('empty reply');
+    T.turns.push({ who:'ai', text:reply }); if(cfg.autoSpeak && st.view==='talk') speak(reply); }
+  catch(e){ toast('The partner did not answer: '+String(e.message||e).slice(0,120)); T.turns.pop(); T.draft=text; }
+  T.busy=false; if(T.turns.filter(x=>x.who==='me').length>=T.max) T.over=true; if(st.view==='talk') render(); };
+actions.talkEnd = async () => { const T=st.T; if(!T.turns.some(x=>x.who==='me')) return; talkDictStop(); speechSynthesis?.cancel(); T.phase='wait'; go('talk');
+  T.words=T.turns.filter(x=>x.who==='me').reduce((t,x)=>t+wc(x.text),0);
+  try{ const R=await aiJSON(talkDebriefPrompt(T), { temp:0.2, max:3000, label:'Debrief · ', kind:'eval' }); ['errors','upgrades','targets'].forEach(k=>{ if(!Array.isArray(R[k])) R[k]=[]; });
+    R.errors=R.errors.filter(e=>e&&e.wrong&&e.fix&&norm(e.wrong)!==norm(e.fix)); T.res=R;
+    errLog(R.errors.map((e,i)=>({ key:`r${T.at}#${i}`, date:today(), mode:'roleplay', task:T.sc.t, type:String(e.type||'').trim(), code:typeCode(e.type), wrong:String(e.wrong).trim(), fix:String(e.fix).trim(), why_ru:String(e.why_ru||'').trim(), context:'', target:T.targets.map(x=>x.deck+':'+x.id).join(' '), level:L().id })));
+    const h=talkHist(); h.unshift({ at:T.at, id:T.sc.id, title:T.sc.t, errors:R.errors.length, words:T.words }); LS.set('bet3.talkhist', h.slice(0,30));
+    dayLog('out'); markActive(); T.phase='sum'; }
+  catch(e){ toast('Could not write the debrief: '+String(e.message||e).slice(0,140)); T.phase='live'; T.over=true; }
+  if(st.view==='talk') go('talk'); };
+
+// ---- 18e. FSRS-4.5 (optional). Classic = your first-answer intervals + SM-2 growth. FSRS = intervals from a memory model
+// (stability, difficulty) so that the chance of recall at review time equals the target. Cards keep ivl/ease too, so switching back is safe.
+const FW=[0.4872,1.4003,3.7145,13.8206,5.1618,1.2298,0.8975,0.031,1.6474,0.1367,1.0461,2.1072,0.0793,0.3246,1.587,0.2272,2.8755], F_DECAY=-0.5, F_FACTOR=19/81;
+const fsrsOn = () => cfg.sched==='fsrs';
+const fsrsTarget = () => { const r=Number(cfg.fsrsR); return r>=0.75&&r<=0.95?r:0.9; };
+const fClamp = (x,a,b) => Math.min(b,Math.max(a,x));
+const fR = (t,S) => Math.pow(1+F_FACTOR*t/S, F_DECAY);
+const fIvl = S => fClamp(Math.round(S/F_FACTOR*(Math.pow(fsrsTarget(),1/F_DECAY)-1)),1,MAX_IVL);
+const fD0 = G => fClamp(FW[4]-(G-3)*FW[5],1,10);
+function fsrsNext(c, g){
+  const G={again:1,hard:2,good:3,easy:4}[g]; let S=c.s, D=c.d;
+  if(!c.reps && !S) return { s:FW[G-1], d:fD0(G) };                                    // first answer
+  if(!S){ S=Math.max(1,c.ivl||1); D=fClamp(10-((c.ease||2.5)-1.3)/1.7*7,1,10); }         // a card that came from the classic scheduler
+  const t=Math.max(0,(Date.now()-(c.last||Date.now()))/DAY), R=fR(t,S);
+  const d=fClamp(FW[7]*fD0(3)+(1-FW[7])*(D-FW[6]*(G-3)),1,10);
+  const s = G===1 ? Math.min(S, FW[11]*Math.pow(D,-FW[12])*(Math.pow(S+1,FW[13])-1)*Math.exp(FW[14]*(1-R)))
+    : S*(1+Math.exp(FW[8])*(11-D)*Math.pow(S,-FW[9])*(Math.exp(FW[10]*(1-R))-1)*(G===2?FW[15]:1)*(G===4?FW[16]:1));
+  return { s:Math.max(0.1,s), d };
+}
+{ const _g=grade; grade=function(it, g){ if(!fsrsOn()) return _g(it, g);
+    const k=keyOf(it), c=srs[k] || { ivl:0, ease:2.5, reps:0, lapses:0, src:st.S?.kind==='flash'?'cards':'lesson' }, n=fsrsNext(c,g), ni=g==='again'?1:fIvl(n.s);
+    if(g==='again') c.lapses=(c.lapses||0)+(c.reps?1:0);
+    c.s=+n.s.toFixed(3); c.d=+n.d.toFixed(3); c.ivl=g==='again'?0:ni; c.ease=fClamp(3-(c.d-1)/9*1.7,1.3,3);
+    const fuzz = ni>3 ? Math.round(ni*0.05*(Math.random()*2-1)) : 0;
+    c.due=startOfDay(Date.now()+(ni+fuzz)*DAY); c.reps=(c.reps||0)+1; c.last=Date.now(); c.u=c.last; srs[k]=c; LS.set(K.srs, srs);
+    bump(g!=='again'); queueSync(); }; }
+{ const _p=preview; preview=function(it, g){ if(!fsrsOn()) return _p(it, g); const c=card(it)||{ ivl:0, ease:2.5, reps:0 }; return fmtIvl(g==='again'?1:fIvl(fsrsNext(c,g).s)); }; }
+SYNC_CFG_KEYS.push('sched','fsrsR');
+
+// ---- 18f. Wiring: home tiles, Today step 3 rotates speak / write / roleplay, settings
+{ const _home=vHome; vHome=function(){ const h=talkHist()[0];
+    const tile=`<button class="deck" data-act="openTalk"><div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON.chat}</div>
+      <div class="meta"><h3>Live Roleplay</h3><div class="muted" style="font-size:.85rem">Mode 6 · a partner who answers and pushes back</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">${TALK.length} scenes</span>${h?`<span class="pill ${h.errors<=2?'ok':''}">last ${h.errors} errors</span>`:''}${aiKeysOk()?'':'<span class="pill new">connect AI</span>'}</div></div></button>
+      <button class="deck" data-act="openStats" style="padding:14px 18px"><div class="meta"><h3>Progress</h3><small class="muted">Error rate in speech, rule families, cards, activity</small></div></button>`;
+    return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
+{ const _tp=todayPlan; todayPlan=function(){ const k=Math.floor(Date.now()/DAY)%3; let h=_tp();
+    if(k===2) h=h.replace(/data-act="open(Speak|Coach)"([^>]*)>(<span class="t-n">[^<]*<\/span><span class="t-m">)<b>[^<]*<\/b><small>[^<]*<\/small>/, 'data-act="openTalk"$2>$3<b>Roleplay</b><small>Six exchanges with a partner who pushes back</small>');
+    return h; }; }
+{ const _set=vSettings; vSettings=function(){ const on=fsrsOn(), r=fsrsTarget();
+    const card=`<div class="card stack"><h3>Scheduler</h3>
+      <div class="seg"><button class="${on?'':'on'}" data-act="set" data-k="sched" data-v="classic">Classic</button><button class="${on?'on':''}" data-act="set" data-k="sched" data-v="fsrs">FSRS</button></div>
+      ${on?`<div><div class="eyebrow" style="margin-bottom:6px">Target recall at review time</div><div class="seg">${[0.85,0.9,0.93].map(v=>`<button class="${r===v?'on':''}" data-act="fsrsR" data-v="${v}">${Math.round(v*100)}%</button>`).join('')}</div></div>
+        <p class="hint" style="margin:0">FSRS sets each interval from a memory model, so that you still remember the card with the chosen probability when it comes back. New cards return sooner than with Classic (Good: about ${fIvl(FW[2])} days instead of ${ivl0('good')}), mature cards wait longer. A higher target means more reviews.</p>`
+       :`<p class="hint" style="margin:0">Classic uses your first-answer intervals (${ivl0('again')} / ${ivl0('hard')} / ${ivl0('good')} / ${ivl0('easy')} days) and grows them by a fixed factor. FSRS replaces both with a memory model. You can switch back at any time; cards keep both sets of numbers.</p>`}</div>`;
+    return _set().replace('<div class="card stack"><h3>Version', card+'<div class="card stack"><h3>Version'); }; }
+actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
 render();
