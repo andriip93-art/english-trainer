@@ -103,7 +103,7 @@ whose tasks are all right moves its drilled errors to fixed; a missed topic goes
 - **Today plan** on the home screen: Review (due cards) > Fix one rule > Speak or Write (alternate days). Steps tick off from the daily log (`fix`, `out` counters next to `rev`).
 - **Fix My Errors**
   - Diagnostic first: up to 3 of your own wrong fragments to repair before the rule is shown (not scored).
-  - Deeper lesson: `lesson.deep` in `v3/fixbank.json` = `steps_ru` (decision steps), `contrast` (`a`, `b`, `note_ru`), `text` (short text, targets in `**bold**`), `say` (lines to say aloud), `more_ru` (fine points). Written for the 10 rules with the most live errors; other rules show the base lesson. A FixBank-tab lesson without `deep` keeps the repo one.
+  - Deeper lesson: `lesson.deep` in `v3/fixbank.json` = `steps_ru` (decision steps), `contrast` (`a`, `b`, `note_ru`), `text` (short text, targets in `**bold**`), `say` (lines to say aloud), `more_ru` (fine points). Written for all 42 rules. A FixBank-tab lesson without `deep` keeps the repo one.
   - Set: 8 bank tasks plus up to 2 of your own errors ("Your own words"). A missed task returns once at the end. Pass = 80% of first attempts.
   - Spaced reviews per rule: after 1, 3 and 7 days (`fix:<topic id>` entries in the card store, synced by the existing script). Review mixes all due rules, production tasks only. Passing the third review marks the errors fixed; a miss sends them back to open.
 - Error journal: repeated words ("in in many") are collapsed before logging; rows that were only a stutter are dropped.
