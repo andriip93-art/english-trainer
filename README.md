@@ -11,6 +11,7 @@ Business English Trainer, offline-first PWA.
   - the sheet must stay shared as "Anyone with the link can view"
 - `/v1/` archived first version, kept for reference
 - `/v2/` redirects to `/`
+- `/v3/` version 3 preview (see below). Same storage keys, same sheet and sync, so `/` and `/v3/` can be used side by side; rollback = keep using `/`
 
 Progress is kept in the browser (`bet3.*`, v1 under `bet.*`) and can be synced across devices, see below.
 
@@ -94,3 +95,18 @@ tasks first. 7 of 8 marks the topic's errors as drilled. On a later day, Mixed r
 gap, fix, translate) from up to 4 drilled topics with no label saying which rule applies; the Rule button reveals it. A topic
 whose tasks are all right moves its drilled errors to fixed; a missed topic goes back to open for a fresh lesson. A plain
 7 of 8 on the same topic on another day also marks it fixed. Exact answers are checked in the app, others by Gemini.
+
+## Version 3 preview (`/v3/`)
+
+`v3/index.html` is the main app plus one added section (17) and a few styles; nothing in `/` changed.
+
+- **Today plan** on the home screen: Review (due cards) > Fix one rule > Speak or Write (alternate days). Steps tick off from the daily log (`fix`, `out` counters next to `rev`).
+- **Fix My Errors**
+  - Diagnostic first: up to 3 of your own wrong fragments to repair before the rule is shown (not scored).
+  - Deeper lesson: `lesson.deep` in `v3/fixbank.json` = `steps_ru` (decision steps), `contrast` (`a`, `b`, `note_ru`), `text` (short text, targets in `**bold**`), `say` (lines to say aloud), `more_ru` (fine points). Written for the 10 rules with the most live errors; other rules show the base lesson. A FixBank-tab lesson without `deep` keeps the repo one.
+  - Set: 8 bank tasks plus up to 2 of your own errors ("Your own words"). A missed task returns once at the end. Pass = 80% of first attempts.
+  - Spaced reviews per rule: after 1, 3 and 7 days (`fix:<topic id>` entries in the card store, synced by the existing script). Review mixes all due rules, production tasks only. Passing the third review marks the errors fixed; a miss sends them back to open.
+- Error journal: repeated words ("in in many") are collapsed before logging; rows that were only a stutter are dropped.
+- `v3/sw.js`: the page itself opens offline (network first, cache as fallback).
+
+To promote v3 later: copy `v3/index.html`, `v3/fixbank.json` and `v3/sw.js` to the root (keep the root manifest, change `../icon` paths in `sw.js` to `icon`), after moving the current root to `/v2/`.
