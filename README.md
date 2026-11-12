@@ -110,3 +110,11 @@ whose tasks are all right moves its drilled errors to fixed; a missed topic goes
 - `v3/sw.js`: the page itself opens offline (network first, cache as fallback).
 
 To promote v3 later: copy `v3/index.html`, `v3/fixbank.json` and `v3/sw.js` to the root (keep the root manifest, change `../icon` paths in `sw.js` to `icon`), after moving the current root to `/v2/`.
+
+### v3.1
+
+- **Interactive lesson** (Fix My Errors): the lesson is a sequence of short screens, each ending with an action: rule and decision steps > "which one is correct" on the lesson pairs > contrasts (predict, then reveal) > the context text as a word-bank cloze > say it aloud with a recognition score (Web Speech API; self-marking where it is missing) > fine points. "Whole lesson on one page" keeps the reference view. No new data fields: it runs on `lesson` + `lesson.deep`.
+- **Progress** page: errors per 100 words across recorded Speak and Roleplay sessions (device-local history), new errors per week, rule families 14 days vs the 14 before, errors by stage and review schedule, cards, 6-week activity.
+- **Live Roleplay (Mode 6)**: 8 scenes, cooperative or tough partner, six exchanges by voice (dictation) or keyboard, no corrections during the talk; one debrief call at the end writes errors to the journal (`mode` = `roleplay`, keys `r<time>#n`) and suggests executive rewrites. Turns use the cheap "gen" model, the debrief the "eval" model.
+- **FSRS-4.5** as an optional scheduler (Settings > Scheduler, default Classic). Cards get `s` and `d` next to `ivl` and `ease`, so switching back, and using `/`, stays safe.
+- Today step 3 rotates Speak / Write / Roleplay.
