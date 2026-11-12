@@ -620,8 +620,15 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .s-big{display:flex;align-items:baseline;gap:12px}.s-big b{font-family:var(--serif);font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
 .s-up{color:var(--ok);font-weight:600}.s-down{color:var(--bad);font-weight:600}
 .s-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;font-size:.9rem;padding:7px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
-.s-row:has(>[style*="grid-column"]){grid-template-columns:auto 1fr}.s-row>[style*="grid-column"]{grid-column:auto!important}
-.s-track{position:relative;width:90px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.s-row>span:first-child{min-width:0;overflow-wrap:anywhere}
+.s-deck{display:grid;gap:8px;padding:12px 0 4px;border-top:1px solid var(--line)}
+.s-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:.92rem;font-variant-numeric:tabular-nums}
+.s-line>*{min-width:0}.s-line b{font-weight:600}
+.s-sub{font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:8px}
+.s-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.s-leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.s-leg i{width:8px;height:8px;border-radius:2px;background:var(--line)}.s-leg i.m{background:var(--primary)}.s-leg i.s{background:color-mix(in srgb,var(--primary) 30%,var(--line))}
+.s-track{position:relative;display:block;width:100%;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
 .s-track i{position:absolute;inset:0 auto 0 0;background:var(--primary)}
 .s-heat{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
 .s-heat i{aspect-ratio:1;border-radius:3px;background:var(--surface-2)}
@@ -632,6 +639,28 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .t-msg.me{background:var(--navy-soft);border-bottom-right-radius:4px;justify-self:end}
 .t-msg .audio{width:28px;height:28px;flex-shrink:0}
 .t-typing{display:flex;gap:4px;padding:6px 2px}.t-typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:pop .6s var(--ease) infinite alternate}.t-typing i:nth-child(2){animation-delay:.15s}.t-typing i:nth-child(3){animation-delay:.3s}
+/* ---- v3.2 · layout safety and polish: nothing may collide or leave the screen at 320px ---- */
+.actions{flex-wrap:wrap}
+.actions .btn{min-width:0}
+.f-sayx .row>.serif{flex:1;min-width:0}.f-sayx .row>.row{flex:0 0 auto}
+.card .row>.btn{flex:1 1 auto;min-width:0}
+.card,.deck .meta,.t-m,.spk-t .meta,.c-pat .t,.stack>*{min-width:0}
+h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wrap:anywhere}
+.chips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);padding-right:36px}
+.s-bars>div{overflow:hidden}.s-bars small{font-size:.62rem;letter-spacing:-.01em}
+.s-page .c-keys>div{padding:10px 12px;gap:4px}
+.s-page .c-keys b{font-family:var(--serif);font-size:1.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.s-page .c-keys span{font-size:.68rem;letter-spacing:.05em}
+.s-page .card{gap:14px}
+.f-con .ab{align-items:stretch}
+@media (max-width:359px){.f-con .ab{grid-template-columns:1fr}.c-keys span{letter-spacing:.02em}.t-step{gap:10px}.t-step.next .t-go{padding:6px 10px}}
+.f-row .t{display:grid;gap:2px;line-height:1.3}
+.f-row .t small{display:block;font-weight:400;font-size:.8rem;line-height:1.35}
+.r-hist{flex-wrap:nowrap!important;align-items:baseline}
+.r-hist>span:first-child{flex:1;min-width:0}.r-hist .pill{flex-shrink:0;white-space:nowrap}
+.btn{text-wrap:balance}
+.f-row .code{width:3.3rem;padding-inline:0;box-sizing:border-box;text-align:center;align-self:start;margin-top:2px}.f-row .c{align-self:start}
+.f-row:not(:has(.code)){grid-template-columns:1fr}
 </style>
 </head>
 <body>
@@ -2943,7 +2972,7 @@ function fixStart(){
       return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
         : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
     <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=(x.of||8)-1?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=(x.of||8)-1?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
     <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
     <p class="hint">Every mistake from Speak and Drills is saved to the "Errors" tab of vocabulary_v2 (one row per mistake), so you can also filter or pivot it there.</p>
   </div>`;
@@ -3152,7 +3181,7 @@ function fixBack(){
 //   contrast pairs, fine points, a text in context, lines to say aloud), your own errors as tasks, missed tasks come
 //   back at the end of the set (mastery), and a spaced schedule per rule: reviews after 1, 3 and 7 days, then fixed.
 // · Stutter filter for the error journal, offline app shell (service worker).
-const V3 = '3.1';
+const V3 = '3.2';
 const FIX_STEPS = [1, 3, 7];            // days until the review after: the lesson, review 1, review 2. Passing the last review marks the errors fixed.
 FTYPE.mine = 'Your own words';
 const dayLog = f => { const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t][f]=(log[t][f]||0)+1; LS.set(K.log,log); queueSync(); };
@@ -3336,14 +3365,14 @@ fixStart = function(){
       :gs.length?`<div class="note"><b>All rules are on schedule</b>Nothing is due today. The next review appears here on its day; you can still open any rule below.</div>`
       :`<div class="note"><b>Not enough errors yet</b>Errors are collected automatically from Speak & Record and Context Drills.</div>`}
     ${gs.length?`<section><h3 class="spk-h">Your rules <small class="muted">by priority · tap to train</small></h3>
-      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.id)}" ${g.ready?'':'disabled'}><span class="code">${esc(g.code)}</span><span class="t">${esc(g.title)}<small class="muted"> · ${g.drilled?g.drilled+' drilled':'last '+esc(g.last)}${sched(g)}${g.bank&&BANK?.[g.id]?.lesson?.deep?' · full lesson':''}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
+      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.id)}" ${g.ready?'':'disabled'}><span class="code">${esc(g.code)}</span><span class="t">${esc(g.title)}<small class="muted">${g.n-g.drilled} open${g.drilled?' · '+g.drilled+' drilled':''}${sched(g)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
     </section>`:''}
     ${(()=>{ const q=LS.get(ERR.q,[]).length, x=LS.get('bet3.errstat',null);
       if(!syncOn()) return '<div class="note warn-note"><b>Sync is off</b>Errors stay on this device until you connect sync in Settings.</div>';
       return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
         : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
     <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=Math.ceil((x.of||8)*.8)?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=Math.ceil((x.of||8)*.8)?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
     <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
   </div>`;
 };
@@ -3511,24 +3540,24 @@ function vStats(){
   const d30=[...Array(30)].map((_,i)=>log[today(new Date(now-i*DAY))]).filter(Boolean), rev=d30.reduce((t,x)=>t+(x.rev||0),0), ok=d30.reduce((t,x)=>t+(x.ok||0),0);
   const full=d30.filter(x=>(x.rev||0)>0&&(x.fix||0)>0&&(x.out||0)>0).length;
   const heat=[...Array(42)].map((_,i)=>{ const x=log[today(new Date(now-(41-i)*DAY))]; return !x?0:((x.rev||0)>0)+((x.fix||0)>0)+((x.out||0)>0)||1; });
-  const dk=k=>{ const x=deck(k); return x.n?`<div class="s-row"><span>${DECKS[k].short}</span><span class="s-track"><i style="width:${x.seen/x.n*100}%;opacity:.35"></i><i style="width:${x.mat/x.n*100}%"></i></span><span class="muted">${x.mat} mature · ${x.seen}/${x.n} seen</span></div>`:`<div class="s-row"><span>${DECKS[k].short}</span><span class="muted" style="grid-column:2/4">open the deck once to load it</span></div>`; };
-  return `<div class="stack">
+  const dk=k=>{ const x=deck(k); return x.n?`<div class="s-deck"><div class="s-line"><b>${DECKS[k].short}</b><span class="muted">${x.n} cards</span></div><span class="s-track"><i style="width:${x.seen/x.n*100}%;opacity:.3"></i><i style="width:${x.mat/x.n*100}%"></i></span><div class="s-leg"><span><i class="m"></i>${x.mat} mature</span><span><i class="s"></i>${x.seen} seen</span><span><i></i>${x.n-x.seen} new</span></div></div>`:`<div class="s-line" style="border-top:1px solid var(--line);padding-top:10px"><b>${DECKS[k].short}</b><span class="muted">open the deck once to load it</span></div>`; };
+  return `<div class="stack s-page">
     <div class="card stack"><div class="eyebrow">Accuracy in speech · errors per 100 words</div>
-      ${acc.length>=2?`<div class="s-big"><b>${a1.toFixed(1)}</b><span class="${dl<0?'s-up':dl>0?'s-down':''}">${dl<0?'▼ '+(-dl)+'% fewer than before':dl>0?'▲ '+dl+'% more than before':'no change'}</span></div>${bars(acc.map(x=>+x.r.toFixed(1)),acc.map(x=>new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}).replace(' ',' ')))}
+      ${acc.length>=2?`<div class="s-big"><b>${a1.toFixed(1)}</b><span class="${dl<0?'s-up':dl>0?'s-down':''}">${dl<0?'▼ '+(-dl)+'% fewer than before':dl>0?'▲ '+dl+'% more than before':'no change'}</span></div>${bars(acc.map(x=>+x.r.toFixed(1)),acc.map(x=>{ const d=new Date(x.at); return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0'); }))}
         <p class="hint" style="margin:0">Last ${acc.length} recorded sessions on this device (Speak and Roleplay). Lower is better. This is the number to watch: it shows whether the rules reach your live speech.</p>`
        :`<div class="note"><b>Not enough recordings yet</b>Two Speak or Roleplay sessions are needed for a trend.</div>`}</div>
     <div class="card stack"><div class="eyebrow">New errors logged per week</div>${bars(perW,weeks.map(w=>w.slice(8)+'.'+w.slice(5,7)))}
       <p class="hint" style="margin:0">Depends on how much you speak and write, so read it together with the rate above.</p></div>
     <div class="card stack"><div class="eyebrow">Rule families · last 14 days vs the 14 before</div>
-      ${fam.map(f=>`<div class="s-row"><span>${f.l}</span><span class="muted">${f.live} live</span><span class="${f.now<f.was?'s-up':f.now>f.was?'s-down':'muted'}">${f.was} → ${f.now} ${f.now<f.was?'▼':f.now>f.was?'▲':''}</span></div>`).join('')}</div>
+      ${fam.map(f=>`<div class="s-row"><span>${f.l}</span><span class="muted">${f.live} live</span><span class="${f.now<f.was?'s-up':f.now>f.was?'s-down':'muted'}" style="min-width:5.2em;text-align:right">${f.was} → ${f.now} ${f.now<f.was?'▼':f.now>f.was?'▲':''}</span></div>`).join('')}</div>
     <div class="card stack"><div class="eyebrow">Errors by stage</div>
       <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
-      <div class="s-row"><span>Review schedule</span><span class="muted" style="grid-column:2/4;text-align:right">${FIX_STEPS.map((d,i)=>`${stg(i)} waiting ${d}d`).join(' · ')}</span></div></div>
+      <div><div class="s-sub">Rules waiting for a review</div><div class="c-keys" style="grid-template-columns:repeat(3,1fr)">${FIX_STEPS.map((d,i)=>`<div><span>in ${d} day${d===1?'':'s'}</span><b>${stg(i)}</b></div>`).join('')}</div></div></div>
     <div class="card stack"><div class="eyebrow">Cards</div>${dk('phr')}${dk('voc')}
-      <div class="s-row"><span>Recall, last 30 days</span><span class="muted" style="grid-column:2/4;text-align:right">${rev?Math.round(ok/rev*100)+'% of '+rev+' reviews':'no reviews yet'}</span></div></div>
+      <div class="s-line" style="border-top:1px solid var(--line);padding-top:10px"><span>Recall, last 30 days</span><b>${rev?Math.round(ok/rev*100)+'%':'–'}</b></div>${rev?`<p class="hint" style="margin:0">${rev} reviews in 30 days.</p>`:''}</div>
     <div class="card stack"><div class="eyebrow">Activity · last 6 weeks</div>
       <div class="s-heat">${heat.map(v=>`<i class="h${v}"></i>`).join('')}</div>
-      <div class="s-row"><span>Streak</span><span class="muted" style="grid-column:2/4;text-align:right">${streak()} days · full Today plan on ${full} of the last 30 days</span></div>
+      <div class="c-keys" style="grid-template-columns:repeat(2,1fr)"><div><span>Streak</span><b>${streak()} day${streak()===1?'':'s'}</b></div><div><span>Full plan, 30 days</span><b>${full} day${full===1?'':'s'}</b></div></div>
       <p class="hint" style="margin:0">Darker = more of the three steps done that day (review, fix, produce).</p></div>
   </div>`;
 }
@@ -3572,9 +3601,9 @@ function talkStart(){
       <ol class="spk-how"><li>Pick a scene. Your partner opens, you answer by voice or keyboard</li><li>Six exchanges, no corrections while you talk: keep the conversation going</li><li>Debrief at the end: errors go to your journal, plus how an executive would have said it</li></ol></div>
     ${aiKeysOk()?'':'<div class="note warn-note"><b>AI key needed</b>Connect sync or add a Gemini key in Settings.</div>'}
     <div class="seg"><button class="${tough?'':'on'}" data-act="talkTough" data-v="0">Cooperative partner</button><button class="${tough?'on':''}" data-act="talkTough" data-v="1">Tough partner</button></div>
-    <section><h3 class="spk-h">Scenes</h3>${TALK.map(s=>`<button class="c-pat f-row" data-act="talkGo" data-id="${s.id}"><span class="t">${esc(s.t)}<small class="muted"> · ${esc(s.you)}</small></span></button>`).join('')}
+    <section><h3 class="spk-h">Scenes</h3>${TALK.map(s=>`<button class="c-pat f-row" data-act="talkGo" data-id="${s.id}"><span class="t">${esc(s.t)}<small class="muted">${esc(s.you)}</small></span></button>`).join('')}
       <button class="btn ghost" data-act="talkGo" data-id="" style="margin-top:12px;width:100%">Surprise me</button></section>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title)} <small class="muted">${new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></span><span class="pill ${x.errors<=2?'ok':x.errors<=5?'new':'due'}">${x.errors} errors · ${x.words} words</span></div>`).join('')}`:''}
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title)} <small class="muted">${new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></span><span class="pill ${x.errors<=2?'ok':x.errors<=5?'new':'due'}">${x.errors} errors · ${x.words} words</span></div>`).join('')}`:''}
   </div>`;
 }
 function talkLive(){

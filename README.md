@@ -118,3 +118,7 @@ To promote v3 later: copy `v3/index.html`, `v3/fixbank.json` and `v3/sw.js` to t
 - **Live Roleplay (Mode 6)**: 8 scenes, cooperative or tough partner, six exchanges by voice (dictation) or keyboard, no corrections during the talk; one debrief call at the end writes errors to the journal (`mode` = `roleplay`, keys `r<time>#n`) and suggests executive rewrites. Turns use the cheap "gen" model, the debrief the "eval" model.
 - **FSRS-4.5** as an optional scheduler (Settings > Scheduler, default Classic). Cards get `s` and `d` next to `ivl` and `ease`, so switching back, and using `/`, stays safe.
 - Today step 3 rotates Speak / Write / Roleplay.
+
+### v3.2
+
+Layout pass, same visual language. Progress: deck rows are a label line, a full-width bar and a legend (the bar no longer runs into the label), the review schedule and streak are stat tiles. Fix My Errors: rule rows have the title on one line and the status below, badges share one width. Action rows wrap instead of leaving the screen, long words break, the filter chips fade at the edge to show they scroll. Checked with an automated overlap and overflow audit of 39 screens at 320, 360 and 412 px.
