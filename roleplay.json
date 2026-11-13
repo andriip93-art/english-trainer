@@ -297,27 +297,886 @@
     {
      "id": "waiver-1",
      "n": 1,
-     "t": "Opening the request"
+     "t": "Opening the request",
+     "setup": "Elena is the agent bank for your syndicated revolver. Net leverage is heading above the covenant at the June test, and you are calling her before anyone else finds out.",
+     "setup_ru": "Елена, банк-агент вашей синдицированной револьверной линии. Чистый леверидж выходит за ковенант на июньском тесте, и вы звоните ей раньше, чем об этом узнает кто-то ещё.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "Good morning. Your note said you want to talk about the leverage covenant. What is going on?"
+       ],
+       "ru": "Доброе утро. В вашей записке сказано, что вы хотите обсудить ковенант по левериджу. Что происходит?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "Let me frame this first:",
+         "id": "p:132",
+         "alts": [
+          "Let me set the scene first:",
+          "Let me give you the context first:"
+         ]
+        },
+        " steel prices fell faster than we planned, and net leverage is heading for about 3.8 times at the June test, against a covenant of 3.5. ",
+        {
+         "t": "To be blunt,",
+         "id": "p:129",
+         "alts": [
+          "Frankly,",
+          "I'll be direct:"
+         ]
+        },
+        " we expect a breach unless something changes."
+       ],
+       "ru": "Сначала рамка: цены на сталь упали быстрее плана, и чистый леверидж на июньском тесте выходит примерно на 3,8x при ковенанте 3,5x. Скажу прямо: без изменений мы ожидаем нарушение."
+      },
+      {
+       "w": "B",
+       "t": [
+        "That is not what I hoped to hear. Is this a one-off, or is the whole price assumption broken?"
+       ],
+       "ru": "Не то, что я надеялась услышать. Это разовая история или сломана вся ценовая гипотеза?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "In some respects yes, in others no.",
+         "id": "p:57",
+         "alts": [
+          "Partly yes, partly no.",
+          "It is a bit of both."
+         ]
+        },
+        " The price drop is cyclical, but our new mill also ramped up two months later than planned. ",
+        {
+         "t": "It's safe to say",
+         "id": "p:137",
+         "alts": [
+          "It's fair to say",
+          "I think we can say"
+         ]
+        },
+        " that the delay is now behind us."
+       ],
+       "ru": "В чём-то да, в чём-то нет. Падение цен цикличное, но и новый стан вышел на мощность на два месяца позже плана. Можно смело сказать, что задержка уже позади."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Understood. What exactly are you asking from the banks? A waiver or a permanent reset? A waiver usually comes with a price."
+       ],
+       "ru": "Понятно. Чего именно вы просите у банков? Waiver или постоянный reset? Waiver обычно имеет цену."
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Accept a price is possible",
+         "t": [
+          {
+           "t": "I'll be the first to admit",
+           "id": "p:128",
+           "alts": [
+            "I'll give you that:",
+            "I won't deny that"
+           ]
+          },
+          " a waiver may carry a fee. We are asking only for a temporary waiver of the June and September tests, not a permanent reset."
+         ],
+         "ru": "Не стану спорить, что waiver может стоить денег. Мы просим только временный waiver на июньский и сентябрьский тесты, а не постоянный reset."
+        },
+        "push": {
+         "label": "Push back on the premise",
+         "t": [
+          {
+           "t": "That's true up to a point, but",
+           "id": "p:36",
+           "alts": [
+            "That's fair to an extent, but",
+            "I agree only partly, because"
+           ]
+          },
+          " this is a timing issue, not a credit issue, so any fee should be small. We are asking for temporary relief only."
+         ],
+         "ru": "Это верно лишь отчасти: у нас вопрос тайминга, а не кредитного качества, поэтому плата должна быть небольшой. Мы просим только временное послабление."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "Temporary, fine. But two test dates is a long time. Why not just one?"
+       ],
+       "ru": "Временный, хорошо. Но два тестовых периода это долго. Почему не один?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "The reality is",
+         "id": "p:70",
+         "alts": [
+          "The fact is",
+          "The honest answer is"
+         ]
+        },
+        " that the recovery takes two quarters to show up in EBITDA. One test date would only move the problem. ",
+        {
+         "t": "How does that sound to you?",
+         "id": "p:91",
+         "alts": [
+          "What do you think?",
+          "Is that a fair way to look at it?"
+         ]
+        }
+       ],
+       "ru": "Реальность в том, что восстановление проявится в EBITDA только через два квартала. Один тест лишь передвинет проблему. Как вам такая логика?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "It is a fair argument. I will need a forecast, a bridge from the last compliance certificate, and the price assumptions behind it."
+       ],
+       "ru": "Аргумент справедливый. Мне понадобятся прогноз, bridge от последнего compliance certificate и ценовые допущения."
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Understood. ",
+        {
+         "t": "I can move this forward, but I need your input on",
+         "id": "p:100",
+         "alts": [
+          "I'd like to move quickly, but I need your guidance on",
+          "We can move fast, but I need to understand"
+         ]
+        },
+        " the format: a short note first, or the full model? Either way, we can ",
+        {
+         "t": "crunch the numbers",
+         "id": "v:362",
+         "alts": []
+        },
+        " by Wednesday."
+       ],
+       "ru": "Понял. Я могу двигать это быстро, но мне нужна ваша подсказка по формату: сначала короткая записка или сразу полная модель? В любом случае посчитаем цифры к среде."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Short note by Wednesday, model by Friday. I will warn the other agents. Thank you for the early notice."
+       ],
+       "ru": "Короткая записка к среде, модель к пятнице. Я предупрежу других агентов. Спасибо, что сообщили заранее."
+      }
+     ],
+     "ready": true
     },
     {
      "id": "waiver-2",
      "n": 2,
-     "t": "Why it is temporary"
+     "t": "Making the case: numbers and mitigants",
+     "setup": "Elena has read your note. Net leverage peaks at 3.8 times in September, and she is testing why it comes back down and what protects lenders if it does not.",
+     "setup_ru": "Елена прочитала вашу записку. Леверидж достигает пика 3,8x в сентябре, и она проверяет, почему он потом снижается и что защищает кредиторов, если нет.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "I went through your note. Leverage peaks at 3.8 times in September. What is behind the improvement after that?"
+       ],
+       "ru": "Я прошла вашу записку. Пик левериджа 3,8x в сентябре. Что стоит за улучшением после этого?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "To put some flesh on the bones,",
+         "id": "p:33",
+         "alts": [
+          "To make it more concrete,",
+          "Let me give you specifics:"
+         ]
+        },
+        " EBITDA should rise by roughly 90 million as the new mill reaches full capacity, ",
+        {
+         "t": "give or take",
+         "id": "v:167",
+         "alts": []
+        },
+        ". At the same time, we will ",
+        {
+         "t": "rein in spending",
+         "id": "v:335",
+         "alts": []
+        },
+        " on non-core projects."
+       ],
+       "ru": "Если конкретнее: EBITDA вырастет примерно на 90 миллионов, плюс-минус, когда новый стан выйдет на полную мощность. При этом мы урежем расходы на непрофильные проекты."
+      },
+      {
+       "w": "B",
+       "t": [
+        "What if EBITDA comes in 10 percent below that?"
+       ],
+       "ru": "А если EBITDA окажется на 10 процентов ниже?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "Barring any major shocks,",
+         "id": "p:60",
+         "alts": [
+          "Unless something unexpected happens,",
+          "Without any big surprises,"
+         ]
+        },
+        " we would still end the year at about 3.9 times. ",
+        {
+         "t": "The worst-case scenario is",
+         "id": "p:79",
+         "alts": [
+          "The downside case is",
+          "At worst, we would see"
+         ]
+        },
+        " 4.2 times for one quarter, and we would then ",
+        {
+         "t": "bite the bullet",
+         "id": "v:355",
+         "alts": []
+        },
+        " and sell our stake in the port terminal."
+       ],
+       "ru": "Если не будет крупных потрясений, мы всё равно закончим год около 3,9x. В худшем случае 4,2x в течение одного квартала, и тогда мы стиснем зубы и продадим долю в портовом терминале."
+      },
+      {
+       "w": "B",
+       "t": [
+        "A disposal helps, but the timing is uncertain. Would you commit to it as a condition of the waiver?"
+       ],
+       "ru": "Продажа помогает, но сроки неопределённы. Вы готовы закрепить её как условие waiver?"
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Commit to a sale process",
+         "t": [
+          {
+           "t": "Assuming the banks can get comfortable with the terms,",
+           "id": "p:108",
+           "alts": [
+            "If the banks can get comfortable with the terms,",
+            "Provided the banks are comfortable with the terms,"
+           ]
+          },
+          " we would commit to launching a formal sale process before year end."
+         ],
+         "ru": "Если банки будут комфортно себя чувствовать с условиями, мы обязуемся запустить формальный процесс продажи до конца года."
+        },
+        "push": {
+         "label": "Commit to a process, not a date",
+         "t": [
+          {
+           "t": "My concern with that is",
+           "id": "p:39",
+           "alts": [
+            "What worries me about that is",
+            "The problem with that is"
+           ]
+          },
+          " that a fixed sale deadline would hurt the price. We can commit to a process, but not to a closing date."
+         ],
+         "ru": "Меня беспокоит, что жёсткий дедлайн продажи ударит по цене. Мы можем обязаться провести процесс, но не закрыть сделку к конкретной дате."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "That is workable. The committee will also ask what protects lenders if the recovery stalls."
+       ],
+       "ru": "Это приемлемо. Комитет также спросит, что защищает кредиторов, если восстановление остановится."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "To mitigate that risk, I'd want to make sure that",
+         "id": "p:107",
+         "alts": [
+          "To limit that risk, I'd want to make sure that",
+          "To reduce that risk, we would make sure that"
+         ]
+        },
+        " you see monthly numbers, and we could ",
+        {
+         "t": "provide a backstop",
+         "id": "v:578",
+         "alts": []
+        },
+        " in the form of a dividend lock-up until leverage is back under 3.5 times."
+       ],
+       "ru": "Чтобы снизить этот риск, я бы обеспечил, чтобы вы получали цифры ежемесячно, и мы могли бы дать подстраховку в виде запрета на дивиденды, пока леверидж не вернётся ниже 3,5x."
+      },
+      {
+       "w": "B",
+       "t": [
+        "A dividend lock-up and monthly reporting would help. Anything else you can offer?"
+       ],
+       "ru": "Запрет на дивиденды и ежемесячная отчётность помогут. Что-то ещё можете предложить?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "At this juncture,",
+         "id": "p:131",
+         "alts": [
+          "At this point,",
+          "For now,"
+         ]
+        },
+        " those two items are the core of our offer. ",
+        {
+         "t": "Where's your flexibility on this?",
+         "id": "p:110",
+         "alts": [
+          "How much room do you have on this?",
+          "What room does the committee have on this?"
+         ]
+        }
+       ],
+       "ru": "На данный момент эти два пункта и есть ядро нашего предложения. Где у вас есть гибкость по этому вопросу?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "In fairness, the committee will want a fee, but the structure is reasonable. I will take it to committee once I have your model."
+       ],
+       "ru": "Справедливости ради, комитет захочет комиссию, но структура разумная. Вынесу её на комитет, как только получу вашу модель."
+      }
+     ],
+     "ready": true
     },
     {
      "id": "waiver-3",
      "n": 3,
-     "t": "The bank's conditions: fee and reporting"
+     "t": "Fee and margin",
+     "setup": "The committee has given Elena an early view on price. You want the waiver to cost as little as possible and not to signal stress to the market.",
+     "setup_ru": "Комитет дал Елене предварительную позицию по цене. Вы хотите, чтобы waiver стоил как можно меньше и не посылал рынку сигнал о стрессе.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "Let me share the committee's early view. They would want a 50 basis point waiver fee and a 75 basis point margin step-up while leverage is above 3.5 times."
+       ],
+       "ru": "Скажу предварительную позицию комитета. Они хотели бы комиссию за waiver 50 базисных пунктов и повышение маржи на 75 б.п., пока леверидж выше 3,5x."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "There's a lot to unpack there. Let me take it piece by piece.",
+         "id": "p:12",
+         "alts": [
+          "That's a lot to take in. Let me go through it step by step.",
+          "Let me take those one at a time."
+         ]
+        },
+        " On the fee, we are open. On the margin, ",
+        {
+         "t": "my hands are tied",
+         "id": "v:401",
+         "alts": []
+        },
+        ", because a step-up for two years would not fit our budget."
+       ],
+       "ru": "Здесь много всего. Давайте по частям. По комиссии мы открыты. По марже у нас связаны руки, потому что повышение на два года не вписывается в наш бюджет."
+      },
+      {
+       "w": "B",
+       "t": [
+        "A margin step-up is standard in a waiver. Why is it such a problem for you?"
+       ],
+       "ru": "Повышение маржи стандартно для waiver. Почему это для вас такая проблема?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "It's not so much about cost, it's about risk.",
+         "id": "p:27",
+         "alts": [
+          "The issue is less the cost and more the risk.",
+          "This isn't really about cost, it's about risk."
+         ]
+        },
+        " A visible step-up signals stress to other lenders and to the rating agencies. ",
+        {
+         "t": "There are knock-on effects",
+         "id": "p:74",
+         "alts": [
+          "There would be knock-on effects",
+          "It would have knock-on effects"
+         ]
+        },
+        " on our bond spreads too."
+       ],
+       "ru": "Дело не столько в стоимости, сколько в риске. Видимое повышение маржи сигнализирует о стрессе другим кредиторам и рейтинговым агентствам. Есть и побочные эффекты для спредов по нашим облигациям."
+      },
+      {
+       "w": "B",
+       "t": [
+        "I hear you, but the committee will not approve a fee-free waiver. What can you live with?"
+       ],
+       "ru": "Я вас слышу, но комитет не одобрит waiver без комиссии. С чем вы можете жить?"
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Trade a smaller fee for margin",
+         "t": [
+          "We can ",
+          {
+           "t": "find a happy medium",
+           "id": "v:388",
+           "alts": []
+          },
+          ": a 40 basis point fee, and a margin step-up of 25 basis points that falls away as soon as we are back under 3.5 times."
+         ],
+         "ru": "Можно найти золотую середину: комиссия 40 б.п. и повышение маржи на 25 б.п., которое исчезает, как только мы возвращаемся ниже 3,5x."
+        },
+        "push": {
+         "label": "Fee or step-up, not both",
+         "t": [
+          {
+           "t": "I understand the concerns, however,",
+           "id": "p:43",
+           "alts": [
+            "I appreciate the concern, but",
+            "I see why the committee wants that, but"
+           ]
+          },
+          " a fee and a step-up together amount to double pricing for one event. We would agree to one or the other."
+         ],
+         "ru": "Я понимаю опасения, однако комиссия и повышение маржи вместе это двойная цена за одно событие. Мы согласимся на что-то одно."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "One or the other is a start. If it is the fee only, the committee would want it higher. Would you consider 60 basis points?"
+       ],
+       "ru": "Что-то одно это уже начало. Если только комиссия, комитет захочет выше. Рассмотрите 60 базисных пунктов?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "Not to argue with the question, but",
+         "id": "p:139",
+         "alts": [
+          "I don't want to argue with the question, but",
+          "I hear the question, but"
+         ]
+        },
+        " this waiver covers only two test dates. Why don't we ",
+        {
+         "t": "split the difference",
+         "id": "v:432",
+         "alts": []
+        },
+        " at 50 basis points?"
+       ],
+       "ru": "Не хочу спорить с вопросом, но этот waiver покрывает только два тестовых периода. Давайте разделим разницу и остановимся на 50 базисных пунктах?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "Fifty could work, if the fee is paid only on signing and the reporting package is tight. I will test it with the other agents."
+       ],
+       "ru": "50 может сработать, если комиссия уплачивается только при подписании, а пакет отчётности жёсткий. Проверю это с другими агентами."
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Thank you. I can have the reporting package drafted tomorrow. ",
+        {
+         "t": "Would you like me to go ahead, or would you prefer to wait?",
+         "id": "p:101",
+         "alts": [
+          "Should I go ahead, or would you rather wait?",
+          "Shall I proceed, or would you prefer to wait?"
+         ]
+        }
+       ],
+       "ru": "Спасибо. Пакет отчётности могу подготовить завтра. Мне начинать или вы предпочитаете подождать?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "Please wait for my call after the agents' meeting. I will come back to you on Thursday."
+       ],
+       "ru": "Подождите моего звонка после встречи с агентами. Я вернусь к вам в четверг."
+      }
+     ],
+     "ready": true
     },
     {
      "id": "waiver-4",
      "n": 4,
-     "t": "Walking through the recovery plan"
+     "t": "Process and timing",
+     "setup": "The price is nearly settled. Now Elena explains that the waiver needs the consent of two thirds of the lenders, and your test date is close.",
+     "setup_ru": "Цена почти согласована. Теперь Елена объясняет, что для waiver нужно согласие двух третей кредиторов, а ваша тестовая дата близко.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "The waiver needs consent from lenders holding two thirds of the commitments. We have fourteen lenders, and some will want more time. When is your test date?"
+       ],
+       "ru": "Для waiver нужно согласие кредиторов, держащих две трети обязательств. У нас четырнадцать кредиторов, и некоторым понадобится больше времени. Когда у вас тестовая дата?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Thanks. ",
+        {
+         "t": "Just to put that in context,",
+         "id": "p:30",
+         "alts": [
+          "To give you some context,",
+          "For context,"
+         ]
+        },
+        " our test date is 30 June, and the compliance certificate is due 45 days later. ",
+        {
+         "t": "The one thing we can be certain of is",
+         "id": "p:135",
+         "alts": [
+          "The only certainty is",
+          "What we know for sure is"
+         ]
+        },
+        " that we want the waiver signed before the test date, not after."
+       ],
+       "ru": "Спасибо. Для контекста: тестовая дата 30 июня, compliance certificate нужно сдать через 45 дней. Единственное, в чём мы уверены: мы хотим подписать waiver до тестовой даты, а не после."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Signing before the test date is ambitious. Lenders usually need three weeks, and some are slow to respond."
+       ],
+       "ru": "Подписать до тестовой даты амбициозно. Кредиторам обычно нужно три недели, и некоторые отвечают медленно."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "One thing that's often overlooked is",
+         "id": "p:68",
+         "alts": [
+          "Something people often miss is",
+          "One point that is easy to overlook is"
+         ]
+        },
+        " that a late response is also a risk for the banks, because a breach without a waiver triggers default interest. With the test date ",
+        {
+         "t": "looming on the horizon",
+         "id": "v:540",
+         "alts": []
+        },
+        ", we would like to start the lender calls this week."
+       ],
+       "ru": "Часто упускают из виду, что медленный ответ это риск и для банков, потому что нарушение без waiver запускает проценты по дефолту. С приближающейся тестовой датой мы хотели бы начать звонки кредиторам на этой неделе."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Which lenders would you prioritise? And should I speak to them first, or do you prefer a joint call?"
+       ],
+       "ru": "Каких кредиторов вы бы поставили в приоритет? И мне поговорить с ними сначала или вы предпочитаете общий звонок?"
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Let the agent lead",
+         "t": [
+          "That would be helpful. ",
+          {
+           "t": "Could you step in on this?",
+           "id": "p:106",
+           "alts": [
+            "Could you take the lead on this?",
+            "Would you be able to step in on this?"
+           ]
+          },
+          " The three largest lenders hold about 45 percent, and a call from you would carry weight."
+         ],
+         "ru": "Это было бы полезно. Не могли бы вы взять это на себя? Три крупнейших кредитора держат около 45 процентов, и ваш звонок будет весомым."
+        },
+        "push": {
+         "label": "Insist on a joint call",
+         "t": [
+          {
+           "t": "I'd have reservations about that.",
+           "id": "p:51",
+           "alts": [
+            "I'm not sure that works.",
+            "I'd be cautious about that."
+           ]
+          },
+          " One-to-one calls risk different messages reaching different lenders. I would prefer a joint call with all fourteen, ",
+          {
+           "t": "with you in the driver's seat",
+           "id": "v:685",
+           "alts": []
+          },
+          "."
+         ],
+         "ru": "У меня есть сомнения. Индивидуальные звонки рискуют донести разным кредиторам разные сообщения. Я бы предпочёл общий звонок со всеми четырнадцатью, где вы за рулём."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "Fine. A joint call early next week, then bilateral follow-ups for the holdouts. What if a lender refuses?"
+       ],
+       "ru": "Хорошо. Общий звонок в начале следующей недели, затем индивидуальные контакты с несогласными. Что, если кредитор откажется?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "Unless I'm missing something,",
+         "id": "p:25",
+         "alts": [
+          "If I'm not missing anything,",
+          "As far as I can see,"
+         ]
+        },
+        " two thirds is enough, so one refusal does not stop us. ",
+        {
+         "t": "It gets a lot more complicated when",
+         "id": "p:75",
+         "alts": [
+          "Things get a lot harder when",
+          "It becomes much harder when"
+         ]
+        },
+        " several of the larger lenders hold out, so we would talk to them first."
+       ],
+       "ru": "Если я ничего не упускаю, двух третей достаточно, так что один отказ нас не остановит. Всё становится гораздо сложнее, когда упираются несколько крупных кредиторов, поэтому поговорим с ними первыми."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Agreed. Let us fix a timeline: joint call on Tuesday, drafts to lenders by Friday, signature by 20 June."
+       ],
+       "ru": "Согласна. Давайте зафиксируем график: общий звонок во вторник, проекты кредиторам к пятнице, подписание до 20 июня."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "Just to make sure we're on the same page, what I'm hearing is",
+         "id": "p:19",
+         "alts": [
+          "Let me check I have this right:",
+          "To confirm what I'm hearing:"
+         ]
+        },
+        " a call on Tuesday, drafts out by Friday, and signatures by 20 June. Our lawyers will ",
+        {
+         "t": "dot the i's and cross the t's",
+         "id": "v:366",
+         "alts": []
+        },
+        " on the amendment letter this week."
+       ],
+       "ru": "Чтобы убедиться, что мы понимаем друг друга: звонок во вторник, проекты к пятнице, подписи до 20 июня. Наши юристы на этой неделе вычитают каждую запятую в amendment letter."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Correct. Send me your lawyers' contact details and I will connect them with ours today."
+       ],
+       "ru": "Верно. Пришлите контакты ваших юристов, и я сегодня же свяжу их с нашими."
+      }
+     ],
+     "ready": true
     },
     {
      "id": "waiver-5",
      "n": 5,
-     "t": "Agreeing the wording"
+     "t": "Closing: terms agreed",
+     "setup": "The committee has approved the waiver in principle. Elena reads out the terms, and you confirm them, negotiate the last two conditions and close the call.",
+     "setup_ru": "Комитет одобрил waiver в принципе. Елена зачитывает условия, а вы подтверждаете их, договариваетесь по двум последним пунктам и завершаете звонок.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "Good news: the committee approved the waiver in principle. A 50 basis point fee, no margin step-up, monthly reporting, a dividend lock-up until you are back under 3.5 times, and a sale process."
+       ],
+       "ru": "Хорошие новости: комитет одобрил waiver в принципе. Комиссия 50 б.п., без повышения маржи, ежемесячная отчётность, запрет на дивиденды, пока вы не вернётесь ниже 3,5x, и процесс продажи."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "If I take stock of everything we've discussed,",
+         "id": "p:98",
+         "alts": [
+          "Taking stock of what we have agreed,",
+          "If I sum up where we are,"
+         ]
+        },
+        " we have a two-test waiver, a 50 basis point fee, monthly reporting and a dividend lock-up. Is that everything?"
+       ],
+       "ru": "Если подвести итог всему, что мы обсуждали: waiver на два теста, комиссия 50 б.п., ежемесячная отчётность и запрет на дивиденды. Это всё?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "Almost. The committee also wants an event of default if you miss the monthly report twice, and a longstop date of 31 December for launching the sale process."
+       ],
+       "ru": "Почти. Комитет также хочет event of default, если вы дважды пропустите ежемесячный отчёт, и крайний срок 31 декабря для запуска процесса продажи."
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Accept the longstop date",
+         "t": [
+          {
+           "t": "In fairness,",
+           "id": "p:120",
+           "alts": [
+            "To be fair,",
+            "Admittedly,"
+           ]
+          },
+          " a longstop gives the committee comfort, and we plan to launch earlier anyway. We can accept 31 December."
+         ],
+         "ru": "Справедливости ради, крайний срок успокоит комитет, а мы и так планируем запуск раньше. Мы можем принять 31 декабря."
+        },
+        "push": {
+         "label": "Soften the default trigger",
+         "t": [
+          {
+           "t": "That's true, but it doesn't necessarily mean that",
+           "id": "p:37",
+           "alts": [
+            "I accept that, but it doesn't follow that",
+            "Fair point, but that doesn't mean that"
+           ]
+          },
+          " a late report should be an immediate default. We would accept a cure period of ten business days."
+         ],
+         "ru": "Это так, но не обязательно, что просрочка отчёта должна означать немедленный дефолт. Мы согласны на период устранения в десять рабочих дней."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "A ten day cure period is reasonable, and a longstop is fine. Let me note both. What about the documents?"
+       ],
+       "ru": "Десять дней на устранение разумно, и крайний срок тоже. Запишу оба пункта. Что с документами?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "I'd like to bring Anna in here.",
+         "id": "p:9",
+         "alts": [
+          "Let me bring Anna in on this.",
+          "I'd like Anna to join us here."
+         ]
+        },
+        " She leads our legal team and will contact your counsel today. Our lawyers can ",
+        {
+         "t": "hash out",
+         "id": "v:718",
+         "alts": []
+        },
+        " the remaining points on Monday."
+       ],
+       "ru": "Хочу подключить Анну. Она возглавляет нашу юридическую команду и сегодня свяжется с вашим юристом. Остальные пункты юристы могут проработать в понедельник."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Good. I will brief my counsel today. Is there anything on your side that could still derail the process?"
+       ],
+       "ru": "Хорошо. Сегодня введу в курс своего юриста. Есть ли что-то с вашей стороны, что ещё может сорвать процесс?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "As we understand it,",
+         "id": "p:122",
+         "alts": [
+          "From what we understand,",
+          "Based on our understanding,"
+         ]
+        },
+        " the board approves the sale process next Thursday, and we do not expect surprises. If steel prices ",
+        {
+         "t": "remain broadly stable",
+         "id": "v:508",
+         "alts": []
+        },
+        " through the summer, we should be back under 3.5 times by year end."
+       ],
+       "ru": "Насколько мы понимаем, совет директоров одобрит процесс продажи в следующий четверг, и сюрпризов мы не ожидаем. Если цены на сталь останутся в целом стабильными летом, к концу года мы вернёмся ниже 3,5x."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Good. I will send the term sheet tomorrow and the amendment letter next week. Thank you for being so transparent."
+       ],
+       "ru": "Хорошо. Завтра пришлю term sheet, на следующей неделе amendment letter. Спасибо за такую прозрачность."
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "One last point, and then I'll stop.",
+         "id": "p:99",
+         "alts": [
+          "Just one last thing.",
+          "One more point and I am done."
+         ]
+        },
+        " We will send the first monthly package by 10 July, so you see the discipline from the start. We would then ",
+        {
+         "t": "have enough cushion",
+         "id": "v:937",
+         "alts": []
+        },
+        " to absorb another price dip."
+       ],
+       "ru": "И последний момент. Первый ежемесячный пакет отправим до 10 июля, чтобы вы с самого начала видели дисциплину. Тогда у нас будет достаточный запас, чтобы пережить ещё одно падение цен."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Thank you. Speak on Thursday."
+       ],
+       "ru": "Спасибо. Созвонимся в четверг."
+      }
+     ],
+     "ready": true
     }
    ]
   },
