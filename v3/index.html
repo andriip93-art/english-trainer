@@ -672,6 +672,9 @@ h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wra
 .rp-gap{max-width:calc(100vw - 120px);border:0;border-bottom:2px solid var(--primary);background:var(--primary-soft);font:inherit;color:inherit;padding:1px 5px;border-radius:4px 4px 0 0;min-width:4.5ch;margin:2px 0}
 .rp-gap.ok{border-color:var(--ok);background:var(--ok-soft)}.rp-gap.bad{border-color:var(--bad);background:var(--bad-soft)}
 .rp-ru{font-family:var(--sans,inherit);font-size:.86rem;margin-top:4px;line-height:1.35}
+.rp-bank{border:1px solid var(--line);border-radius:14px;padding:0 12px 6px}
+.rp-bank>.rp-row{padding:12px 0}
+.rp-bk{padding:8px 0;border-top:1px solid var(--line);display:grid;gap:2px}
 .rp-fork{display:grid;gap:8px;border:1px dashed var(--line);border-radius:var(--r-sm);padding:12px}
 .rp-steps button:disabled{opacity:.4}
 .rp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0}
@@ -3626,8 +3629,17 @@ function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
   </div>`; }
 function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
   return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" ${j+1>R.maxPass?'disabled':''}>${l}</button>`).join('')}</div>`; }
+function rpBankOpen(R){ return R.bank===undefined ? (R.phase==='read'&&R.i===0) : R.bank; }
+function rpBank(R){ const al=rpProg().alt, rows=[]; let n=0;
+  R.rp.lines.forEach((L,i)=>{ if(L.w!=='Y') return; const parts=L.fork?Object.entries(L.fork).map(([b,x])=>[b,x]):[[null,L]];
+    parts.forEach(([b,x])=>{ const k=R.rp.id+'.'+i+(b?'.'+b:''), segs=x.t.map((q,j)=>[q,j]).filter(([q])=>typeof q!=='string'); if(!segs.length) return;
+      rows.push(`<div class="eyebrow" style="margin-top:12px">Your line ${rpYs(R).indexOf(i)+1}${b?' · '+(b==='agree'?'agree':'push back'):''}</div>`);
+      segs.forEach(([q,j])=>{ n++; const cur=al[k+'.'+j] ?? q.t, it=rpItem(q.id), vs=[q.t,...q.alts];
+        rows.push(`<div class="rp-bk">${vs.length>1?`<div class="rp-chips">${vs.map((v,m)=>`<button class="chip ${v===cur?'on':''}" data-act="rpAlt" data-k="${esc(k)}" data-j="${j}" data-n="${m}">${esc(v)}</button>`).join('')}</div>`:`<div class="serif"><span class="rp-u">${esc(cur)}</span></div>`}${it?`<div class="muted" style="font-size:.86rem">${esc(it.ru||'')}</div>`:''}</div>`); }); }); });
+  const open=rpBankOpen(R);
+  return `<div class="rp-bank"><button class="f-row rp-row" data-act="rpBank"><span class="t">Phrase bank<small class="muted">${n} phrases from Modes 1 and 2. Pick the version you want to use</small></span><span class="pill">${open?'hide':'show'}</span></button>${open?rows.join(''):''}</div>`; }
 function rpHead(R){ return `<div class="note"><b>${esc(R.rp.t)}</b>${R.phase==='read'?esc(R.rp.setup)+`<div class="muted rp-ru" style="margin-top:6px">${esc(R.rp.setup_ru||'')}</div>`:''}</div>
-  ${rpSteps(R)}<div class="actions" style="justify-content:flex-end"><button class="chip ${R.ru?'on':''}" data-act="rpRu">RU</button></div>`; }
+  ${rpSteps(R)}${rpBank(R)}<div class="actions" style="justify-content:flex-end"><button class="chip ${R.ru?'on':''}" data-act="rpRu">RU</button></div>`; }
 function rpRead(){ const R=st.R, lines=R.rp.lines, last=Math.min(R.i,lines.length-1); let out='';
   for(let i=0;i<=last;i++){ const f=lines[i].fork;
     if(f && !R.branch){ out+=`<div class="rp-fork"><div class="eyebrow">Your move</div>${['agree','push'].map(b=>`<button class="btn ghost" data-act="rpFork" data-v="${b}"><span style="text-align:left">${b==='agree'?'Agree':'Push back'}<small class="muted" style="display:block;font-weight:500">${esc(f[b].label)}</small></span></button>`).join('')}</div>`; break; }
@@ -3676,14 +3688,15 @@ function talkBack(){ const R=st.R||{}; rpDictStop(); speechSynthesis?.cancel();
 actions.openTalk = () => { if(!st.R||st.R.phase!=='home') st.R={ phase:'home' }; go('talk'); };
 actions.rpTopic = d => { st.R={ phase:'topic', topic:d.id }; go('talk'); };
 actions.rpStart = d => { const f=rpFind(d.id); if(!f||!f.rp.ready) return;
-  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru',true), pop:null, gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
+  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru',true), pop:null, bank:undefined, gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
 actions.rpOther = d => { const R=st.R; st.R={ ...R, phase:'read', i:0, branch:d.v, maxPass:1, pop:null, gv:[], hits:0, tot:0, ph:[], chk:false, res:null }; go('talk'); };
 actions.rpRu = () => { st.R.ru=!st.R.ru; LS.set('bet3.rpru',st.R.ru); render(); };
 actions.rpPop = d => { const R=st.R, i=+d.k.split('.')[1]; R.pop = R.pop&&R.pop.k===d.k&&R.pop.j===+d.j ? null : { k:d.k, j:+d.j, i }; render(); };
-actions.rpAlt = d => { const P=rpProg(), f=rpFind(st.R.rp.id), R=st.R, i=+d.k.split('.')[1], seg=(rpLine(R,i).t)[+d.j], v=[seg.t,...seg.alts][+d.n]; P.alt[d.k+'.'+d.j]=v; LS.set(RPK,P); render(); };
+actions.rpAlt = d => { const R=st.R, [, i, b]=d.k.split('.'), L=R.rp.lines[+i], X=L.fork?L.fork[b]:L, seg=X.t[+d.j], v=[seg.t,...seg.alts][+d.n], P=rpProg(); P.alt[d.k+'.'+d.j]=v; LS.set(RPK,P); render(); };
+actions.rpBank = () => { st.R.bank=!rpBankOpen(st.R); render(); };
 actions.rpFork = d => { const R=st.R; R.branch=d.v; R.pop=null; render(); if(cfg.autoSpeak) speak(rpPlain(R,R.i)); };
 actions.rpNext = () => { const R=st.R; R.pop=null; R.i=Math.min(R.i+1,R.rp.lines.length-1); render(); if(cfg.autoSpeak&&R.rp.lines[R.i].w==='B') speak(rpPlain(R,R.i)); };
-actions.rpPass = d => { const R=st.R; rpDictStop(); R.pop=null; R.phase=d.v; R.chk=false; R.res=null; R.gv=[]; R.draft='';
+actions.rpPass = d => { const R=st.R; rpDictStop(); R.pop=null; R.bank=false; R.phase=d.v; R.chk=false; R.res=null; R.gv=[]; R.draft='';
   if(d.v==='read'){ R.i=R.branch?R.rp.lines.length-1:0; } else { R.i=rpYs(R)[0]; R.maxPass=Math.max(R.maxPass,d.v==='fill'?2:3); }
   if(d.v==='fill') R.maxPass=Math.max(R.maxPass,2); render(); };
 actions.rpCheck = () => { const R=st.R, L=rpLine(R,R.i), segs=L.t.filter(s=>typeof s!=='string'), vals=[...document.querySelectorAll('.rp-gap')].map(e=>e.value);
