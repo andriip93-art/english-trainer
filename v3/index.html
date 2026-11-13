@@ -673,7 +673,7 @@ h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wra
 .rp-gap.ok{border-color:var(--ok);background:var(--ok-soft)}.rp-gap.bad{border-color:var(--bad);background:var(--bad-soft)}
 .rp-ru{font-family:var(--sans,inherit);font-size:.86rem;margin-top:4px;line-height:1.35}
 .rp-bank{border:1px solid var(--line);border-radius:14px;padding:0 12px 6px}
-.rp-bank>.rp-row{padding:12px 0}
+.rp-bank>.rp-row{padding:12px 0}.rp-bank.shut>.rp-row{border-bottom:0}.rp-bank.shut .f-row{border-bottom:0}
 .rp-bk{padding:8px 0;border-top:1px solid var(--line);display:grid;gap:2px}
 .rp-fork{display:grid;gap:8px;border:1px dashed var(--line);border-radius:var(--r-sm);padding:12px}
 .rp-steps button:disabled{opacity:.4}
@@ -3648,7 +3648,7 @@ function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
     <p class="hint">Each role play opens when you finish the previous one. Every one has a fork where you can agree or push back.</p>
   </div>`; }
 function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
-  return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" ${j+1>R.maxPass?'disabled':''}>${l}</button>`).join('')}</div>`; }
+  return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" >${l}</button>`).join('')}</div>`; }
 function rpBankOpen(R){ return !!R.bank; }
 function rpBank(R){ const al=rpProg().alt, rows=[]; let n=0;
   R.rp.lines.forEach((L,i)=>{ if(L.w!=='Y') return; const parts=L.fork?Object.entries(L.fork).map(([b,x])=>[b,x]):[[null,L]];
@@ -3656,7 +3656,7 @@ function rpBank(R){ const al=rpProg().alt, rows=[]; let n=0;
       segs.forEach(([q,j])=>{ n++; const cur=rpVar(R,k,j,q).t, it=rpItem(q.id), vs=rpVs(q).map(v=>v.t);
         rows.push(`<div class="rp-bk">${vs.length>1?`<div class="rp-chips">${vs.map((v,m)=>`<button class="chip ${v===cur?'on':''}" data-act="rpAlt" data-k="${esc(k)}" data-j="${j}" data-n="${m}">${esc(v)}</button>`).join('')}</div>`:`<div class="serif"><span class="rp-u">${esc(cur)}</span></div>`}${it?`<div class="muted" style="font-size:.86rem">${esc(it.ru||'')}</div>`:''}</div>`); }); }); });
   const open=rpBankOpen(R);
-  return `<div class="rp-bank"><button class="f-row rp-row" data-act="rpBank"><span class="t">Phrase bank<small class="muted">${n} phrases from Modes 1 and 2. Every play uses a random version; tap one to pin it</small></span><span class="pill">${open?'hide':'show'}</span></button>${open?rows.join('')+`<button class="btn ghost" data-act="rpShuffle" style="width:100%;margin:10px 0 4px">Shuffle versions</button>`:''}</div>`; }
+  return `<div class="rp-bank ${open?'':'shut'}"><button class="f-row rp-row" data-act="rpBank"><span class="t">Phrase bank<small class="muted">${n} phrases from Modes 1 and 2. Every play uses a random version; tap one to pin it</small></span><span class="pill">${open?'hide':'show'}</span></button>${open?rows.join('')+`<button class="btn ghost" data-act="rpShuffle" style="width:100%;margin:10px 0 4px">Shuffle versions</button>`:''}</div>`; }
 function rpHead(R){ return `<div class="note"><b>${esc(R.rp.t)}</b>${R.phase==='read'?esc(R.rp.setup)+`<div class="muted rp-ru" style="margin-top:6px">${esc(R.rp.setup_ru||'')}</div>`:''}</div>
   ${rpSteps(R)}${rpBank(R)}<div class="actions" style="justify-content:flex-end"><button class="chip ${R.ru?'on':''}" data-act="rpRu">RU</button></div>`; }
 function rpRead(){ const R=st.R, lines=R.rp.lines, last=Math.min(R.i,lines.length-1); let out='';
@@ -3665,7 +3665,7 @@ function rpRead(){ const R=st.R, lines=R.rp.lines, last=Math.min(R.i,lines.lengt
     out+=rpBubble(R,i,{ru:true}); }
   const waiting=lines[last].fork&&!R.branch, end=R.i>=lines.length-1;
   return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>
-    ${waiting?'':end?`<button class="btn spk-go" data-act="rpPass" data-v="fill">Next: fill the gaps</button>`:`<button class="btn" data-act="rpNext">Next line</button>`}</div>`; }
+    ${waiting?'':end?`<button class="btn spk-go" data-act="rpPass" data-v="fill">Next: fill the gaps</button><button class="btn ghost" data-act="rpPass" data-v="recall">Skip fill</button>`:`<button class="btn" data-act="rpNext">Next line</button>`}</div>`; }
 function rpGapLine(R,i){ const L=rpLine(R,i); let g=0;
   return L.t.map((s,j)=> typeof s==='string' ? esc(s) : `<input class="rp-gap ${R.chk?(R.gres[g]?'ok':'bad'):''}" data-g="${g++}" size="${Math.max(5,Math.min(30,Math.round(s.t.length*0.8)))}" autocomplete="off" autocapitalize="off" spellcheck="false" ${R.chk?'disabled':''} value="${esc(R.gv?.[g-1]||'')}" aria-label="phrase ${g}">`).join(''); }
 function rpFill(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
@@ -3675,7 +3675,8 @@ function rpFill(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
   const fb=R.chk?`<div class="note ${R.gres.every(Boolean)?'':'warn-note'}"><b>${R.gres.every(Boolean)?'Right':'Check the model'}</b><div class="serif">${rpHtml(R,i)}</div><div class="muted" style="font-size:.88rem">${esc(rpLine(R,i).ru||'')}</div></div>`:'';
   return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>${hint}${fb}
     <div class="actions">${R.chk?`<button class="btn" data-act="rpFillNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Next: recall':'Continue'}</button>`
-      :`<button class="btn ghost" data-act="rpShow" style="flex:0 0 auto">Show</button><button class="btn" data-act="rpCheck">Check</button>`}</div></div>`; }
+      :`<button class="btn ghost" data-act="rpShow" style="flex:0 0 auto">Show</button><button class="btn" data-act="rpCheck">Check</button>`}</div>
+    <button class="btn ghost" data-act="rpPass" data-v="recall" style="width:100%">Skip fill</button></div>`; }
 function rpRecall(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
   for(let k=Math.max(0,i-2);k<i;k++){ if(lines[k].w==='B'||k===i-1) out+=rpBubble(R,k,{ru:true}); }
   const L=rpLine(R,i);
@@ -3687,10 +3688,11 @@ function rpRecall(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
     ${R.res?'':`<div class="c-in"><textarea id="rAns" rows="3" spellcheck="false" autocomplete="off" placeholder="${SR?'Tap the mic and say it, or type':'Type your line'}">${esc(R.draft||'')}</textarea>${SR?`<button class="c-mic ${R.dict?'on':''}" data-act="rpDict" aria-label="Dictate">${ICON.mic||'●'}</button>`:''}</div>`}
     ${res}
     <div class="actions">${R.res?`<button class="btn" data-act="rpRecNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Finish':'Continue'}</button>`
-      :`<button class="btn ghost" data-act="rpGiveUp" style="flex:0 0 auto">Show line</button><button class="btn" data-act="rpRecCheck">Check</button>`}</div></div>`; }
+      :`<button class="btn ghost" data-act="rpGiveUp" style="flex:0 0 auto">Show line</button><button class="btn" data-act="rpRecCheck">Check</button>`}</div>
+    <button class="btn ghost" data-act="rpSkipRecall" style="width:100%">Skip recall</button></div>`; }
 function rpEnd(){ const R=st.R, T=R.T, d=rpProg().done[R.rp.id]||{}, nx=T.rps[R.rp.n], other=R.branch==='agree'?'push':'agree';
-  return `<div class="stack spk-res"><div class="summary-hero spk-sum"><div class="eyebrow">Role play · ${esc(R.rp.t)}</div><div class="n">${R.acc}<small>% of phrases recalled</small></div>
-      <div class="muted">${R.hits} of ${R.tot} · route: ${R.branch==='agree'?'agree':'push back'}</div></div>
+  return `<div class="stack spk-res"><div class="summary-hero spk-sum"><div class="eyebrow">Role play · ${esc(R.rp.t)}</div><div class="n">${R.tot?R.acc+'<small>% of phrases recalled</small>':'<small>Recall skipped</small>'}</div>
+      <div class="muted">${R.tot?R.hits+' of '+R.tot+' · ':''}route: ${R.branch==='agree'?'agree':'push back'}</div></div>
     <section><h3 class="spk-h">Phrases in this dialogue</h3>${R.ph.map(x=>`<div class="spk-t ${x.ok?'ok':'bad'}"><div class="spk-ti">${x.ok?'✓':'×'}</div><div class="meta"><span class="serif">${esc(x.s)}</span><div class="muted" style="font-size:.85rem">${esc(x.ru||'')}</div></div></div>`).join('')}</section>
     <div class="actions">${nx?`<button class="btn" data-act="rpStart" data-id="${nx.id}" ${nx.ready?'':'disabled'}>+ ${nx.ready?'Next role play':'Next one soon'}</button>`:''}<button class="btn ghost" data-act="rpOther" data-v="${other}">${other==='agree'?'Try: agree':'Try: push back'}</button></div>
     <button class="btn ghost" data-act="rpTopic" data-id="${T.id}" style="width:100%">Back to the topic</button></div>`; }
@@ -3737,10 +3739,13 @@ function rpScore(R, answer, i){ const L=rpLine(R,i), segs=L.t.filter(s=>typeof s
 actions.rpRecCheck = () => { const R=st.R, ans=($('#rAns')?.value||R.draft||'').trim(); if(!ans) return toast('Say or type your line first.'); rpDictStop(); R.res=rpScore(R,ans,R.i); rpTally(R); render(); };
 actions.rpGiveUp = () => { const R=st.R; rpDictStop(); R.res=rpScore(R,'',R.i); rpTally(R); render(); };
 function rpTally(R){ R.hits+=R.res.hits; R.tot+=R.res.tot; R.res.list.forEach(x=>{ const o=R.ph.find(y=>y.s===x.s); if(o) o.ok=o.ok&&x.ok; else R.ph.push({ s:x.s, ru:x.ru, ok:x.ok }); }); }
+function rpFinish(){ const R=st.R; rpDictStop(); R.res=null; R.draft=''; R.pop=null; const P=rpProg(), old=P.done[R.rp.id];
+  R.acc=R.tot?Math.round(R.hits/R.tot*100):(old?.acc||0);
+  P.done[R.rp.id]={ at:Date.now(), acc:Math.max(R.acc,old?.acc||0), branches:[...new Set([...(old?.branches||[]),R.branch])] }; LS.set(RPK,P); dayLog('out'); markActive(); queueSync();
+  R.phase='end'; render(); }
+actions.rpSkipRecall = () => rpFinish();
 actions.rpRecNext = () => { const R=st.R, ys=rpYs(R), n=ys.indexOf(R.i); R.res=null; R.draft=''; R.pop=null;
-  if(n>=ys.length-1){ R.acc=R.tot?Math.round(R.hits/R.tot*100):100; const P=rpProg(), old=P.done[R.rp.id];
-    P.done[R.rp.id]={ at:Date.now(), acc:Math.max(R.acc,old?.acc||0), branches:[...new Set([...(old?.branches||[]),R.branch])] }; LS.set(RPK,P); dayLog('out'); markActive(); queueSync();
-    R.phase='end'; return render(); }
+  if(n>=ys.length-1) return rpFinish();
   R.i=ys[n+1]; render(); };
 
 // ---- 18e. FSRS-4.5 (optional). Classic = your first-answer intervals + SM-2 growth. FSRS = intervals from a memory model
