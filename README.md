@@ -135,3 +135,6 @@ Mode 6 is no longer a live Gemini chat. It is now a set of ready dialogues you l
 ### v3.3.2: variants and shuffle
 
 Each phrase in `roleplay.json` has a main wording and variants. A variant is a string, or `{ "t": "...", "post": "...", "id": "p:12" }`: `post` replaces the text right after the phrase so the whole sentence stays natural, `id` points to another dictionary entry. Every play picks variants at random, so the dialogue differs each time. A tap in the Phrase bank pins a version; "Shuffle versions" clears the pins. Gap and recall checks accept every variant.
+
+### v3.3.3: RolePlay sheet layer
+Tab `RolePlay` (`id | topic | n | updated | json`) in `vocabulary_v2` is merged over `v3/roleplay.json` at load (`rpValid` drops invalid rows). A weekly scheduled task writes new role plays and adds new dictionary alternatives there, so no PR is needed for new content.

@@ -3592,7 +3592,20 @@ const RPK = 'bet3.rp';
 let RPD = LS.get('bet3.rpdata', null);
 const rpProg = () => LS.get(RPK, { done:{}, alt:{} });
 const rpTopics = () => RPD?.topics || [];
-async function rpLoad(){ try{ const r=await fetch('roleplay.json',{cache:'no-store'}); if(r.ok){ RPD=await r.json(); LS.set('bet3.rpdata',RPD); } }catch(e){} if(st.view==='talk') render(); }
+// Base: roleplay.json shipped with the app (12 topics, 5 titled slots each). Layer: tab "RolePlay" (id | topic | n | updated | json),
+// written by the weekly scheduled run: new role plays and rewritten ones (more variants). A row replaces the slot with the same id.
+function rpValid(o){ const seg=q=>typeof q==='string'||(q&&typeof q.t==='string'&&/^[pv]:\d+$/.test(q.id||'')&&Array.isArray(q.alts));
+  const body=L=>L&&Array.isArray(L.t)&&L.t.length&&L.t.every(seg);
+  return o&&typeof o.setup==='string'&&Array.isArray(o.lines)&&o.lines.length>=4&&o.lines.every(L=>(L.w==='B'||L.w==='Y')&&(L.fork?body(L.fork.agree)&&body(L.fork.push):body(L))); }
+async function rpLoad(){
+  let base=null; try{ const r=await fetch('roleplay.json',{cache:'no-store'}); if(r.ok) base=await r.json(); }catch(e){}
+  if(base){ try{ const id=sheetId(cfg.sheet)||sheetId(LIB_URL), r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=RolePlay`,{cache:'no-store'});
+      const t=await r.text(); if(r.ok && !/^\s*<(!doctype|html)/i.test(t)){ const rows=splitTSV(t), h=(rows[0]||[]).map(x=>x.trim().toLowerCase()), c=n=>h.indexOf(n);
+        if(c('id')>=0 && c('json')>=0) rows.slice(1).forEach(r=>{ try{ const rid=(r[c('id')]||'').trim(), o=JSON.parse(r[c('json')]), tid=(r[c('topic')]||rid.slice(0,rid.lastIndexOf('-'))).trim(), n=+(r[c('n')]||rid.slice(rid.lastIndexOf('-')+1))||0;
+          const T=base.topics.find(x=>x.id===tid); if(!T||!n||n>5||!rpValid(o)) return; let rp=T.rps.find(x=>x.id===rid); if(!rp){ rp={ id:rid, n, t:o.t||'Role play '+n }; T.rps.push(rp); }
+          Object.assign(rp,o,{ ready:true }); T.rps.sort((x,y)=>x.n-y.n); }catch(e){} }); } }catch(e){}
+    RPD=base; LS.set('bet3.rpdata',RPD); }
+  if(st.view==='talk') render(); }
 const rpOpen = (T,n) => n===1 || !!rpProg().done[T.id+'-'+(n-1)];
 const rpDoneCount = () => Object.keys(rpProg().done).length;
 const rpFind = id => { for(const T of rpTopics()){ const r=T.rps.find(x=>x.id===id); if(r) return { T, rp:r }; } return null; };
