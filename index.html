@@ -3646,7 +3646,7 @@ function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
     <div class="note"><b>${esc(T.t)}</b>${esc(T.you)}</div>
     <section><h3 class="spk-h">Five role plays</h3>${T.rps.map(r=>{ const d=P.done[r.id], open=r.ready&&rpOpen(T,r.n), state=d?`<span class="pill ok">done · ${d.acc}%</span>`:!r.ready?'<span class="pill">soon</span>':open?'<span class="pill">open</span>':'<span class="pill">locked</span>';
       return `<button class="rp-row f-row" data-act="rpStart" data-id="${r.id}" ${open?'':'disabled'}><span class="t">${r.n}. ${esc(r.t)}</span>${state}</button>`; }).join('')}</section>
-    <p class="hint">Each role play opens when you finish the previous one. Every one has a fork where you can agree or push back.</p>
+    <p class="hint">Pick any ready role play. Every one has a fork where you can agree or push back.</p>
   </div>`; }
 function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
   return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" >${l}</button>`).join('')}</div>`; }
