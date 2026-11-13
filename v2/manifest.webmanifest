@@ -1,6 +1,6 @@
 {
- "name": "Business English Trainer v3",
- "short_name": "English v3",
+ "name": "Business English Trainer",
+ "short_name": "English",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
@@ -8,17 +8,17 @@
  "theme_color": "#FFFFFF",
  "icons": [
   {
-   "src": "../icon-192.png",
+   "src": "icon-192.png",
    "sizes": "192x192",
    "type": "image/png"
   },
   {
-   "src": "../icon-512.png",
+   "src": "icon-512.png",
    "sizes": "512x512",
    "type": "image/png"
   },
   {
-   "src": "../icon-maskable-512.png",
+   "src": "icon-maskable-512.png",
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"

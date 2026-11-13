@@ -11,7 +11,7 @@ Business English Trainer, offline-first PWA.
   - the sheet must stay shared as "Anyone with the link can view"
 - `/v1/` archived first version, kept for reference
 - `/v2/` redirects to `/`
-- `/v3/` version 3 preview (see below). Same storage keys, same sheet and sync, so `/` and `/v3/` can be used side by side; rollback = keep using `/`
+- `/` is now version 3 (see below). The previous root app is kept at `/v2/` (same storage keys, same sheet and sync, so you can switch back at any time). `/v3/` only redirects to `/`.
 
 Progress is kept in the browser (`bet3.*`, v1 under `bet.*`) and can be synced across devices, see below.
 
@@ -138,3 +138,7 @@ Each phrase in `roleplay.json` has a main wording and variants. A variant is a s
 
 ### v3.3.3: RolePlay sheet layer
 Tab `RolePlay` (`id | topic | n | updated | json`) in `vocabulary_v2` is merged over `v3/roleplay.json` at load (`rpValid` drops invalid rows). A weekly scheduled task writes new role plays and adds new dictionary alternatives there, so no PR is needed for new content.
+
+
+### v3.4: promoted to the root
+Root = v3 (`index.html`, `fixbank.json`, `roleplay.json`, `sw.js`); the old root app moved to `/v2/` with its own manifest and icons; `/v3/` is a redirect plus a service worker that unregisters itself. Roleplay: phrase bank and RU hidden by default, Skip fill and Skip recall.
