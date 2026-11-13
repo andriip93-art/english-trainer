@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="English">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Business English Trainer</title>
+<title>Business English Trainer v3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -570,6 +570,118 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 .spk-scene.compact .spk-beats{gap:14px}
 .spk-rec .spk-scene{text-align:left;width:100%}
 .spk-scene.compact .spk-beats span{font-size:.84rem}
+/* ---- v3 · Today plan, diagnostic, deep lesson ---- */
+.t-plan{display:grid;gap:0;padding:14px 16px 6px}
+.t-step{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:12px 0;color:var(--fg);font:inherit;cursor:pointer;min-height:56px}
+.t-plan .row{padding-bottom:10px}
+.t-n{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.82rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.t-m{display:grid;min-width:0}.t-m b{font-weight:600}.t-m small{color:var(--muted);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t-step.next .t-n{border-color:var(--primary);color:var(--primary)}
+.t-step.next .t-go{background:var(--primary);color:var(--primary-ink);font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:999px}
+.t-step.done .t-n{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.t-step.done .t-m b{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.f-mine{color:var(--bad);border-left:3px solid var(--bad);padding-left:12px;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 45%,transparent);text-decoration-thickness:1px}
+.f-miss{color:var(--bad)!important}
+.f-ctx{font-family:var(--serif);font-size:.98rem;border:1px dashed var(--line);border-radius:4px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.f-ctx span{font-family:var(--font);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);flex-basis:100%}
+.f-ctx .audio,.f-say .audio,.f-text .audio{width:30px;height:30px;flex-shrink:0}
+.f-steps{margin:0;padding-left:22px;display:grid;gap:8px;line-height:1.5}
+.f-steps li::marker{color:var(--primary);font-weight:700}
+.f-con{padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.f-con:last-child{border-bottom:0}
+.f-con .ab{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:var(--serif)}
+.f-con .ab span{background:var(--surface-2);border-radius:4px;padding:8px 10px;line-height:1.4}
+.f-con .ab span+span{background:var(--navy-soft)}
+.f-text{font-family:var(--serif);font-size:1.05rem;line-height:1.7;border-left:3px solid var(--navy);padding-left:12px}
+.f-t{color:var(--navy);font-weight:700}
+.f-say{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.f-say:last-child{border-bottom:0}
+.f-more{border-top:1px solid var(--line);padding-top:10px}
+.f-more summary{cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* ---- v3.1 · interactive lesson, progress, roleplay ---- */
+.f-blank{display:inline-block;min-width:4.5em;border-bottom:2px solid var(--line);text-align:center;color:var(--primary);font-weight:700;line-height:1.2;margin:0 2px}
+.f-blank.cur{border-color:var(--primary);background:var(--primary-soft);border-radius:3px 3px 0 0}
+.f-in{color:var(--ok)!important;animation:pop .3s var(--ease)}
+.f-bank{display:flex;flex-wrap:wrap;gap:8px}
+.f-bank .chip{font-family:var(--serif);font-size:1rem;min-height:40px}
+.f-shake{animation:fshake .3s;border-color:var(--bad)!important;color:var(--bad)!important}
+@keyframes fshake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.f-sayx{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.f-sayx:last-of-type{border-bottom:0}
+.f-sayx .audio{width:36px;height:36px;flex-shrink:0}
+.f-rec svg{width:18px;height:18px}
+.f-rec.on{background:var(--primary);color:var(--primary-ink);animation:pop .6s var(--ease) infinite alternate}
+.s-bars{display:flex;gap:6px;align-items:flex-end;min-height:96px}
+.s-bars>div{flex:1;display:grid;justify-items:center;gap:3px;min-width:0}
+.s-bars span{width:100%;max-width:34px;background:var(--fg);border-radius:2px 2px 0 0}
+.s-bars>div:last-child span{background:var(--primary)}
+.s-bars em{font-style:normal;font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.s-bars small{font-size:.66rem;color:var(--muted);white-space:nowrap}
+.s-big{display:flex;align-items:baseline;gap:12px}.s-big b{font-family:var(--serif);font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.s-up{color:var(--ok);font-weight:600}.s-down{color:var(--bad);font-weight:600}
+.s-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;font-size:.9rem;padding:7px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.s-row>span:first-child{min-width:0;overflow-wrap:anywhere}
+.s-deck{display:grid;gap:8px;padding:12px 0 4px;border-top:1px solid var(--line)}
+.s-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:.92rem;font-variant-numeric:tabular-nums}
+.s-line>*{min-width:0}.s-line b{font-weight:600}
+.s-sub{font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:8px}
+.s-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.s-leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.s-leg i{width:8px;height:8px;border-radius:2px;background:var(--line)}.s-leg i.m{background:var(--primary)}.s-leg i.s{background:color-mix(in srgb,var(--primary) 30%,var(--line))}
+.s-track{position:relative;display:block;width:100%;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.s-track i{position:absolute;inset:0 auto 0 0;background:var(--primary)}
+.s-heat{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+.s-heat i{aspect-ratio:1;border-radius:3px;background:var(--surface-2)}
+.s-heat .h1{background:color-mix(in srgb,var(--primary) 30%,var(--surface-2))}.s-heat .h2{background:color-mix(in srgb,var(--primary) 62%,var(--surface-2))}.s-heat .h3{background:var(--primary)}
+.t-chat{display:grid;gap:10px}
+.t-msg{max-width:88%;padding:10px 12px;border-radius:14px;font-family:var(--serif);line-height:1.45;display:flex;gap:8px;align-items:flex-end}
+.t-msg.ai{background:var(--surface-2);border-bottom-left-radius:4px;justify-self:start}
+.t-msg.me{background:var(--navy-soft);border-bottom-right-radius:4px;justify-self:end}
+.t-msg .audio{width:28px;height:28px;flex-shrink:0}
+.t-typing{display:flex;gap:4px;padding:6px 2px}.t-typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:pop .6s var(--ease) infinite alternate}.t-typing i:nth-child(2){animation-delay:.15s}.t-typing i:nth-child(3){animation-delay:.3s}
+/* ---- v3.2 · layout safety and polish: nothing may collide or leave the screen at 320px ---- */
+.actions{flex-wrap:wrap}
+.actions .btn{min-width:0}
+.f-sayx .row>.serif{flex:1;min-width:0}.f-sayx .row>.row{flex:0 0 auto}
+.card .row>.btn{flex:1 1 auto;min-width:0}
+.card,.deck .meta,.t-m,.spk-t .meta,.c-pat .t,.stack>*{min-width:0}
+h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wrap:anywhere}
+.chips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);padding-right:36px}
+.s-bars>div{overflow:hidden}.s-bars small{font-size:.62rem;letter-spacing:-.01em}
+.s-page .c-keys>div{padding:10px 12px;gap:4px}
+.s-page .c-keys b{font-family:var(--serif);font-size:1.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.s-page .c-keys span{font-size:.68rem;letter-spacing:.05em}
+.s-page .card{gap:14px}
+.f-con .ab{align-items:stretch}
+@media (max-width:359px){.f-con .ab{grid-template-columns:1fr}.c-keys span{letter-spacing:.02em}.t-step{gap:10px}.t-step.next .t-go{padding:6px 10px}}
+.f-row .t{display:grid;gap:2px;line-height:1.3}
+.f-row .t small{display:block;font-weight:400;font-size:.8rem;line-height:1.35}
+.r-hist{flex-wrap:nowrap!important;align-items:baseline}
+.r-hist>span:first-child{flex:1;min-width:0}.r-hist .pill{flex-shrink:0;white-space:nowrap}
+.btn{text-wrap:balance}
+.f-row .code{width:3.3rem;padding-inline:0;box-sizing:border-box;text-align:center;align-self:start;margin-top:2px}.f-row .c{align-self:start}
+.f-row:not(:has(.code)){grid-template-columns:1fr}
+
+/* ---- v3.3 · Roleplay: underlined phrases, gaps, synonym popover ---- */
+.rp-u{text-decoration:underline;text-decoration-color:var(--primary);text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:3px}
+.rp-u.on{background:var(--primary-soft)}
+.rp-pop{border:1px solid var(--line);border-left:3px solid var(--primary);background:var(--surface);border-radius:var(--r-sm);padding:10px 12px;display:grid;gap:2px;overflow-wrap:anywhere}
+.rp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.rp-chips .chip{white-space:normal;text-align:left;font-family:var(--serif);font-size:.92rem;line-height:1.3;border-radius:12px}
+.rp-chips .chip.on{background:var(--primary-soft);border-color:var(--primary);color:var(--fg)}
+.rp-gap{max-width:calc(100vw - 120px);border:0;border-bottom:2px solid var(--primary);background:var(--primary-soft);font:inherit;color:inherit;padding:1px 5px;border-radius:4px 4px 0 0;min-width:4.5ch;margin:2px 0}
+.rp-gap.ok{border-color:var(--ok);background:var(--ok-soft)}.rp-gap.bad{border-color:var(--bad);background:var(--bad-soft)}
+.rp-ru{font-family:var(--sans,inherit);font-size:.86rem;margin-top:4px;line-height:1.35}
+.rp-bank{border:1px solid var(--line);border-radius:14px;padding:0 12px 6px}
+.rp-bank>.rp-row{padding:12px 0}.rp-bank.shut>.rp-row{border-bottom:0}.rp-bank.shut .f-row{border-bottom:0}
+.rp-bk{padding:8px 0;border-top:1px solid var(--line);display:grid;gap:2px}
+.rp-fork{display:grid;gap:8px;border:1px dashed var(--line);border-radius:var(--r-sm);padding:12px}
+.rp-steps button:disabled{opacity:.4}
+.rp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0}
+.rp-row .t{flex:1;min-width:0;font-weight:600;font-size:.95rem}.rp-row .t small{display:block;font-weight:400;margin-top:2px}
+.rp-row .pill{flex:0 0 auto}
+.actions>.chip{flex:0 0 auto;padding:6px 14px}
+.t-msg>div:first-child{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -585,7 +697,7 @@ input.spk-in.spk-topic{font-family:inherit;font-size:.95rem}
 
 <script>
 /* ============================================================
-   Business English Trainer v2 (offline edition)
+   Business English Trainer v3 (v2 + section 17: Today plan, deeper Fix My Errors, spaced rule reviews, offline shell)
    - Data: Google Sheet vocabulary_v2, tabs Eng_Phrases and Eng_Chunks (CSV via gviz). Cached in localStorage,
      so after one successful load the app works with no network.
    - Progress: SM-2 style spaced repetition, namespaced per deck.
@@ -2881,7 +2993,7 @@ function fixStart(){
       return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
         : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
     <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=(x.of||8)-1?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=(x.of||8)-1?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
     <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
     <p class="hint">Every mistake from Speak and Drills is saved to the "Errors" tab of vocabulary_v2 (one row per mistake), so you can also filter or pivot it there.</p>
   </div>`;
@@ -2955,7 +3067,7 @@ async function bankLoad(force){
   // Base bank: fixbank.json shipped with the app. Layer: FixBank tab, written by the scheduled run (new topics, new or corrected
   // tasks by id, a newer lesson). Rows whose code has no "." are from the old one-row-per-code bank and are ignored.
   if(BANK && !force) return BANK;
-  const c=LS.get('bet3.bank2',null);
+  const c=LS.get('bet3.bank3',null);
   if(c && !force && Date.now()-c.at<6*3600e3) return (BANK=c.v);
   const v={}; let got=false;
   try{ const r=await fetch('fixbank.json',{cache:'no-store'}); if(r.ok){ Object.assign(v, await r.json()); got=true; } }catch(e){}
@@ -2966,11 +3078,11 @@ async function bankLoad(force){
       const lesson=r[col('lesson')]?JSON.parse(r[col('lesson')]):{}, tasks=r[col('tasks')]?JSON.parse(r[col('tasks')]):[];
       const base=v[code]||{ updated:'', lesson:{}, tasks:[] }, m=new Map(base.tasks.map(x=>[x.id,x]));
       (Array.isArray(tasks)?tasks:[]).forEach(x=>{ if(x&&x.id&&x.type) m.set(x.id,x); });
-      const ls=lesson?.title_ru ? { ...lesson, hint_en:lesson.hint_en||base.lesson.hint_en } : base.lesson, up=String(r[col('updated')]||'');
+      const ls=lesson?.title_ru ? { ...base.lesson, ...lesson, hint_en:lesson.hint_en||base.lesson.hint_en } : base.lesson, up=String(r[col('updated')]||'');
       if(ls?.title_ru && m.size) v[code]={ updated:up>base.updated?up:base.updated, lesson:ls, tasks:[...m.values()] }; }catch(e){} }); } }
   catch(e){}
   if(!got) return (BANK=c?.v||{});
-  LS.set('bet3.bank2',{ at:Date.now(), v }); return (BANK=v);
+  LS.set('bet3.bank3',{ at:Date.now(), v }); return (BANK=v);
 }
 const bankTask = t => ({ ...t, type:String(t.type).toLowerCase(), answers:(t.answers||[]).map(String), options:(t.options||[]).map(String), answer:+t.answer||0, res:null, pick:undefined, ans:undefined });
 function bankPick(code, want){
@@ -3083,6 +3195,608 @@ function fixBack(){
       const a=$('#fAns'); if(a){ a.oninput=()=>{ F.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey||F.tasks[F.i].type==='gap')){ e.preventDefault(); actions.fixCheck(); } }; if(!('ontouchstart' in window)) a.focus(); } } }; }
 { const _back=actions.back; actions.back=()=>{ if(st.view==='fix') return fixBack(); _back(); }; }
 
+// ---------- 17. v3 layer ----------
+// What v3 adds on top of v2 (same data, same storage keys, so both versions can be used side by side):
+// · Today plan on the home screen: one guided path (review > fix > produce) instead of choosing between five modes.
+// · Fix My Errors: a diagnostic on your own sentences before the rule (pretesting), a deeper lesson (decision steps,
+//   contrast pairs, fine points, a text in context, lines to say aloud), your own errors as tasks, missed tasks come
+//   back at the end of the set (mastery), and a spaced schedule per rule: reviews after 1, 3 and 7 days, then fixed.
+// · Stutter filter for the error journal, offline app shell (service worker).
+const V3 = '3.3';
+const FIX_STEPS = [1, 3, 7];            // days until the review after: the lesson, review 1, review 2. Passing the last review marks the errors fixed.
+FTYPE.mine = 'Your own words';
+const dayLog = f => { const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t][f]=(log[t][f]||0)+1; LS.set(K.log,log); queueSync(); };
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="f-t">$1</b>');
+const plain = s => String(s||'').replace(/\*\*/g,'');
+
+// ---- 17a. Spaced schedule per rule. Stored next to the cards ("fix:<topic id>"), so it syncs with the existing script.
+const fixCard = id => { const c=srs['fix:'+id]; return c && c.stage>=0 ? c : null; };
+function fixCardSet(id, stage){ const now=Date.now(); srs['fix:'+id]={ stage, due:startOfDay(now+FIX_STEPS[Math.min(stage,FIX_STEPS.length-1)]*DAY), last:now, u:now }; LS.set(K.srs,srs); queueSync(); }
+function fixCardOff(id){ if(!srs['fix:'+id]) return; srs['fix:'+id]={ stage:-1, due:0, last:Date.now(), u:Date.now() }; LS.set(K.srs,srs); queueSync(); }
+const dueIn = c => Math.max(0, Math.ceil((c.due-Date.now())/DAY));
+// Rules whose review is due. Rules drilled in v2 (no schedule yet) are due from the next day, as before.
+mixTopics = function(){
+  const now=Date.now(), t=today();
+  return fixGroups().filter(g=>g.bank && g.rows.some(r=>r.status==='drilled')).map(g=>{ const c=fixCard(g.id);
+      const due = c ? c.due : g.rows.some(r=>r.status==='drilled' && String(r.updated||r.date)<t) ? 0 : Infinity;
+      return { ...g, due, stage:c?c.stage:0 }; })
+    .filter(g=>g.due<=now).sort((a,b)=>a.due-b.due);
+};
+
+// ---- 17b. Error journal: a repeated word is a slip of the tongue, not a rule to learn
+const unstutter = s => String(s||'').replace(/\b([\p{L}']+)(\s+\1\b)+/giu,'$1').replace(/\s+/g,' ').trim();
+{ const _log=errLog; errLog=function(rows){ _log((rows||[]).map(r=>({ ...r, wrong:unstutter(r.wrong) })).filter(r=>r.wrong && norm(r.wrong)!==norm(r.fix))); }; }
+
+// ---- 17c. Your own errors as material
+function pickMine(rows, n, skip){
+  const seen=new Set(skip||[]), out=[];
+  rows.slice().sort((a,b)=>(a.status==='open'?0:1)-(b.status==='open'?0:1) || String(b.date).localeCompare(String(a.date))).forEach(r=>{
+    const w=unstutter(r.wrong), f=String(r.fix||'').trim(), k=norm(w);
+    if(out.length>=n || !w || !f || w.length>70 || f.length>90 || seen.has(k) || k===norm(f)) return;
+    seen.add(k); out.push({ ...r, wrong:w });
+  });
+  return out;
+}
+// Lenient match for a fragment: the fix itself, or a sentence that contains it
+const mineHit = (ans, fix) => { const a=norm(ans), f=norm(fix); return !!a && (a===f || (f.length>=6 && a.includes(f))); };
+
+// ---- 17d. Diagnostic before the rule: try to repair your own words first. Not scored; it shows whether the rule is still live.
+function fixDiag(){
+  const F=st.F, D=F.diag, x=D.items[D.i], r=x.r, last=D.i===D.items.length-1;
+  return `<div class="stack">
+    <div class="spk-dots">${D.items.map((y,i)=>`<span class="${y.res?(y.res.ok?'done':'warnd'):i===D.i?'on':''}"></span>`).join('')}<em>${D.i+1} / ${D.items.length}</em></div>
+    <div class="card c-card">
+      <div class="spk-kind">Before the rule · your own words</div>
+      <h2 class="serif" style="margin:0">${esc(F.lesson.title_ru||'')}</h2>
+      <p class="hint" style="margin:0">Вы сказали так${r.task?' ('+esc(r.task)+', '+esc(r.date)+')':''}. Попробуйте исправить сами, до правила: так оно запоминается лучше.</p>
+      <div class="f-q f-mine">${esc(r.wrong)}</div>
+      ${x.res ? `<div class="c-fix ${x.res.ok?'':'f-miss'}"><span>Your answer</span>${esc(x.ans||'(skipped)')}</div>`
+        : `<div class="c-in"><textarea id="dAns" rows="2" spellcheck="false" autocomplete="off" placeholder="How should it sound?"></textarea></div>
+           <div class="actions"><button class="btn ghost" data-act="diagShow" style="flex:0 0 auto">I don't know</button><button class="btn" data-act="diagCheck">Check</button></div>`}
+    </div>
+    ${x.res?`<div class="card c-fb ${x.res.ok?'ok':'bad'}">
+      <div class="row" style="gap:10px;flex-wrap:nowrap;align-items:center"><div class="c-grade ${x.res.ok?'ok':'bad'}">${x.res.ok?'✓':'×'}</div><div><b>${x.res.ok?'Right':'This one is still live'}</b></div></div>
+      <div class="spk-native"><span>Correct</span>${esc(r.fix)} ${audioBtn(r.fix)}</div>
+      ${r.context?`<div class="f-ctx"><span>Native version</span>${esc(r.context)} ${audioBtn(r.context)}</div>`:''}
+      ${r.why_ru?`<div class="note"><b>Почему</b>${esc(r.why_ru)}</div>`:''}
+      <div class="actions"><button class="btn" data-act="diagNext">${last?'See the rule':'Next'}</button></div>
+    </div>`:`<button class="btn ghost small" data-act="diagSkip" style="align-self:center">Skip to the rule</button>`}
+  </div>`;
+}
+actions.diagCheck = () => { const D=st.F.diag, x=D.items[D.i], a=($('#dAns')?.value||'').trim(); if(!a) return toast('Type your version, or tap I don\'t know.'); x.ans=a; x.res={ ok:mineHit(a,x.r.fix) }; buzz(x.res.ok?15:[30,40,30]); render(); };
+actions.diagShow = () => { const D=st.F.diag, x=D.items[D.i]; x.ans=''; x.res={ ok:false }; render(); };
+actions.diagNext = () => { const F=st.F, D=F.diag; if(D.i<D.items.length-1){ D.i++; return go('fix'); } F.phase='lesson'; go('fix'); };
+actions.diagSkip = () => { st.F.phase='lesson'; go('fix'); };
+{ const _v=vFix; vFix=function(){ const F=st.F||(st.F={phase:'start'}); return F.phase==='diag' ? fixDiag() : _v(); }; }
+{ const _b=fixBack; fixBack=function(){ if(st.F?.phase==='diag'){ st.F={phase:'start'}; return go('fix'); } _b(); }; }
+{ const _go=actions.fixGo; actions.fixGo=async d=>{ await _go(d); const F=st.F;
+    if(st.view==='fix' && F?.phase==='lesson' && !d.fresh){ const mine=pickMine(F.rows,3);
+      if(mine.length){ F.diag={ i:0, items:mine.map(r=>({ r, ans:'', res:null })) }; F.phase='diag'; go('fix'); } } }; }
+
+// ---- 17e. The lesson: base rule + the deep block (when the bank has one) + every error behind it
+function deepBody(ls){
+  const d=ls.deep; if(!d) return '';
+  const sec=(t,b)=>`<div><div class="eyebrow" style="margin-bottom:6px">${t}</div>${b}</div>`;
+  return `${d.steps_ru?.length?sec('Как решать: по шагам',`<ol class="f-steps">${d.steps_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`):''}
+    ${d.contrast?.length?sec('Сравните',d.contrast.map(c=>`<div class="f-con"><div class="ab"><span>${esc(c.a)}</span><span>${esc(c.b)}</span></div>${c.note_ru?`<div class="muted" style="font-size:.88rem">${esc(c.note_ru)}</div>`:''}</div>`).join('')):''}
+    ${d.text?sec('In context',`<div class="f-text">${md(d.text)} ${audioBtn(plain(d.text))}</div>`):''}
+    ${d.say?.length?sec('Say it aloud · listen, then repeat',d.say.map(x=>`<div class="f-say"><span class="serif">${esc(x)}</span>${audioBtn(x)}</div>`).join('')):''}
+    ${d.more_ru?.length?`<details class="f-more"><summary>Тонкости и исключения · ${d.more_ru.length}</summary><ul class="f-rule" style="margin-top:8px">${d.more_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}`;
+}
+{ const _lb=lessonBody; lessonBody=function(ls, compact){ return _lb(ls, compact)+(compact?'':deepBody(ls)); }; }
+fixLesson = function(){
+  const F=st.F, ls=F.lesson, D=F.diag, done=D?D.items.filter(x=>x.res):[], hit=done.filter(x=>x.res.ok).length;
+  const mine=F.rows.filter(r=>r.wrong&&r.fix);
+  return `<div class="stack"><div class="card c-card">
+    <div class="spk-kind">Lesson · ${esc(F.cat||F.code)} · ${F.fromBank?`covers ${F.rows.length} of your errors`:`from ${F.rows.length} of your errors`}${ls.deep?' · full':''}</div>
+    <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
+    ${done.length?`<div class="note ${hit===done.length?'':'warn-note'}"><b>Diagnostic: ${hit} of ${done.length} repaired without the rule</b>${hit===done.length?'Правило вы знаете. Задача теперь довести его до автоматизма в речи.':'Правило ещё не автоматическое. Прочитайте его и обратите внимание на шаги.'}</div>`:''}
+    ${lessonBody(ls,false)}
+    ${mine.length?`<details class="f-more"><summary>All your errors on this rule · ${mine.length}</summary><div style="margin-top:6px">${mine.slice(0,40).map(r=>`<div class="f-pair"><div class="w">${esc(unstutter(r.wrong))}</div><div class="r">${esc(r.fix)} ${audioBtn(r.fix)}</div><div class="muted" style="font-size:.8rem">${esc(r.date)} · ${esc(r.task||r.mode||'')} · ${esc(r.status||'open')}</div></div>`).join('')}</div></details>`:''}
+    <div class="actions">${F.fromBank?'':'<button class="btn ghost" data-act="fixRelesson" style="flex:0 0 auto">New lesson</button>'}<button class="btn" data-act="fixTasks">Start practice</button></div>
+  </div></div>`;
+};
+
+// ---- 17f. The set: bank tasks plus up to two of your own errors, placed after the controlled tasks
+{ const _t=actions.fixTasks; actions.fixTasks=async()=>{ await _t(); const F=st.F; if(F.phase!=='task' || F.mix || F.tasks.some(t=>t.type==='mine')) return;
+    const used=(F.diag?.items||[]).map(x=>norm(x.r.wrong)); let mine=pickMine(F.rows,2,used); if(!mine.length) mine=pickMine(F.rows,2);
+    const at=F.tasks.findIndex(t=>t.type==='fix'||t.type==='translate');
+    F.tasks.splice(at<0?F.tasks.length:at, 0, ...mine.map(mineTask)); render(); }; }
+const mineTask = r => ({ id:'mine-'+r.key, type:'mine', q:r.wrong, answers:[String(r.fix)], options:[], answer:0, why_ru:r.why_ru||'', ctx:r.context||'', res:null });
+{ const _c=actions.fixCheck; actions.fixCheck=async()=>{ const t=st.F.tasks[st.F.i], a=($('#fAns')?.value||'').trim();
+    if(t.type==='mine' && a && mineHit(a,t.answers[0])){ t.ans=a; st.F.draft=''; t.res={ ok:true }; buzz(15); return render(); }
+    return _c(); }; }
+{ const _ft=fixTask; fixTask=function(){ let h=_ft(); const F=st.F, t=F.tasks[F.i];
+    if(t.type==='mine'){ h=h.replace('<div class="f-q ">','<p class="hint" style="margin:0">Вы сказали так. Как правильно?</p><div class="f-q f-mine">').replace('placeholder="Your English sentence"','placeholder="The correct version"');
+      if(t.res && t.ctx){ const i=h.lastIndexOf('<div class="actions">'); if(i>0) h=h.slice(0,i)+`<div class="f-ctx"><span>Native version</span>${esc(t.ctx)} ${audioBtn(t.ctx)}</div>`+h.slice(i); } }
+    if(t.retry) h=h.replace('<div class="spk-kind" style="margin:0">','<div class="spk-kind" style="margin:0">Again · ');
+    return h; }; }
+// A missed task returns once at the end of the set. The score counts first attempts only.
+actions.fixNext = () => { const F=st.F, t=F.tasks[F.i];
+  if(t.res && !t.res.ok && !t.retry && !t.requeued && F.tasks.filter(x=>x.retry).length<5){ t.requeued=true;
+    const c={ ...t, res:null, pick:undefined, ans:undefined, retry:true };
+    if(c.type==='choose'){ const right=c.options[c.answer]; c.options=shuffle(c.options); c.answer=c.options.indexOf(right); }
+    F.tasks.push(c); }
+  if(F.i<F.tasks.length-1){ F.i++; F.showRule=false; return go('fix'); } fixFinish(); };
+
+// ---- 17g. Result: pass at 80% first-attempt, then the rule enters the 1 > 3 > 7 day schedule
+fixFinish = function(){
+  const F=st.F, base=F.tasks.filter(t=>!t.retry), n=base.length, ok=base.filter(t=>t.res?.ok).length, live=errAll();
+  Object.assign(F,{ phase:'sum', n, ok, need:Math.ceil(n*.8), promoted:{ drilled:0, fixed:0, back:0 } });
+  const hist=e=>{ const h=LS.get(ERR.hist,[]); h.unshift(e); LS.set(ERR.hist, h.slice(0,30)); };
+  if(F.mix){ F.mixRes=[];
+    [...new Set(base.map(t=>t.topic))].forEach(id=>{ const ls=BANK?.[id]?.lesson||{}, pass=base.filter(t=>t.topic===id).every(t=>t.res?.ok);
+      const dr=live.filter(r=>String(r.type).trim()===id && r.status==='drilled').map(r=>r.key), c=fixCard(id), stage=c?c.stage:0, m={ id, title:ls.title_ru||id, ok:pass, fixed:0, back:0, next:0 };
+      if(pass && stage+1>=FIX_STEPS.length){ errSetStatus(dr,'fixed'); fixCardOff(id); m.fixed=dr.length; }
+      else if(pass){ fixCardSet(id, stage+1); m.next=FIX_STEPS[stage+1]; }
+      else { errSetStatus(dr,'open'); fixCardOff(id); m.back=dr.length; }
+      F.promoted.fixed+=m.fixed; F.promoted.back+=m.back; F.mixRes.push(m); });
+    hist({ at:F.at, code:'MIX', title:'Review', score:ok, of:n }); dayLog('fix'); markActive(); return go('fix'); }
+  if(ok>=F.need){
+    const keys=new Set(F.rows.map(r=>r.key)), rows=live.filter(r=>(keys.has(r.key) || (F.fromBank && String(r.type).trim()===F.code)) && r.status!=='fixed');
+    const toDrill=rows.filter(r=>r.status!=='drilled').map(r=>r.key);
+    if(F.fromBank){ errSetStatus(toDrill,'drilled'); F.promoted.drilled=toDrill.length; if(toDrill.length || !fixCard(F.code)) fixCardSet(F.code, 0); F.next=dueIn(fixCard(F.code)); }
+    else { const toFix=rows.filter(r=>r.status==='drilled' && String(r.updated||r.date)<today()).map(r=>r.key);   // no bank yet: the v2 two-day rule
+      errSetStatus(toFix,'fixed'); errSetStatus(toDrill,'drilled'); F.promoted={ drilled:toDrill.length, fixed:toFix.length, back:0 }; }
+  }
+  hist({ at:F.at, code:F.cat||F.code, title:F.lesson.title_ru, score:ok, of:n }); dayLog('fix'); markActive(); go('fix');
+};
+fixSum = function(){
+  const F=st.F, n=F.n, ok=F.ok, P=F.promoted||{}, pass=ok>=F.need, base=F.tasks.filter(t=>!t.retry), again=F.tasks.filter(t=>t.retry), won=again.filter(t=>t.res?.ok).length;
+  const note = F.mix
+    ? `<div class="note ${P.back?'warn-note':''}"><b>${P.fixed?P.fixed+' errors fixed':'Review done'}${P.back?` · ${P.back} back to training`:''}</b>A rule passes when every first attempt on it is right. Passed rules come back after a longer gap (1, 3, then 7 days); after the last one the errors are fixed. A missed rule returns to the list for a fresh lesson.</div>
+       <section><h3 class="spk-h">By rule</h3>${(F.mixRes||[]).map(m=>`<div class="spk-t ${m.ok?'ok':'bad'}"><div class="spk-ti">${m.ok?'✓':'×'}</div><div class="meta"><span>${esc(m.title)}</span><div class="muted" style="font-size:.85rem">${m.ok?(m.fixed?m.fixed+' errors fixed':'next review in '+m.next+' days'):m.back+' back to training'}</div></div></div>`).join('')}</section>`
+    : `<div class="note ${pass?'':'warn-note'}"><b>${pass?(F.fromBank?`Passed · review in ${F.next||1} day${(F.next||1)===1?'':'s'}`:(P.fixed?`${P.fixed} errors marked fixed`:`${P.drilled||0} errors marked drilled`)):`Not yet · ${F.need} of ${n} needed`}</b>${pass?(F.fromBank?`${P.drilled?P.drilled+' errors marked drilled. ':''}The rule comes back in Review after 1, 3 and 7 days, mixed with other rules and with no hint which one applies. Pass all three and the errors are fixed.`:'They are confirmed on another day.'):'Re-read the steps of the rule and take a new set. Only first attempts count.'}</div>`;
+  return `<div class="stack spk-res">
+    <div class="summary-hero spk-sum"><div class="eyebrow">Fix My Errors · ${esc(F.mix?'Review':F.cat||F.code)}</div>
+      <div class="n">${ok}<small>/${n}</small></div><div class="muted">${esc(F.mix?(F.mixRes||[]).length+' rule'+((F.mixRes||[]).length===1?'':'s'):F.lesson.title_ru||'')}${again.length?` · ${won} of ${again.length} repaired on the second try`:''}</div></div>
+    ${note}
+    <section><h3 class="spk-h">Task by task · first attempts</h3>${base.map(t=>`<div class="spk-t ${t.res?.ok?'ok':'bad'}"><div class="spk-ti">${t.res?.ok?'✓':'×'}</div><div class="meta"><div class="muted" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">${FTYPE[t.type]}${F.mix?' · '+esc(lsOf(t).title_ru||''):''}</div>
+      <span class="serif">${esc(t.type==='choose'?t.options[t.answer]:t.type==='gap'?fillGap(t.q,t.answers[0]):t.answers[0])}</span></div></div>`).join('')}</section>
+    <div class="actions">${F.mix?'':'<button class="btn ghost" data-act="fixLessonAgain">Read the rule</button>'}<button class="btn" data-act="${F.mix?'fixHome':'fixMore'}">${F.mix?'All rules':'New set'}</button></div>
+    ${F.mix?'':'<button class="btn ghost" data-act="fixHome">All rules</button>'}
+  </div>`;
+};
+
+// ---- 17h. Review: every rule that is due (one is enough), production tasks only, plus one of your own errors per rule
+actions.fixMix = async () => {
+  await bankLoad(); const mx=mixTopics().filter(g=>inCat(g)).slice(0,4); if(!mx.length) return toast('No rule is due for review yet.');
+  const per = mx.length>=4 ? {fix:1,translate:1} : mx.length===3 ? {gap:1,fix:1,translate:1} : mx.length===2 ? {gap:1,fix:2,translate:1} : {gap:2,fix:2,translate:2};
+  const tasks=[]; mx.forEach(g=>{ (bankPick(g.id, per)||[]).forEach(t=>tasks.push({ ...bankTask(t), topic:g.id })); pickMine(g.rows,1).forEach(r=>tasks.push({ ...mineTask(r), topic:g.id })); });
+  if(tasks.length<3) return toast('Not enough tasks in the bank yet.');
+  st.F={ phase:'task', mix:true, code:'MIX', cat:'Review', rows:[], lesson:{}, tasks:shuffle(tasks), i:0, draft:'', showRule:false, at:Date.now() }; go('fix');
+};
+
+// ---- 17i. Start screen of Mode 5
+fixStart = function(){
+  const gAll=fixGroups(), cat=fixCat(), gs=gAll.filter(g=>inCat(g,cat)), all=errAll(), ready=gs.filter(g=>g.ready), h=LS.get(ERR.hist,[]), mx=mixTopics().filter(g=>inCat(g,cat));
+  const top=ready.find(g=>g.rows.some(r=>r.status!=='drilled')) || ready.find(g=>!fixCard(g.id)) || null;
+  const catN=c=>gAll.filter(g=>inCat(g,c)).reduce((t,g)=>t+g.n,0), cnt=s=>all.filter(r=>r.status===s).length, max=Math.max(1,...gs.map(g=>g.n));
+  const sched=g=>{ const c=fixCard(g.id); return !c||!g.drilled ? '' : c.due<=Date.now() ? ' · <b style="color:var(--primary)">review due</b>' : ` · review ${c.stage+1}/${FIX_STEPS.length} in ${dueIn(c)}d`; };
+  return `<div class="stack">
+    <div class="chips">${FIX_CATS.map(([c,l])=>`<button class="chip ${cat===c?'on':''}" data-act="fixCat" data-c="${c}">${l} <span class="muted">${catN(c)}</span></button>`).join('')}</div>
+    <div class="hero spk-hero">
+      <div class="lbl">Mode 5 · Fix My Errors</div>
+      <div class="q">Your own mistakes, one rule at a time.</div>
+      <ol class="spk-how"><li>Repair your own sentences first, then read the rule: steps, contrasts, a text, lines to say aloud</li><li>A set of about ten tasks, two of them your own errors. Missed tasks come back. 80% on first attempts passes</li><li>Review after 1, 3 and 7 days, rules mixed with no hint. Pass all three and the errors are fixed</li></ol>
+    </div>
+    ${mx.length?`<button class="btn spk-go" data-act="fixMix">${ICON_FIX} Review due · ${Math.min(4,mx.length)} rule${Math.min(4,mx.length)===1?'':'s'}</button>`:''}
+    ${top?`<button class="btn ${mx.length?'ghost':'spk-go'}" data-act="fixGo" data-c="${esc(top.id)}">${mx.length?'':ICON_FIX+' '}Train: ${esc(top.title)} · ${top.n}</button>`
+      :mx.length?'':cat!=='all'&&gAll.some(g=>g.ready)?`<div class="note"><b>Nothing to train in this group</b>Pick another group above or All.</div>`
+      :gs.length?`<div class="note"><b>All rules are on schedule</b>Nothing is due today. The next review appears here on its day; you can still open any rule below.</div>`
+      :`<div class="note"><b>Not enough errors yet</b>Errors are collected automatically from Speak & Record and Context Drills.</div>`}
+    ${gs.length?`<section><h3 class="spk-h">Your rules <small class="muted">by priority · tap to train</small></h3>
+      ${gs.map(g=>`<button class="c-pat f-row" data-act="fixGo" data-c="${esc(g.id)}" ${g.ready?'':'disabled'}><span class="code">${esc(g.code)}</span><span class="t">${esc(g.title)}<small class="muted">${g.n-g.drilled} open${g.drilled?' · '+g.drilled+' drilled':''}${sched(g)}</small></span><span class="c">${g.n}</span><i style="width:${Math.round(g.n/max*100)}%"></i></button>`).join('')}
+    </section>`:''}
+    ${(()=>{ const q=LS.get(ERR.q,[]).length, x=LS.get('bet3.errstat',null);
+      if(!syncOn()) return '<div class="note warn-note"><b>Sync is off</b>Errors stay on this device until you connect sync in Settings.</div>';
+      return q||(x&&!x.ok) ? `<div class="note ${x&&!x.ok?'warn-note':''}"><b>${q} errors waiting to be sent</b>${x?esc(x.msg)+' · '+new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Not tried yet.'}</div>`
+        : x ? `<p class="hint" style="margin:0">Sheet: ${esc(x.msg)}</p>` : ''; })()}
+    <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
+    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title||CODE_RU[x.code]||x.code)} <small class="muted">${esc(x.code||'')}</small></span><span class="pill ${x.score>=Math.ceil((x.of||8)*.8)?'ok':x.score>=(x.of||8)*.6?'new':'due'}">${x.score}/${x.of||8}</span></div>`).join('')}`:''}
+    <div class="row" style="gap:8px">${syncOn()?'<button class="btn ghost small" data-act="fixPull">Update from sheet</button>':''}${cfg.sheet?`<a class="btn ghost small" href="${esc(cfg.sheet)}" target="_blank" rel="noopener">Open the Errors tab</a>`:''}</div>
+  </div>`;
+};
+
+// ---- 17j. Today: one guided path. Review what is due, repair one rule, then produce (speak and write on alternate days).
+{ const _sh=spkSaveHist; spkSaveHist=function(result, extra={}){ _sh(result, extra); const K=st.K; if(result && K && !K._out){ K._out=true; dayLog('out'); } }; }
+{ const _cs=coachSRS; coachSRS=function(t){ _cs(t); const C=st.C; if(C && !C._out){ C._out=true; dayLog('out'); } }; }
+function todayPlan(){
+  const t=log[today()]||{}, items=k=>(data[k]?.items||[]).filter(inScope), dP=items('phr').filter(isDue).length, dV=items('voc').filter(isDue).length, due=dP+dV;
+  const mx=mixTopics(), top=topRule(), odd=Math.floor(Date.now()/DAY)%2===1;
+  const steps=[
+    { done:!due && (t.rev||0)>0, act:'todayReview', d:dV>dP?'voc':'phr', h:'Review', s:due?`${due} card${due===1?'':'s'} due`:(t.rev?`${t.rev} reviewed today`:'Nothing due · learn new cards') },
+    { done:(t.fix||0)>0 && !mx.length, act:mx.length?'todayFixMix':top?'todayFix':'openFix', h:'Fix one rule', s:mx.length?`${mx.length} rule${mx.length===1?'':'s'} due for review`:top?top.title:'All rules on schedule' },
+    { done:(t.out||0)>0, act:odd?'openSpeak':'openCoach', h:odd?'Speak':'Write', s:odd?'2 to 3 minutes with your cards, or free talk':'Context drills: reply, translate, upgrade' }
+  ];
+  const n=steps.filter(x=>x.done).length, next=steps.findIndex(x=>!x.done);
+  return `<div class="card t-plan"><div class="row" style="justify-content:space-between"><span class="eyebrow">Today</span><span class="hint" style="margin:0">${n===3?'Done for today':n+' of 3 · about 15 minutes'}</span></div>
+    ${steps.map((x,i)=>`<button class="t-step ${x.done?'done':i===next?'next':''}" data-act="${x.act}" ${x.d?`data-d="${x.d}"`:''}><span class="t-n">${x.done?'✓':i+1}</span><span class="t-m"><b>${x.h}</b><small>${esc(x.s)}</small></span><span class="t-go">${x.done?'':i===next?'Start':''}</span></button>`).join('')}</div>`;
+}
+actions.todayReview = async d => { await actions.openDeck({ d:d.d }); if(st.view==='deck' && reviewQueue().length) actions.lesson(); };
+const topRule = () => { const g=fixGroups().filter(x=>x.ready); return g.find(x=>x.rows.some(r=>r.status!=='drilled')) || null; };
+actions.todayFix = async () => { st.F={phase:'start'}; go('fix'); await bankLoad(); const top=topRule(); if(top) actions.fixGo({ c:top.id }); };
+actions.todayFixMix = async () => { st.F={phase:'start'}; go('fix'); await actions.fixMix(); };
+{ const _home=vHome; vHome=function(){ const h=_home(), a='<div class="eyebrow" style="margin-top:6px">Your decks</div>';
+    return h.replace(a, todayPlan()+a.replace('Your decks','All modes')).replace('<p class="hint">','<p class="hint">The previous version stays at <a href="v2/">/v2/</a> with the same progress. '); }; }
+{ const _set=vSettings; vSettings=function(){
+    const card=`<div class="card stack"><h3>Version ${V3}</h3>
+      <p class="hint" style="margin:0">Adds the Today plan, step-by-step interactive lessons in Fix My Errors, spaced rule reviews (1, 3, 7 days), Live Roleplay, the Progress page, an optional FSRS scheduler and an offline app shell. Cards, progress, errors and sync are shared with the previous version, so you can switch back at any time.</p>
+      <a class="btn ghost small" href="v2/" style="align-self:flex-start">Open the previous version</a></div>`;
+    return _set().replace(/<\/div>\s*$/, card+'</div>'); }; }
+{ const _ar=afterRender; afterRender=function(){ _ar(); if(st.view==='fix' && st.F?.phase==='diag'){ bar((st.F.diag.i+(st.F.diag.items[st.F.diag.i].res?1:0))/st.F.diag.items.length*100);
+      const a=$('#dAns'); if(a){ a.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); actions.diagCheck(); } }; if(!('ontouchstart' in window)) a.focus(); } } }; }
+
+// ---- 17k. Offline shell: the page itself opens with no network (v2 kept only the data offline)
+if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load', ()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// ---------- 18. v3.1 layer: interactive lessons, Progress, Live Roleplay, FSRS ----------
+// · Lesson = a sequence of short screens, each one ends with something to do (test-teach-test, one idea per screen):
+//   rule > spot the right one > contrasts (predict, then reveal) > fill the text from a word bank > say it aloud (scored) > fine points.
+// · Progress: is the error rate in speech going down, which rule families move, how the cards and the daily plan are doing.
+// · Live Roleplay (Mode 6): a turn-by-turn conversation with a partner who pushes back; corrections come after, not during.
+// · FSRS-4.5 as an optional scheduler (Settings); the classic intervals stay the default.
+
+// ---- 18a. Extra views (the v2 router only knows its own)
+const X_VIEWS = { stats:{ title:'Progress', v:()=>vStats() }, talk:{ title:'Roleplay', v:()=>vTalk() } };
+{ const _r=render; render=function(){ const X=X_VIEWS[st.view]; if(!X) return _r();
+    stopBulletTimer(); document.body.classList.remove('sess','bul'); const b=$('#backBtn'); b.hidden=false; b.setAttribute('aria-label','Back');
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+    bar(0); $('#title').textContent=X.title; $('#app').innerHTML=X.v(); if(st.view==='talk') talkAfter(); }; }
+{ const _b=actions.back; actions.back=()=>{ if(st.view==='stats') return go('home'); if(st.view==='talk') return talkBack(); _b(); }; }
+
+// ---- 18b. Interactive lesson
+const fixLessonAll = fixLesson;                       // the one-page version stays as the reference view
+const lsParts = s => String(s||'').split(/\*\*(.+?)\*\*/g);   // even index = plain text, odd index = target
+function lessonSteps(ls){
+  const d=ls.deep||{}, out=['rule'];
+  if((ls.pairs||[]).length) out.push('spot');
+  if((d.contrast||[]).length) out.push('contrast');
+  if(d.text && lsParts(d.text).length>=5) out.push('text');
+  if((d.say||[]).length) out.push('say');
+  out.push('more'); return out;
+}
+function lessonInit(F){
+  const ls=F.lesson, d=ls.deep||{}, parts=lsParts(d.text), tg=parts.map((x,i)=>i%2?i:-1).filter(i=>i>=0), blanks=shuffle(tg).slice(0,6).sort((a,b)=>a-b);
+  F.L={ i:0, steps:lessonSteps(ls),
+    spot:shuffle(ls.pairs||[]).slice(0,4).map(p=>({ p, flip:Math.random()<.5, pick:null })), si:0,
+    con:(d.contrast||[]).map(()=>false),
+    parts, blanks, fill:{}, bank:shuffle(blanks.map(i=>({ i, t:parts[i] }))), miss:0, bad:-1,
+    say:(d.say||[]).map(t=>({ t, heard:'', score:null, self:false })) };
+}
+const sayScore = (target, heard) => { const a=norm(target).split(' ').filter(Boolean), h=norm(heard).split(' '); let n=0; a.forEach(w=>{ const j=h.indexOf(w); if(j>=0){ n++; h.splice(j,1); } }); return a.length?Math.round(n/a.length*100):0; };
+fixLesson = function(){
+  const F=st.F; if(F.lmode==='all') return fixLessonAll().replace('<div class="actions">','<button class="btn ghost small" data-act="lsMode" style="align-self:flex-start">Back to the step-by-step lesson</button><div class="actions">');
+  if(!F.L) lessonInit(F);
+  const L=F.L, ls=F.lesson, d=ls.deep||{}, step=L.steps[L.i], last=L.i===L.steps.length-1, D=F.diag, done=D?D.items.filter(x=>x.res):[], hit=done.filter(x=>x.res.ok).length;
+  const eb=t=>`<div class="eyebrow" style="margin-bottom:6px">${t}</div>`;
+  let body='', ready=true;
+  if(step==='rule'){
+    body=`${done.length?`<div class="note ${hit===done.length?'':'warn-note'}"><b>Diagnostic: ${hit} of ${done.length} repaired without the rule</b>${hit===done.length?'Правило вы знаете. Цель урока: автоматизм в речи.':'Правило ещё не автоматическое. Пройдите шаги по порядку.'}</div>`:''}
+      <div class="note"><b>В чём ошибка</b>${esc(ls.why_ru||'')}</div>
+      <div>${eb('Правило')}<ul class="f-rule">${(ls.rule_ru||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      ${ls.formula?`<div class="spk-native"><span>Pattern</span>${esc(ls.formula)}</div>`:''}
+      ${d.steps_ru?.length?`<div>${eb('Как решать: по шагам')}<ol class="f-steps">${d.steps_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:''}`;
+  } else if(step==='spot'){
+    const q=L.spot[L.si], opts=q.flip?[q.p.right,q.p.wrong]:[q.p.wrong,q.p.right], ok=q.pick!==null && opts[q.pick]===q.p.right; ready=L.si===L.spot.length-1 && q.pick!==null;
+    body=`${eb(`Which one is correct? · ${L.si+1} of ${L.spot.length}`)}
+      <div class="stack" style="gap:10px">${opts.map((o,n)=>`<button class="opt ${q.pick===null?'':o===q.p.right?'right':n===q.pick?'wrong':''}" data-act="lsSpot" data-n="${n}" ${q.pick===null?'':'disabled'}><span class="k">${n+1}</span><span class="serif">${esc(o)}</span></button>`).join('')}</div>
+      ${q.pick===null?'':`<div class="note ${ok?'':'warn-note'}"><b>${ok?'Right':'Not this one'}</b>${esc(q.p.note_ru||'')} ${audioBtn(q.p.right)}</div>
+        ${L.si<L.spot.length-1?'<button class="btn" data-act="lsSpotNext">Next pair</button>':''}`}`;
+  } else if(step==='contrast'){
+    body=`${eb('Сравните · сначала подумайте, в чём разница, потом откройте')}
+      ${d.contrast.map((c,i)=>`<div class="f-con"><div class="ab"><span>${esc(c.a)}</span><span>${esc(c.b)}</span></div>${L.con[i]?`<div class="muted" style="font-size:.9rem">${esc(c.note_ru||'')}</div>`:`<button class="btn ghost small" data-act="lsCon" data-n="${i}" style="justify-self:start">В чём разница?</button>`}</div>`).join('')}`;
+    ready=L.con.every(Boolean);
+  } else if(step==='text'){
+    const left=L.bank.filter(b=>L.fill[b.i]===undefined), cur=L.blanks.find(i=>L.fill[i]===undefined); ready=!left.length;
+    body=`${eb('In context · fill the gaps in order from the word bank')}
+      <div class="f-text">${L.parts.map((x,i)=>i%2===0?esc(x):!L.blanks.includes(i)?`<b class="f-t">${esc(x)}</b>`:L.fill[i]!==undefined?`<b class="f-t f-in">${esc(x)}</b>`:`<span class="f-blank ${i===cur?'cur':''}">${i===cur?'?':'&nbsp;'}</span>`).join('')}</div>
+      ${left.length?`<div class="f-bank">${L.bank.map((b,n)=>L.fill[b.i]!==undefined?'':`<button class="chip ${L.bad===n?'f-shake':''}" data-act="lsFill" data-n="${n}">${esc(b.t)}</button>`).join('')}</div>`
+        :`<div class="note ${L.miss?'':''}"><b>${L.miss?`Done · ${L.miss} wrong tap${L.miss===1?'':'s'}`:'Done · no mistakes'}</b>Послушайте текст целиком и прочитайте его вслух. ${audioBtn(L.parts.join(''))}</div>`}`;
+  } else if(step==='say'){
+    body=`${eb('Say it aloud · listen, then record yourself')}
+      ${L.say.map((s,i)=>`<div class="f-sayx"><div class="row" style="gap:10px;flex-wrap:nowrap;justify-content:space-between;align-items:center"><span class="serif">${esc(s.t)}</span><span class="row" style="gap:6px;flex-wrap:nowrap">${audioBtn(s.t)}${SR?`<button class="audio f-rec ${L.rec===i?'on':''}" data-act="lsSay" data-n="${i}" aria-label="Record">${ICON_MIC}</button>`:''}</span></div>
+        ${s.score!==null?`<div class="muted" style="font-size:.88rem"><b style="color:var(--${s.score>=80?'ok':'warn'})">${s.score}%</b> · heard: ${esc(s.heard||'nothing')}</div>`:L.rec===i?'<div class="muted" style="font-size:.88rem">Listening…</div>':''}
+        ${!SR&&!s.self?`<button class="btn ghost small" data-act="lsSelf" data-n="${i}" style="justify-self:start">I said it aloud</button>`:''}</div>`).join('')}
+      ${SR?'<p class="hint" style="margin:0">The score shows how many words the recogniser caught. 80% or more counts as clear.</p>':'<p class="hint" style="margin:0">Speech recognition is not available in this browser, so mark each line yourself.</p>'}`;
+    ready=L.say.every(s=>s.score!==null||s.self);
+  } else {
+    const mine=F.rows.filter(r=>r.wrong&&r.fix);
+    body=`${d.more_ru?.length?`<div>${eb('Тонкости и исключения')}<ul class="f-rule">${d.more_ru.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${ls.trap_ru?`<div class="note warn-note"><b>Ловушка</b>${esc(ls.trap_ru)}</div>`:''}
+      ${ls.hook_ru?`<div class="spk-win" style="margin:0"><b>Как запомнить</b><div class="muted" style="font-size:.92rem;margin-top:2px">${esc(ls.hook_ru)}</div></div>`:''}
+      ${mine.length?`<details class="f-more"><summary>All your errors on this rule · ${mine.length}</summary><div style="margin-top:6px">${mine.slice(0,40).map(r=>`<div class="f-pair"><div class="w">${esc(unstutter(r.wrong))}</div><div class="r">${esc(r.fix)} ${audioBtn(r.fix)}</div></div>`).join('')}</div></details>`:''}`;
+  }
+  return `<div class="stack">
+    <div class="spk-dots">${L.steps.map((x,i)=>`<span class="${i<L.i?'done':i===L.i?'on':''}"></span>`).join('')}<em>${L.i+1} / ${L.steps.length}</em></div>
+    <div class="card c-card">
+      <div class="spk-kind">Lesson · ${esc(F.cat||F.code)} · ${F.rows.length} of your errors</div>
+      <div><h2 class="serif" style="margin:0">${esc(ls.title_ru||'')}</h2><div class="muted">${esc(ls.title_en||'')}</div></div>
+      ${body}
+      <div class="actions">${L.i?'<button class="btn ghost" data-act="lsPrev" style="flex:0 0 auto">Back</button>':''}
+        ${last?'<button class="btn" data-act="fixTasks">Start practice</button>':`<button class="btn ${ready?'':'ghost'}" data-act="lsNext">${ready?'Next':'Skip'}</button>`}</div>
+    </div>
+    <button class="btn ghost small" data-act="lsMode" style="align-self:center">Whole lesson on one page</button>
+  </div>`;
+};
+let lsRec=null;
+const lsStopRec = () => { try{ lsRec?.abort(); }catch(e){} lsRec=null; if(st.F?.L) st.F.L.rec=undefined; };
+actions.lsNext = () => { lsStopRec(); const L=st.F.L; if(L.i<L.steps.length-1) L.i++; go('fix'); };
+actions.lsPrev = () => { lsStopRec(); const L=st.F.L; if(L.i>0) L.i--; go('fix'); };
+actions.lsMode = () => { lsStopRec(); st.F.lmode=st.F.lmode==='all'?'':'all'; go('fix'); };
+actions.lsSpot = d => { const L=st.F.L, q=L.spot[L.si]; if(q.pick!==null) return; q.pick=+d.n; const ok=(q.flip?[q.p.right,q.p.wrong]:[q.p.wrong,q.p.right])[q.pick]===q.p.right; buzz(ok?15:[30,40,30]); render(); };
+actions.lsSpotNext = () => { st.F.L.si++; render(); };
+actions.lsCon = d => { st.F.L.con[+d.n]=true; render(); };
+actions.lsFill = d => { const L=st.F.L, b=L.bank[+d.n], cur=L.blanks.find(i=>L.fill[i]===undefined); if(cur===undefined||!b) return;
+  if(norm(b.t)===norm(L.parts[cur])){ const same=L.bank.find(x=>x.i===cur); if(same && same!==b){ same.i=b.i; b.i=cur; } L.fill[cur]=true; L.bad=-1; buzz(15); }   // identical words are interchangeable
+  else { L.miss++; L.bad=+d.n; buzz([30,40,30]); }
+  render(); };
+actions.lsSelf = d => { st.F.L.say[+d.n].self=true; render(); };
+actions.lsSay = d => { const L=st.F.L, i=+d.n, s=L.say[i]; if(!SR) return; if(lsRec){ const same=L.rec===i; lsStopRec(); render(); if(same) return; }
+  speechSynthesis?.cancel(); const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=false; r.maxAlternatives=3;
+  r.onresult=e=>{ const alts=[...e.results[0]].map(a=>a.transcript), best=alts.map(a=>[sayScore(s.t,a),a]).sort((a,b)=>b[0]-a[0])[0]; s.score=best[0]; s.heard=best[1]; buzz(s.score>=80?15:[30,40,30]); };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); else if(e.error==='no-speech'){ s.score=0; s.heard=''; } };
+  r.onend=()=>{ if(lsRec===r){ lsRec=null; L.rec=undefined; if(st.view==='fix' && st.F?.phase==='lesson') render(); } };
+  try{ r.start(); lsRec=r; L.rec=i; render(); }catch(e){ toast('Recording is not available here.'); } };
+{ const _a=actions.fixLessonAgain; actions.fixLessonAgain=()=>{ st.F.lmode='all'; _a(); }; }
+{ const _t=actions.fixTasks; actions.fixTasks=async()=>{ lsStopRec(); return _t(); }; }
+
+// ---- 18c. Progress
+const wkStart = d => { const x=new Date(d); x.setHours(12,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return today(x); };
+function vStats(){
+  const errs=errAll(), now=Date.now(), bars=(vals,labels,fmt)=>{ const mx=Math.max(1,...vals); return `<div class="s-bars">${vals.map((v,i)=>`<div><em>${fmt?fmt(v):v}</em><span style="height:${4+Math.round(v/mx*56)}px"></span><small>${labels[i]}</small></div>`).join('')}</div>`; };
+  // 1. speech accuracy: errors per 100 words, per recorded session
+  const sp=spkHist().filter(s=>s.result?.metrics?.words>30).map(s=>({ at:s.at, r:(s.result.metrics.errors_total||0)/s.result.metrics.words*100 })).reverse().slice(-10);
+  const tk=LS.get('bet3.talkhist',[]).filter(t=>t.words>30).map(t=>({ at:t.at, r:t.errors/t.words*100 })).reverse().slice(-10);
+  const acc=[...sp,...tk].sort((a,b)=>a.at-b.at).slice(-10), half=Math.floor(acc.length/2), avg=a=>a.reduce((t,x)=>t+x.r,0)/Math.max(1,a.length);
+  const a0=avg(acc.slice(0,half)), a1=avg(acc.slice(half)), dl=a0?Math.round((a1-a0)/a0*100):0;
+  // 2. new errors per week, last 6 weeks
+  const weeks=[...Array(6)].map((_,i)=>wkStart(now-(5-i)*7*DAY)), perW=weeks.map(w=>errs.filter(r=>wkStart(r.date)===w).length);
+  // 3. rule families: last 14 days vs the 14 before
+  const inWin=(r,a,b)=>{ const t=(now-new Date(r.date).getTime())/DAY; return t>=a && t<b; };
+  const fam=FIX_CATS.slice(1).map(([c,l,re])=>({ l, now:errs.filter(r=>re.test(r.code)&&inWin(r,0,14)).length, was:errs.filter(r=>re.test(r.code)&&inWin(r,14,28)).length, live:errs.filter(r=>re.test(r.code)&&r.status!=='fixed').length }));
+  // 4. rules pipeline
+  const cnt=s=>errs.filter(r=>r.status===s).length, cards=Object.entries(srs).filter(([k,c])=>k.startsWith('fix:')&&c.stage>=0), stg=n=>cards.filter(([k,c])=>c.stage===n).length;
+  // 5. cards + activity
+  const deck=k=>{ const it=(data[k]?.items||[]).filter(inScope); return { n:it.length, seen:it.filter(i=>!isNew(i)).length, mat:it.filter(i=>(card(i)?.ivl||0)>=21).length }; };
+  const d30=[...Array(30)].map((_,i)=>log[today(new Date(now-i*DAY))]).filter(Boolean), rev=d30.reduce((t,x)=>t+(x.rev||0),0), ok=d30.reduce((t,x)=>t+(x.ok||0),0);
+  const full=d30.filter(x=>(x.rev||0)>0&&(x.fix||0)>0&&(x.out||0)>0).length;
+  const heat=[...Array(42)].map((_,i)=>{ const x=log[today(new Date(now-(41-i)*DAY))]; return !x?0:((x.rev||0)>0)+((x.fix||0)>0)+((x.out||0)>0)||1; });
+  const dk=k=>{ const x=deck(k); return x.n?`<div class="s-deck"><div class="s-line"><b>${DECKS[k].short}</b><span class="muted">${x.n} cards</span></div><span class="s-track"><i style="width:${x.seen/x.n*100}%;opacity:.3"></i><i style="width:${x.mat/x.n*100}%"></i></span><div class="s-leg"><span><i class="m"></i>${x.mat} mature</span><span><i class="s"></i>${x.seen} seen</span><span><i></i>${x.n-x.seen} new</span></div></div>`:`<div class="s-line" style="border-top:1px solid var(--line);padding-top:10px"><b>${DECKS[k].short}</b><span class="muted">open the deck once to load it</span></div>`; };
+  return `<div class="stack s-page">
+    <div class="card stack"><div class="eyebrow">Accuracy in speech · errors per 100 words</div>
+      ${acc.length>=2?`<div class="s-big"><b>${a1.toFixed(1)}</b><span class="${dl<0?'s-up':dl>0?'s-down':''}">${dl<0?'▼ '+(-dl)+'% fewer than before':dl>0?'▲ '+dl+'% more than before':'no change'}</span></div>${bars(acc.map(x=>+x.r.toFixed(1)),acc.map(x=>{ const d=new Date(x.at); return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0'); }))}
+        <p class="hint" style="margin:0">Last ${acc.length} recorded sessions on this device (Speak and Roleplay). Lower is better. This is the number to watch: it shows whether the rules reach your live speech.</p>`
+       :`<div class="note"><b>Not enough recordings yet</b>Two Speak or Roleplay sessions are needed for a trend.</div>`}</div>
+    <div class="card stack"><div class="eyebrow">New errors logged per week</div>${bars(perW,weeks.map(w=>w.slice(8)+'.'+w.slice(5,7)))}
+      <p class="hint" style="margin:0">Depends on how much you speak and write, so read it together with the rate above.</p></div>
+    <div class="card stack"><div class="eyebrow">Rule families · last 14 days vs the 14 before</div>
+      ${fam.map(f=>`<div class="s-row"><span>${f.l}</span><span class="muted">${f.live} live</span><span class="${f.now<f.was?'s-up':f.now>f.was?'s-down':'muted'}" style="min-width:5.2em;text-align:right">${f.was} → ${f.now} ${f.now<f.was?'▼':f.now>f.was?'▲':''}</span></div>`).join('')}</div>
+    <div class="card stack"><div class="eyebrow">Errors by stage</div>
+      <div class="c-keys" style="grid-template-columns:repeat(3,1fr)"><div><span>Open</span><b>${cnt('open')}</b></div><div><span>Drilled</span><b>${cnt('drilled')}</b></div><div><span>Fixed</span><b class="ok">${cnt('fixed')}</b></div></div>
+      <div><div class="s-sub">Rules waiting for a review</div><div class="c-keys" style="grid-template-columns:repeat(3,1fr)">${FIX_STEPS.map((d,i)=>`<div><span>in ${d} day${d===1?'':'s'}</span><b>${stg(i)}</b></div>`).join('')}</div></div></div>
+    <div class="card stack"><div class="eyebrow">Cards</div>${dk('phr')}${dk('voc')}
+      <div class="s-line" style="border-top:1px solid var(--line);padding-top:10px"><span>Recall, last 30 days</span><b>${rev?Math.round(ok/rev*100)+'%':'–'}</b></div>${rev?`<p class="hint" style="margin:0">${rev} reviews in 30 days.</p>`:''}</div>
+    <div class="card stack"><div class="eyebrow">Activity · last 6 weeks</div>
+      <div class="s-heat">${heat.map(v=>`<i class="h${v}"></i>`).join('')}</div>
+      <div class="c-keys" style="grid-template-columns:repeat(2,1fr)"><div><span>Streak</span><b>${streak()} day${streak()===1?'':'s'}</b></div><div><span>Full plan, 30 days</span><b>${full} day${full===1?'':'s'}</b></div></div>
+      <p class="hint" style="margin:0">Darker = more of the three steps done that day (review, fix, produce).</p></div>
+  </div>`;
+}
+actions.openStats = () => { go('stats'); if(syncOn()) errPull().then(ok=>{ if(ok && st.view==='stats') render(); }); };
+
+// ---- 18d. Roleplay (Mode 6): ready-made branching dialogues, learned in three passes (read, fill, recall).
+// Your lines carry underlined phrases from Mode 1 (Eng_Phrases) and Mode 2 (Eng_Chunks); tap one for its meaning and synonyms.
+const talkHist = () => LS.get('bet3.talkhist', []);          // history of the old live roleplay, kept for the Progress chart
+const wc = s => norm(s).split(' ').filter(Boolean).length;
+const RPK = 'bet3.rp';
+let RPD = LS.get('bet3.rpdata', null);
+const rpProg = () => LS.get(RPK, { done:{}, alt:{} });
+const rpTopics = () => RPD?.topics || [];
+// Base: roleplay.json shipped with the app (12 topics, 5 titled slots each). Layer: tab "RolePlay" (id | topic | n | updated | json),
+// written by the weekly scheduled run: new role plays and rewritten ones (more variants). A row replaces the slot with the same id.
+function rpValid(o){ const seg=q=>typeof q==='string'||(q&&typeof q.t==='string'&&/^[pv]:\d+$/.test(q.id||'')&&Array.isArray(q.alts));
+  const body=L=>L&&Array.isArray(L.t)&&L.t.length&&L.t.every(seg);
+  return o&&typeof o.setup==='string'&&Array.isArray(o.lines)&&o.lines.length>=4&&o.lines.every(L=>(L.w==='B'||L.w==='Y')&&(L.fork?body(L.fork.agree)&&body(L.fork.push):body(L))); }
+async function rpLoad(){
+  let base=null; try{ const r=await fetch('roleplay.json',{cache:'no-store'}); if(r.ok) base=await r.json(); }catch(e){}
+  if(base){ try{ const id=sheetId(cfg.sheet)||sheetId(LIB_URL), r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=RolePlay`,{cache:'no-store'});
+      const t=await r.text(); if(r.ok && !/^\s*<(!doctype|html)/i.test(t)){ const rows=splitTSV(t), h=(rows[0]||[]).map(x=>x.trim().toLowerCase()), c=n=>h.indexOf(n);
+        if(c('id')>=0 && c('json')>=0) rows.slice(1).forEach(r=>{ try{ const rid=(r[c('id')]||'').trim(), o=JSON.parse(r[c('json')]), tid=(r[c('topic')]||rid.slice(0,rid.lastIndexOf('-'))).trim(), n=+(r[c('n')]||rid.slice(rid.lastIndexOf('-')+1))||0;
+          const T=base.topics.find(x=>x.id===tid); if(!T||!n||n>5||!rpValid(o)) return; let rp=T.rps.find(x=>x.id===rid); if(!rp){ rp={ id:rid, n, t:o.t||'Role play '+n }; T.rps.push(rp); }
+          Object.assign(rp,o,{ ready:true }); T.rps.sort((x,y)=>x.n-y.n); }catch(e){} }); } }catch(e){}
+    RPD=base; LS.set('bet3.rpdata',RPD); }
+  if(st.view==='talk') render(); }
+const rpOpen = (T,n) => n===1 || !!rpProg().done[T.id+'-'+(n-1)];
+const rpDoneCount = () => Object.keys(rpProg().done).length;
+const rpFind = id => { for(const T of rpTopics()){ const r=T.rps.find(x=>x.id===id); if(r) return { T, rp:r }; } return null; };
+function rpItem(id){ const [k,i]=String(id).split(':'); const a=(k==='p'?data.phr:data.voc)?.items||[]; return a.find(x=>x.id===i); }
+const rpLine = (R,i) => { const L=R.rp.lines[i]; return L.fork ? (R.branch ? L.fork[R.branch] : null) : L; };
+const rpKey = (R,i) => R.rp.id+'.'+i+(R.rp.lines[i].fork?'.'+R.branch:'');
+// A phrase has a main wording and variants. A variant is a string, or { t, post?, id? }: post replaces the text right after the phrase
+// so that the whole sentence stays natural; id points to another dictionary entry. Each play picks variants at random; a tap in the bank pins one.
+const rpVs = s => [{ t:s.t }, ...s.alts.map(a=>typeof a==='string'?{ t:a }:a)];
+function rpVariants(s){ const it=rpItem(s.id), o=it?String(it.en).replace(/\s*(\.{3}|…)\s*$/,'').trim():''; return [...rpVs(s).map(v=>v.t),...(o?[o]:[])].map(norm).filter(Boolean); }
+function rpPick(rp){ const pick={}; rp.lines.forEach((L,i)=>{ if(L.w!=='Y') return; const parts=L.fork?Object.entries(L.fork):[[null,L]];
+  parts.forEach(([b,x])=>x.t.forEach((q,j)=>{ if(typeof q!=='string') pick[rp.id+'.'+i+(b?'.'+b:'')+'.'+j]=Math.floor(Math.random()*rpVs(q).length); })); }); return pick; }
+function rpVar(R,k,j,q){ const vs=rpVs(q), pin=rpProg().alt[k+'.'+j], f=pin!==undefined?vs.find(v=>v.t===pin):null; return f || vs[R.pick?.[k+'.'+j]||0] || vs[0]; }
+function rpSegs(R,i){ const L=rpLine(R,i), k=rpKey(R,i), ov={};
+  return L.t.map((s,j)=>{ if(typeof s==='string') return { s:ov[j]!==undefined?ov[j]:s }; const v=rpVar(R,k,j,s); if(v.post!==undefined) ov[j+1]=v.post; return { s:v.t, seg:s, j, k }; }); }
+const rpPlain = (R,i) => rpSegs(R,i).map(x=>x.s).join('');
+function rpHtml(R,i){ return rpSegs(R,i).map(x=> x.seg ? `<span class="rp-u ${R.pop&&R.pop.k===x.k&&R.pop.j===x.j?'on':''}" data-act="rpPop" data-k="${esc(x.k)}" data-j="${x.j}">${esc(x.s)}</span>` : esc(x.s)).join(''); }
+function rpPopHtml(R,i){ const p=R.pop; if(!p) return ''; const x=rpSegs(R,i).find(y=>y.seg&&y.k===p.k&&y.j===p.j); if(!x) return '';
+  const it=rpItem(x.seg.id), vs=rpVs(x.seg).map(v=>v.t), deck=x.seg.id[0]==='p'?'Mode 1':'Mode 2';
+  return `<div class="rp-pop"><div class="eyebrow">${deck} · ${esc(it?.cat||it?.context||'phrase')}</div>${it?`<div class="serif" style="font-size:1.02rem">${esc(it.en)}</div><div class="muted" style="font-size:.9rem">${esc(it.ru||'')}</div>`:''}
+    ${vs.length>1?`<div class="eyebrow" style="margin-top:8px">Say it another way</div><div class="rp-chips">${vs.map((v,n)=>`<button class="chip ${v===x.s?'on':''}" data-act="rpAlt" data-k="${esc(x.k)}" data-j="${x.j}" data-n="${n}">${esc(v)}</button>`).join('')}</div>`:''}</div>`; }
+function rpBubble(R,i,o={}){ const L=rpLine(R,i), me=R.rp.lines[i].w==='Y', plain=rpPlain(R,i);
+  return `<div class="t-msg ${me?'me':'ai'}"><div>${o.gap?o.gap:rpHtml(R,i)}${o.ru&&L.ru&&R.ru?`<div class="muted rp-ru">${esc(L.ru)}</div>`:''}</div>${o.gap?'':audioBtn(plain)}</div>${R.pop&&R.pop.i===i?rpPopHtml(R,i):''}`; }
+const rpYs = R => R.rp.lines.map((l,i)=>l.w==='Y'?i:-1).filter(i=>i>=0);
+
+function vTalk(){ const R=st.R||(st.R={phase:'home'}); if(!rpTopics().length){ rpLoad(); return `<div class="stack"><p class="hint">Loading dialogues…</p></div>`; }
+  return ({ home:rpHome, topic:rpTopicV, read:rpRead, fill:rpFill, recall:rpRecall, end:rpEnd })[R.phase](); }
+function rpHome(){ const P=rpProg();
+  return `<div class="stack">
+    <div class="hero spk-hero"><div class="lbl">Mode 6 · Roleplay</div><div class="q">Ready dialogues. Learn your side, then own the call.</div>
+      <ol class="spk-how"><li>Read and listen. At the fork choose to agree or push back</li><li>Fill the gaps in your lines: underlined phrases come from Modes 1 and 2</li><li>Say your lines from memory. Tap an underlined phrase for its synonyms</li></ol></div>
+    <section><h3 class="spk-h">Topics</h3>${rpTopics().map(T=>{ const ready=T.rps.filter(r=>r.ready).length, done=T.rps.filter(r=>P.done[r.id]).length;
+      return `<button class="rp-row f-row" data-act="rpTopic" data-id="${T.id}"><span class="t">${esc(T.t)}<small class="muted">${esc(T.you)}</small></span><span class="pill ${done?'ok':''}">${done}/5${ready?'':' · soon'}</span></button>`; }).join('')}</section>
+  </div>`; }
+function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
+  return `<div class="stack">
+    <div class="note"><b>${esc(T.t)}</b>${esc(T.you)}</div>
+    <section><h3 class="spk-h">Five role plays</h3>${T.rps.map(r=>{ const d=P.done[r.id], open=r.ready&&rpOpen(T,r.n), state=d?`<span class="pill ok">done · ${d.acc}%</span>`:!r.ready?'<span class="pill">soon</span>':open?'<span class="pill">open</span>':'<span class="pill">locked</span>';
+      return `<button class="rp-row f-row" data-act="rpStart" data-id="${r.id}" ${open?'':'disabled'}><span class="t">${r.n}. ${esc(r.t)}</span>${state}</button>`; }).join('')}</section>
+    <p class="hint">Each role play opens when you finish the previous one. Every one has a fork where you can agree or push back.</p>
+  </div>`; }
+function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
+  return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" >${l}</button>`).join('')}</div>`; }
+function rpBankOpen(R){ return !!R.bank; }
+function rpBank(R){ const al=rpProg().alt, rows=[]; let n=0;
+  R.rp.lines.forEach((L,i)=>{ if(L.w!=='Y') return; const parts=L.fork?Object.entries(L.fork).map(([b,x])=>[b,x]):[[null,L]];
+    parts.forEach(([b,x])=>{ const k=R.rp.id+'.'+i+(b?'.'+b:''), segs=x.t.map((q,j)=>[q,j]).filter(([q])=>typeof q!=='string'); if(!segs.length) return;
+      segs.forEach(([q,j])=>{ n++; const cur=rpVar(R,k,j,q).t, it=rpItem(q.id), vs=rpVs(q).map(v=>v.t);
+        rows.push(`<div class="rp-bk">${vs.length>1?`<div class="rp-chips">${vs.map((v,m)=>`<button class="chip ${v===cur?'on':''}" data-act="rpAlt" data-k="${esc(k)}" data-j="${j}" data-n="${m}">${esc(v)}</button>`).join('')}</div>`:`<div class="serif"><span class="rp-u">${esc(cur)}</span></div>`}${it?`<div class="muted" style="font-size:.86rem">${esc(it.ru||'')}</div>`:''}</div>`); }); }); });
+  const open=rpBankOpen(R);
+  return `<div class="rp-bank ${open?'':'shut'}"><button class="f-row rp-row" data-act="rpBank"><span class="t">Phrase bank<small class="muted">${n} phrases from Modes 1 and 2. Every play uses a random version; tap one to pin it</small></span><span class="pill">${open?'hide':'show'}</span></button>${open?rows.join('')+`<button class="btn ghost" data-act="rpShuffle" style="width:100%;margin:10px 0 4px">Shuffle versions</button>`:''}</div>`; }
+function rpHead(R){ return `<div class="note"><b>${esc(R.rp.t)}</b>${R.phase==='read'?esc(R.rp.setup)+`<div class="muted rp-ru" style="margin-top:6px">${esc(R.rp.setup_ru||'')}</div>`:''}</div>
+  ${rpSteps(R)}${rpBank(R)}<div class="actions" style="justify-content:flex-end"><button class="chip ${R.ru?'on':''}" data-act="rpRu">RU</button></div>`; }
+function rpRead(){ const R=st.R, lines=R.rp.lines, last=Math.min(R.i,lines.length-1); let out='';
+  for(let i=0;i<=last;i++){ const f=lines[i].fork;
+    if(f && !R.branch){ out+=`<div class="rp-fork"><div class="eyebrow">Your move</div>${['agree','push'].map(b=>`<button class="btn ghost" data-act="rpFork" data-v="${b}"><span style="text-align:left">${b==='agree'?'Agree':'Push back'}<small class="muted" style="display:block;font-weight:500">${esc(f[b].label)}</small></span></button>`).join('')}</div>`; break; }
+    out+=rpBubble(R,i,{ru:true}); }
+  const waiting=lines[last].fork&&!R.branch, end=R.i>=lines.length-1;
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>
+    ${waiting?'':end?`<button class="btn spk-go" data-act="rpPass" data-v="fill">Next: fill the gaps</button><button class="btn ghost" data-act="rpPass" data-v="recall">Skip fill</button>`:`<button class="btn" data-act="rpNext">Next line</button>`}</div>`; }
+function rpGapLine(R,i){ const L=rpLine(R,i); let g=0;
+  return L.t.map((s,j)=> typeof s==='string' ? esc(s) : `<input class="rp-gap ${R.chk?(R.gres[g]?'ok':'bad'):''}" data-g="${g++}" size="${Math.max(5,Math.min(30,Math.round(s.t.length*0.8)))}" autocomplete="off" autocapitalize="off" spellcheck="false" ${R.chk?'disabled':''} value="${esc(R.gv?.[g-1]||'')}" aria-label="phrase ${g}">`).join(''); }
+function rpFill(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
+  for(let k=0;k<i;k++) out+=rpBubble(R,k,{ru:true});
+  out+=rpBubble(R,i,{gap:rpGapLine(R,i)});
+  const hint=R.chk?'':`<div class="muted" style="font-size:.88rem">Type each underlined phrase. Any synonym from the list is accepted.</div>`;
+  const fb=R.chk?`<div class="note ${R.gres.every(Boolean)?'':'warn-note'}"><b>${R.gres.every(Boolean)?'Right':'Check the model'}</b><div class="serif">${rpHtml(R,i)}</div><div class="muted" style="font-size:.88rem">${esc(rpLine(R,i).ru||'')}</div></div>`:'';
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>${hint}${fb}
+    <div class="actions">${R.chk?`<button class="btn" data-act="rpFillNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Next: recall':'Continue'}</button>`
+      :`<button class="btn ghost" data-act="rpShow" style="flex:0 0 auto">Show</button><button class="btn" data-act="rpCheck">Check</button>`}</div>
+    <button class="btn ghost" data-act="rpPass" data-v="recall" style="width:100%">Skip fill</button></div>`; }
+function rpRecall(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
+  for(let k=Math.max(0,i-2);k<i;k++){ if(lines[k].w==='B'||k===i-1) out+=rpBubble(R,k,{ru:true}); }
+  const L=rpLine(R,i);
+  const res=R.res?`<div class="note ${R.res.hits===R.res.tot?'':'warn-note'}"><b>${R.res.hits}/${R.res.tot} phrases${R.res.tot?'':' (none in this line)'} · ${R.res.score}% of the words</b>
+      <div class="serif" style="margin:4px 0">${rpHtml(R,i)}</div><div class="muted" style="font-size:.88rem">${esc(L.ru||'')}</div>${audioBtn(rpPlain(R,i))}
+      ${R.res.list.map(x=>`<div class="spk-t ${x.ok?'ok':'bad'}"><div class="spk-ti">${x.ok?'✓':'×'}</div><div class="meta"><span class="serif">${esc(x.s)}</span></div></div>`).join('')}</div>`:'';
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}${R.pop&&R.pop.i===i?rpPopHtml(R,i):''}</div>
+    <div class="muted" style="font-size:.9rem">Your line, from memory. Aim to use the phrases you studied.</div>
+    ${R.res?'':`<div class="c-in"><textarea id="rAns" rows="3" spellcheck="false" autocomplete="off" placeholder="${SR?'Tap the mic and say it, or type':'Type your line'}">${esc(R.draft||'')}</textarea>${SR?`<button class="c-mic ${R.dict?'on':''}" data-act="rpDict" aria-label="Dictate">${ICON.mic||'●'}</button>`:''}</div>`}
+    ${res}
+    <div class="actions">${R.res?`<button class="btn" data-act="rpRecNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Finish':'Continue'}</button>`
+      :`<button class="btn ghost" data-act="rpGiveUp" style="flex:0 0 auto">Show line</button><button class="btn" data-act="rpRecCheck">Check</button>`}</div>
+    <button class="btn ghost" data-act="rpSkipRecall" style="width:100%">Skip recall</button></div>`; }
+function rpEnd(){ const R=st.R, T=R.T, d=rpProg().done[R.rp.id]||{}, nx=T.rps[R.rp.n], other=R.branch==='agree'?'push':'agree';
+  return `<div class="stack spk-res"><div class="summary-hero spk-sum"><div class="eyebrow">Role play · ${esc(R.rp.t)}</div><div class="n">${R.tot?R.acc+'<small>% of phrases recalled</small>':'<small>Recall skipped</small>'}</div>
+      <div class="muted">${R.tot?R.hits+' of '+R.tot+' · ':''}route: ${R.branch==='agree'?'agree':'push back'}</div></div>
+    <section><h3 class="spk-h">Phrases in this dialogue</h3>${R.ph.map(x=>`<div class="spk-t ${x.ok?'ok':'bad'}"><div class="spk-ti">${x.ok?'✓':'×'}</div><div class="meta"><span class="serif">${esc(x.s)}</span><div class="muted" style="font-size:.85rem">${esc(x.ru||'')}</div></div></div>`).join('')}</section>
+    <div class="actions">${nx?`<button class="btn" data-act="rpStart" data-id="${nx.id}" ${nx.ready?'':'disabled'}>+ ${nx.ready?'Next role play':'Next one soon'}</button>`:''}<button class="btn ghost" data-act="rpOther" data-v="${other}">${other==='agree'?'Try: agree':'Try: push back'}</button></div>
+    <button class="btn ghost" data-act="rpTopic" data-id="${T.id}" style="width:100%">Back to the topic</button></div>`; }
+function talkAfter(){ const R=st.R; if(!R) return; bar(R.phase==='read'?R.i/Math.max(1,R.rp.lines.length-1)*33:R.phase==='fill'?33+rpYs(R).indexOf(R.i)/rpYs(R).length*33:R.phase==='recall'?66+rpYs(R).indexOf(R.i)/rpYs(R).length*34:R.phase==='end'?100:0);
+  document.querySelectorAll('.rp-gap').forEach(el=>{ el.oninput=()=>{ (R.gv=R.gv||[])[+el.dataset.g]=el.value; }; el.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); const n=document.querySelector(`.rp-gap[data-g="${+el.dataset.g+1}"]`); if(n) n.focus(); else actions.rpCheck(); } }; });
+  const a=$('#rAns'); if(a){ a.oninput=()=>{ R.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); actions.rpRecCheck(); } }; }
+  if(R.phase==='fill'&&!R.chk) document.querySelector('.rp-gap')?.focus();
+  document.querySelector('.t-chat')?.lastElementChild?.scrollIntoView({ block:'nearest' }); }
+let rpRec=null;
+function rpDictStop(){ try{ rpRec?.stop(); }catch(e){} rpRec=null; if(st.R) st.R.dict=false; document.querySelectorAll('.c-mic').forEach(b=>b.classList.remove('on')); }
+function talkBack(){ const R=st.R||{}; rpDictStop(); speechSynthesis?.cancel();
+  if(['read','fill','recall','end'].includes(R.phase)){ st.R={ phase:'topic', topic:R.T.id }; return go('talk'); }
+  if(R.phase==='topic'){ st.R={ phase:'home' }; return go('talk'); } go('home'); }
+actions.openTalk = () => { if(!st.R||st.R.phase!=='home') st.R={ phase:'home' }; go('talk'); };
+actions.rpTopic = d => { st.R={ phase:'topic', topic:d.id }; go('talk'); };
+actions.rpStart = d => { const f=rpFind(d.id); if(!f||!f.rp.ready) return;
+  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru2',false), pop:null, bank:undefined, pick:rpPick(f.rp), gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
+actions.rpOther = d => { const R=st.R; st.R={ ...R, pick:rpPick(R.rp), phase:'read', i:0, branch:d.v, maxPass:1, pop:null, gv:[], hits:0, tot:0, ph:[], chk:false, res:null }; go('talk'); };
+actions.rpRu = () => { st.R.ru=!st.R.ru; LS.set('bet3.rpru2',st.R.ru); render(); };
+actions.rpPop = d => { const R=st.R, i=+d.k.split('.')[1]; R.pop = R.pop&&R.pop.k===d.k&&R.pop.j===+d.j ? null : { k:d.k, j:+d.j, i }; render(); };
+actions.rpAlt = d => { const R=st.R, [, i, b]=d.k.split('.'), L=R.rp.lines[+i], X=L.fork?L.fork[b]:L, seg=X.t[+d.j], v=rpVs(seg)[+d.n].t, P=rpProg(); P.alt[d.k+'.'+d.j]=v; LS.set(RPK,P); render(); };
+actions.rpShuffle = () => { const R=st.R, P=rpProg(); Object.keys(P.alt).filter(x=>x.startsWith(R.rp.id+'.')).forEach(x=>delete P.alt[x]); LS.set(RPK,P); R.pick=rpPick(R.rp); render(); };
+actions.rpBank = () => { st.R.bank=!rpBankOpen(st.R); render(); };
+actions.rpFork = d => { const R=st.R; R.branch=d.v; R.pop=null; render(); if(cfg.autoSpeak) speak(rpPlain(R,R.i)); };
+actions.rpNext = () => { const R=st.R; R.pop=null; R.i=Math.min(R.i+1,R.rp.lines.length-1); render(); if(cfg.autoSpeak&&R.rp.lines[R.i].w==='B') speak(rpPlain(R,R.i)); };
+actions.rpPass = d => { const R=st.R; rpDictStop(); R.pop=null; R.bank=false; R.phase=d.v; R.chk=false; R.res=null; R.gv=[]; R.draft='';
+  if(d.v==='read'){ R.i=R.branch?R.rp.lines.length-1:0; } else { R.i=rpYs(R)[0]; R.maxPass=Math.max(R.maxPass,d.v==='fill'?2:3); }
+  if(d.v==='fill') R.maxPass=Math.max(R.maxPass,2); render(); };
+actions.rpCheck = () => { const R=st.R, L=rpLine(R,R.i), segs=L.t.filter(s=>typeof s!=='string'), vals=[...document.querySelectorAll('.rp-gap')].map(e=>e.value);
+  if(vals.some((v,n)=>!v.trim()&&false)) return; R.gv=vals; R.gres=segs.map((s,n)=>rpVariants(s).includes(norm(vals[n]||''))); R.chk=true;
+  buzz(R.gres.every(Boolean)?15:[30,40,30]); render(); };
+actions.rpShow = () => { const R=st.R, L=rpLine(R,R.i), segs=L.t.filter(s=>typeof s!=='string'); R.gv=segs.map(()=>''); R.gres=segs.map(()=>false); R.chk=true; render(); };
+actions.rpFillNext = () => { const R=st.R, ys=rpYs(R), n=ys.indexOf(R.i); R.chk=false; R.gv=[]; if(n>=ys.length-1){ return actions.rpPass({v:'recall'}); } R.i=ys[n+1]; render(); };
+actions.rpDict = () => { if(rpRec) return rpDictStop(); const ta=$('#rAns'); if(!ta||!SR) return; speechSynthesis?.cancel();
+  const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=true; r.continuous=true; const base=ta.value.trim(); let fin='';
+  r.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const x=e.results[i]; if(x.isFinal) fin+=x[0].transcript+' '; else tmp+=x[0].transcript; }
+    const el=$('#rAns'); if(el){ el.value=(base?base+' ':'')+(fin+tmp).replace(/\s+/g,' ').trim(); st.R.draft=el.value; } };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); rpDictStop(); };
+  r.onend=()=>{ if(rpRec===r) rpDictStop(); };
+  try{ r.start(); rpRec=r; st.R.dict=true; document.querySelectorAll('.c-mic').forEach(b=>b.classList.add('on')); buzz(20); }catch(e){ toast('Dictation is not available here.'); } };
+function rpScore(R, answer, i){ const L=rpLine(R,i), segs=L.t.filter(s=>typeof s!=='string'), a=' '+norm(answer)+' ';
+  const list=segs.map(s=>({ s:rpSegs(R,i).find(x=>x.seg===s).s, ru:rpItem(s.id)?.ru||'', ok:rpVariants(s).some(v=>a.includes(' '+v+' ')) }));
+  return { list, hits:list.filter(x=>x.ok).length, tot:list.length, score:sayScore(rpPlain(R,i), answer||'') }; }
+actions.rpRecCheck = () => { const R=st.R, ans=($('#rAns')?.value||R.draft||'').trim(); if(!ans) return toast('Say or type your line first.'); rpDictStop(); R.res=rpScore(R,ans,R.i); rpTally(R); render(); };
+actions.rpGiveUp = () => { const R=st.R; rpDictStop(); R.res=rpScore(R,'',R.i); rpTally(R); render(); };
+function rpTally(R){ R.hits+=R.res.hits; R.tot+=R.res.tot; R.res.list.forEach(x=>{ const o=R.ph.find(y=>y.s===x.s); if(o) o.ok=o.ok&&x.ok; else R.ph.push({ s:x.s, ru:x.ru, ok:x.ok }); }); }
+function rpFinish(){ const R=st.R; rpDictStop(); R.res=null; R.draft=''; R.pop=null; const P=rpProg(), old=P.done[R.rp.id];
+  R.acc=R.tot?Math.round(R.hits/R.tot*100):(old?.acc||0);
+  P.done[R.rp.id]={ at:Date.now(), acc:Math.max(R.acc,old?.acc||0), branches:[...new Set([...(old?.branches||[]),R.branch])] }; LS.set(RPK,P); dayLog('out'); markActive(); queueSync();
+  R.phase='end'; render(); }
+actions.rpSkipRecall = () => rpFinish();
+actions.rpRecNext = () => { const R=st.R, ys=rpYs(R), n=ys.indexOf(R.i); R.res=null; R.draft=''; R.pop=null;
+  if(n>=ys.length-1) return rpFinish();
+  R.i=ys[n+1]; render(); };
+
+// ---- 18e. FSRS-4.5 (optional). Classic = your first-answer intervals + SM-2 growth. FSRS = intervals from a memory model
+// (stability, difficulty) so that the chance of recall at review time equals the target. Cards keep ivl/ease too, so switching back is safe.
+const FW=[0.4872,1.4003,3.7145,13.8206,5.1618,1.2298,0.8975,0.031,1.6474,0.1367,1.0461,2.1072,0.0793,0.3246,1.587,0.2272,2.8755], F_DECAY=-0.5, F_FACTOR=19/81;
+const fsrsOn = () => cfg.sched==='fsrs';
+const fsrsTarget = () => { const r=Number(cfg.fsrsR); return r>=0.75&&r<=0.95?r:0.9; };
+const fClamp = (x,a,b) => Math.min(b,Math.max(a,x));
+const fR = (t,S) => Math.pow(1+F_FACTOR*t/S, F_DECAY);
+const fIvl = S => fClamp(Math.round(S/F_FACTOR*(Math.pow(fsrsTarget(),1/F_DECAY)-1)),1,MAX_IVL);
+const fD0 = G => fClamp(FW[4]-(G-3)*FW[5],1,10);
+function fsrsNext(c, g){
+  const G={again:1,hard:2,good:3,easy:4}[g]; let S=c.s, D=c.d;
+  if(!c.reps && !S) return { s:FW[G-1], d:fD0(G) };                                    // first answer
+  if(!S){ S=Math.max(1,c.ivl||1); D=fClamp(10-((c.ease||2.5)-1.3)/1.7*7,1,10); }         // a card that came from the classic scheduler
+  const t=Math.max(0,(Date.now()-(c.last||Date.now()))/DAY), R=fR(t,S);
+  const d=fClamp(FW[7]*fD0(3)+(1-FW[7])*(D-FW[6]*(G-3)),1,10);
+  const s = G===1 ? Math.min(S, FW[11]*Math.pow(D,-FW[12])*(Math.pow(S+1,FW[13])-1)*Math.exp(FW[14]*(1-R)))
+    : S*(1+Math.exp(FW[8])*(11-D)*Math.pow(S,-FW[9])*(Math.exp(FW[10]*(1-R))-1)*(G===2?FW[15]:1)*(G===4?FW[16]:1));
+  return { s:Math.max(0.1,s), d };
+}
+{ const _g=grade; grade=function(it, g){ if(!fsrsOn()) return _g(it, g);
+    const k=keyOf(it), c=srs[k] || { ivl:0, ease:2.5, reps:0, lapses:0, src:st.S?.kind==='flash'?'cards':'lesson' }, n=fsrsNext(c,g), ni=g==='again'?1:fIvl(n.s);
+    if(g==='again') c.lapses=(c.lapses||0)+(c.reps?1:0);
+    c.s=+n.s.toFixed(3); c.d=+n.d.toFixed(3); c.ivl=g==='again'?0:ni; c.ease=fClamp(3-(c.d-1)/9*1.7,1.3,3);
+    const fuzz = ni>3 ? Math.round(ni*0.05*(Math.random()*2-1)) : 0;
+    c.due=startOfDay(Date.now()+(ni+fuzz)*DAY); c.reps=(c.reps||0)+1; c.last=Date.now(); c.u=c.last; srs[k]=c; LS.set(K.srs, srs);
+    bump(g!=='again'); queueSync(); }; }
+{ const _p=preview; preview=function(it, g){ if(!fsrsOn()) return _p(it, g); const c=card(it)||{ ivl:0, ease:2.5, reps:0 }; return fmtIvl(g==='again'?1:fIvl(fsrsNext(c,g).s)); }; }
+SYNC_CFG_KEYS.push('sched','fsrsR');
+
+// ---- 18f. Wiring: home tiles, Today step 3 rotates speak / write / roleplay, settings
+{ const _home=vHome; vHome=function(){ const h=talkHist()[0];
+    const tile=`<button class="deck" data-act="openTalk"><div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON.chat}</div>
+      <div class="meta"><h3>Roleplay</h3><div class="muted" style="font-size:.85rem">Mode 6 · ready dialogues with your phrases</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">${rpTopics().length||12} topics</span>${rpDoneCount()?`<span class="pill ok">${rpDoneCount()} done</span>`:''}</div></div></button>
+      <button class="deck" data-act="openStats" style="padding:14px 18px"><div class="meta"><h3>Progress</h3><small class="muted">Error rate in speech, rule families, cards, activity</small></div></button>`;
+    return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
+{ const _tp=todayPlan; todayPlan=function(){ const k=Math.floor(Date.now()/DAY)%3; let h=_tp();
+    if(k===2) h=h.replace(/data-act="open(Speak|Coach)"([^>]*)>(<span class="t-n">[^<]*<\/span><span class="t-m">)<b>[^<]*<\/b><small>[^<]*<\/small>/, 'data-act="openTalk"$2>$3<b>Roleplay</b><small>One ready dialogue: read, fill, recall</small>');
+    return h; }; }
+{ const _set=vSettings; vSettings=function(){ const on=fsrsOn(), r=fsrsTarget();
+    const card=`<div class="card stack"><h3>Scheduler</h3>
+      <div class="seg"><button class="${on?'':'on'}" data-act="set" data-k="sched" data-v="classic">Classic</button><button class="${on?'on':''}" data-act="set" data-k="sched" data-v="fsrs">FSRS</button></div>
+      ${on?`<div><div class="eyebrow" style="margin-bottom:6px">Target recall at review time</div><div class="seg">${[0.85,0.9,0.93].map(v=>`<button class="${r===v?'on':''}" data-act="fsrsR" data-v="${v}">${Math.round(v*100)}%</button>`).join('')}</div></div>
+        <p class="hint" style="margin:0">FSRS sets each interval from a memory model, so that you still remember the card with the chosen probability when it comes back. New cards return sooner than with Classic (Good: about ${fIvl(FW[2])} days instead of ${ivl0('good')}), mature cards wait longer. A higher target means more reviews.</p>`
+       :`<p class="hint" style="margin:0">Classic uses your first-answer intervals (${ivl0('again')} / ${ivl0('hard')} / ${ivl0('good')} / ${ivl0('easy')} days) and grows them by a fixed factor. FSRS replaces both with a memory model. You can switch back at any time; cards keep both sets of numbers.</p>`}</div>`;
+    return _set().replace('<div class="card stack"><h3>Version', card+'<div class="card stack"><h3>Version'); }; }
+actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
+rpLoad();
+bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
 render();
 bankLoad();
