@@ -131,3 +131,7 @@ Mode 6 is no longer a live Gemini chat. It is now a set of ready dialogues you l
 - **Three passes:** read and listen (with a fork: agree or push back), fill the gaps in your lines, say your lines from memory (voice or keyboard).
 - **Phrases:** underlined phrases come from Mode 1 (`p:<id>`) and Mode 2 (`v:<id>`). Tap one to see the original, the Russian and synonyms; a chosen synonym replaces the phrase in the line. Gap and recall checks accept any listed synonym.
 - Progress is stored in `bet3.rp` on the device.
+
+### v3.3.2: variants and shuffle
+
+Each phrase in `roleplay.json` has a main wording and variants. A variant is a string, or `{ "t": "...", "post": "...", "id": "p:12" }`: `post` replaces the text right after the phrase so the whole sentence stays natural, `id` points to another dictionary entry. Every play picks variants at random, so the dialogue differs each time. A tap in the Phrase bank pins a version; "Shuffle versions" clears the pins. Gap and recall checks accept every variant.

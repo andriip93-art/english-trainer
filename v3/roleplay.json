@@ -59,7 +59,9 @@
          "t": "The short answer is yes, with a caveat.",
          "id": "p:10",
          "alts": [
-          "Short answer: yes, with a caveat."
+          "Short answer: yes, with a caveat.",
+          "In a word, yes. In more words, there is a caveat.",
+          "The short answer is yes, but let me explain why."
          ]
         },
         " ",
@@ -68,7 +70,8 @@
          "id": "p:131",
          "alts": [
           "At this stage,",
-          "For now,"
+          "For now,",
+          "At this juncture,"
          ]
         },
         " we are on track for September. ",
@@ -108,14 +111,23 @@
           {
            "t": "have enough cushion",
            "id": "v:937",
-           "alts": []
+           "alts": [
+            {
+             "t": "have a cushion of resilience",
+             "id": "v:729"
+            }
+           ]
           },
           ". ",
           {
            "t": "The worst-case scenario is",
            "id": "p:79",
            "alts": [
-            "The downside scenario is"
+            "The downside scenario is",
+            {
+             "t": "In the bear case,",
+             "post": " steel prices fall 15 percent. Even then, we stay inside the covenant."
+            }
            ]
           },
           " a 15 percent drop in steel prices. Even then, we stay inside the covenant."
@@ -138,7 +150,8 @@
            "t": "If we zoom out for a second,",
            "id": "p:28",
            "alts": [
-            "Looking at the bigger picture,"
+            "Looking at the bigger picture,",
+            "If we take a step back and look at the whole picture,"
            ]
           },
           " it has come down for three quarters in a row."
@@ -161,7 +174,8 @@
          "t": "I can move this forward, but I need your input on",
          "id": "p:100",
          "alts": [
-          "I'm happy to take this forward, I just need your view on"
+          "I'm happy to take this forward, I just need your view on",
+          "I'm blocked on this until I get your input on"
          ]
         },
         " pricing. ",
@@ -200,7 +214,8 @@
          "id": "p:19",
          "alts": [
           "Let me play that back to you:",
-          "So if I understand you correctly,"
+          "So if I understand you correctly,",
+          "Just to recap where we've landed:"
          ]
         },
         " the margin stays where it is and reporting gets tighter."
@@ -222,14 +237,20 @@
          "t": "Long story short,",
          "id": "p:96",
          "alts": [
-          "In a nutshell,"
+          "In a nutshell,",
+          "To cut a long story short,"
          ]
         },
         " you will have the downside case by Friday, and ",
         {
          "t": "I'll keep you posted",
          "id": "v:189",
-         "alts": []
+         "alts": [
+          {
+           "t": "I'll give you a heads up",
+           "id": "v:98"
+          }
+         ]
         },
         " on the timing."
        ],
