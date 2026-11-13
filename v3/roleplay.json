@@ -1,0 +1,634 @@
+{
+ "v": 1,
+ "topics": [
+  {
+   "id": "lender",
+   "t": "Call with a lender",
+   "you": "You represent the group on a call with a relationship banker.",
+   "ru": "Вы представляете группу на звонке с relationship-банкиром.",
+   "rps": [
+    {
+     "id": "lender-1",
+     "n": 1,
+     "t": "Refinancing timeline",
+     "setup": "Marc is a relationship banker at a European bank. Your revolving facility matures in the second quarter and his credit committee wants a plan.",
+     "setup_ru": "Марк, relationship-банкир европейского банка. Ваша револьверная линия погашается во втором квартале, кредитному комитету нужен план.",
+     "lines": [
+      {
+       "w": "B",
+       "t": [
+        "Thanks for making time. I will get straight to it: where are you on the refinancing? The facility matures in the second quarter, and our credit committee will want to see a plan."
+       ],
+       "ru": "Спасибо, что нашли время. Сразу к делу: на каком этапе рефинансирование? Линия погашается во втором квартале, и кредитному комитету нужен план."
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Thanks, Marc. ",
+        {
+         "t": "Let me start with the big picture and then get specific.",
+         "id": "p:15",
+         "alts": [
+          "Let me answer at a high level first, then drill down."
+         ]
+        },
+        " We want to launch in September, and ",
+        {
+         "t": "the key variable here is",
+         "id": "p:56",
+         "alts": [
+          "a lot depends on",
+          "it hinges on"
+         ]
+        },
+        " how the steel market behaves over the summer."
+       ],
+       "ru": "Спасибо, Марк. Начну с общей картины, потом конкретика. Хотим запуститься в сентябре, и ключевая переменная здесь то, как поведёт себя рынок стали летом."
+      },
+      {
+       "w": "B",
+       "t": [
+        "That is helpful, but the committee wants a date, not a condition. Is September firm?"
+       ],
+       "ru": "Это полезно, но комитету нужна дата, а не условие. Сентябрь твёрдый?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "The short answer is yes, with a caveat.",
+         "id": "p:10",
+         "alts": [
+          "Short answer: yes, with a caveat."
+         ]
+        },
+        " ",
+        {
+         "t": "As things stand,",
+         "id": "p:131",
+         "alts": [
+          "At this stage,",
+          "For now,"
+         ]
+        },
+        " we are on track for September. ",
+        {
+         "t": "Barring any major shocks,",
+         "id": "p:60",
+         "alts": [
+          "All else being equal,",
+          "Assuming nothing changes dramatically,"
+         ]
+        },
+        " the plan will not change."
+       ],
+       "ru": "Короткий ответ: да, с оговоркой. На сегодня мы идём по плану на сентябрь. Если не будет серьёзных шоков, план не изменится."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Good. Now covenant headroom. Net leverage is close to the limit in your last compliance certificate, so a dip in steel prices could push you over it. How do you see that?"
+       ],
+       "ru": "Хорошо. Теперь запас по ковенантам. Чистый леверидж близок к лимиту в последнем сертификате, и падение цен на сталь может вывести вас за него. Как вы это видите?"
+      },
+      {
+       "w": "Y",
+       "fork": {
+        "agree": {
+         "label": "Agree, then show you have room",
+         "t": [
+          {
+           "t": "You're absolutely right on that, but at the same time",
+           "id": "p:44",
+           "alts": [
+            "Completely agree, and yet"
+           ]
+          },
+          " we still ",
+          {
+           "t": "have enough cushion",
+           "id": "v:937",
+           "alts": []
+          },
+          ". ",
+          {
+           "t": "The worst-case scenario is",
+           "id": "p:79",
+           "alts": [
+            "The downside scenario is"
+           ]
+          },
+          " a 15 percent drop in steel prices. Even then, we stay inside the covenant."
+         ],
+         "ru": "Вы абсолютно правы, но при этом у нас всё ещё достаточно запаса. Худший сценарий: падение цен на сталь на 15 процентов. Даже тогда мы остаёмся в рамках ковенанта."
+        },
+        "push": {
+         "label": "Push back on the conclusion",
+         "t": [
+          {
+           "t": "I'd be careful about drawing that conclusion.",
+           "id": "p:40",
+           "alts": [
+            "I'd caution against reading too much into that.",
+            "I wouldn't jump to that conclusion just yet."
+           ]
+          },
+          " Leverage is a snapshot, not a trend. ",
+          {
+           "t": "If we zoom out for a second,",
+           "id": "p:28",
+           "alts": [
+            "Looking at the bigger picture,"
+           ]
+          },
+          " it has come down for three quarters in a row."
+         ],
+         "ru": "Я бы осторожнее делал такой вывод. Леверидж это снимок, а не тренд. Если взглянуть шире, он снижается три квартала подряд."
+        }
+       }
+      },
+      {
+       "w": "B",
+       "t": [
+        "Fair. So if you do go in September, what do you need from us?"
+       ],
+       "ru": "Справедливо. Если вы выходите в сентябре, что вам нужно от нас?"
+      },
+      {
+       "w": "Y",
+       "t": [
+        {
+         "t": "I can move this forward, but I need your input on",
+         "id": "p:100",
+         "alts": [
+          "I'm happy to take this forward, I just need your view on"
+         ]
+        },
+        " pricing. ",
+        {
+         "t": "Where's your flexibility on",
+         "id": "p:110",
+         "alts": [
+          "Is there any room to move on"
+         ]
+        },
+        " the margin?"
+       ],
+       "ru": "Я могу двигать это, но мне нужна ваша позиция по цене. Где у вас есть гибкость по марже?"
+      },
+      {
+       "w": "B",
+       "t": [
+        "I cannot promise anything yet, the committee decides. But realistically, I do not see us moving on margin, and we would want tighter reporting."
+       ],
+       "ru": "Пока ничего обещать не могу, решает комитет. Но реалистично, по марже мы двигаться не будем, и нам нужна более плотная отчётность."
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Understood. ",
+        {
+         "t": "Assuming the committee can get comfortable with the terms,",
+         "id": "p:108",
+         "alts": [
+          "Provided the committee is comfortable with the terms,"
+         ]
+        },
+        " we could sign by October. ",
+        {
+         "t": "Just to make sure we're on the same page, what I'm hearing is that",
+         "id": "p:19",
+         "alts": [
+          "Let me play that back to you:",
+          "So if I understand you correctly,"
+         ]
+        },
+        " the margin stays where it is and reporting gets tighter."
+       ],
+       "ru": "Понял. Если комитет будет готов принять условия, мы могли бы подписать к октябрю. Чтобы убедиться, что мы на одной волне: маржа остаётся, отчётность ужесточается."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Exactly. Send me your downside case by Friday and I will take it to committee."
+       ],
+       "ru": "Именно. Пришлите downside case до пятницы, я возьму его на комитет."
+      },
+      {
+       "w": "Y",
+       "t": [
+        "Will do. ",
+        {
+         "t": "Long story short,",
+         "id": "p:96",
+         "alts": [
+          "In a nutshell,"
+         ]
+        },
+        " you will have the downside case by Friday, and ",
+        {
+         "t": "I'll keep you posted",
+         "id": "v:189",
+         "alts": []
+        },
+        " on the timing."
+       ],
+       "ru": "Сделаю. Если коротко, вы получите downside case до пятницы, а я буду держать вас в курсе по срокам."
+      },
+      {
+       "w": "B",
+       "t": [
+        "Perfect. Speak next week."
+       ],
+       "ru": "Отлично. Созвонимся на следующей неделе."
+      }
+     ],
+     "ready": true
+    },
+    {
+     "id": "lender-2",
+     "n": 2,
+     "t": "Covenant headroom if steel prices dip"
+    },
+    {
+     "id": "lender-3",
+     "n": 3,
+     "t": "Pricing and fees on the new facility"
+    },
+    {
+     "id": "lender-4",
+     "n": 4,
+     "t": "Information requests and reporting"
+    },
+    {
+     "id": "lender-5",
+     "n": 5,
+     "t": "Closing the call: next steps"
+    }
+   ]
+  },
+  {
+   "id": "waiver",
+   "t": "Negotiating a covenant waiver",
+   "you": "You ask a lender for a temporary covenant waiver.",
+   "ru": "Вы просите у кредитора временный waiver по ковенантам.",
+   "rps": [
+    {
+     "id": "waiver-1",
+     "n": 1,
+     "t": "Opening the request"
+    },
+    {
+     "id": "waiver-2",
+     "n": 2,
+     "t": "Why it is temporary"
+    },
+    {
+     "id": "waiver-3",
+     "n": 3,
+     "t": "The bank's conditions: fee and reporting"
+    },
+    {
+     "id": "waiver-4",
+     "n": 4,
+     "t": "Walking through the recovery plan"
+    },
+    {
+     "id": "waiver-5",
+     "n": 5,
+     "t": "Agreeing the wording"
+    }
+   ]
+  },
+  {
+   "id": "rating",
+   "t": "Rating agency Q&A",
+   "you": "You answer an analyst during the annual rating review.",
+   "ru": "Вы отвечаете аналитику рейтингового агентства на ежегодном review.",
+   "rps": [
+    {
+     "id": "rating-1",
+     "n": 1,
+     "t": "Liquidity questions"
+    },
+    {
+     "id": "rating-2",
+     "n": 2,
+     "t": "Logistics and export routes"
+    },
+    {
+     "id": "rating-3",
+     "n": 3,
+     "t": "Capex and the funding plan"
+    },
+    {
+     "id": "rating-4",
+     "n": 4,
+     "t": "A follow-up you cannot fully answer"
+    },
+    {
+     "id": "rating-5",
+     "n": 5,
+     "t": "Outlook and wrap-up"
+    }
+   ]
+  },
+  {
+   "id": "investor",
+   "t": "Investor one-on-one",
+   "you": "You meet a bond investor during a non-deal roadshow.",
+   "ru": "Вы встречаетесь с держателем облигаций на non-deal roadshow.",
+   "rps": [
+    {
+     "id": "investor-1",
+     "n": 1,
+     "t": "Introduction and the story"
+    },
+    {
+     "id": "investor-2",
+     "n": 2,
+     "t": "Asset risk questions"
+    },
+    {
+     "id": "investor-3",
+     "n": 3,
+     "t": "Transparency and disclosure"
+    },
+    {
+     "id": "investor-4",
+     "n": 4,
+     "t": "Why not buy the bonds back?"
+    },
+    {
+     "id": "investor-5",
+     "n": 5,
+     "t": "Follow-up and next steps"
+    }
+   ]
+  },
+  {
+   "id": "board",
+   "t": "Pushback from a board member",
+   "you": "You present a liability management proposal to the board.",
+   "ru": "Вы представляете совету директоров предложение по liability management.",
+   "rps": [
+    {
+     "id": "board-1",
+     "n": 1,
+     "t": "Presenting the proposal"
+    },
+    {
+     "id": "board-2",
+     "n": 2,
+     "t": "'It is too early'"
+    },
+    {
+     "id": "board-3",
+     "n": 3,
+     "t": "'It is too expensive'"
+    },
+    {
+     "id": "board-4",
+     "n": 4,
+     "t": "Handling an interruption"
+    },
+    {
+     "id": "board-5",
+     "n": 5,
+     "t": "Getting the decision"
+    }
+   ]
+  },
+  {
+   "id": "ceo",
+   "t": "Two-minute update for the CEO",
+   "you": "The CEO stops you in the corridor and wants a fast update.",
+   "ru": "CEO останавливает вас в коридоре и просит быстрый апдейт.",
+   "rps": [
+    {
+     "id": "ceo-1",
+     "n": 1,
+     "t": "Bottom line first"
+    },
+    {
+     "id": "ceo-2",
+     "n": 2,
+     "t": "A problem, not just status"
+    },
+    {
+     "id": "ceo-3",
+     "n": 3,
+     "t": "Asking for a decision"
+    },
+    {
+     "id": "ceo-4",
+     "n": 4,
+     "t": "The CEO challenges a number"
+    },
+    {
+     "id": "ceo-5",
+     "n": 5,
+     "t": "Follow-up by message"
+    }
+   ]
+  },
+  {
+   "id": "team",
+   "t": "Aligning a cross-functional team",
+   "you": "You run a kick-off call for a transaction workstream.",
+   "ru": "Вы ведёте kick-off звонок по рабочему потоку сделки.",
+   "rps": [
+    {
+     "id": "team-1",
+     "n": 1,
+     "t": "Kick-off and goals"
+    },
+    {
+     "id": "team-2",
+     "n": 2,
+     "t": "Legal says the timeline is unrealistic"
+    },
+    {
+     "id": "team-3",
+     "n": 3,
+     "t": "Splitting responsibilities"
+    },
+    {
+     "id": "team-4",
+     "n": 4,
+     "t": "A blocked dependency"
+    },
+    {
+     "id": "team-5",
+     "n": 5,
+     "t": "Closing with owners and dates"
+    }
+   ]
+  },
+  {
+   "id": "model",
+   "t": "Model and numbers review",
+   "you": "You defend the assumptions of a financial model.",
+   "ru": "Вы защищаете допущения финансовой модели.",
+   "rps": [
+    {
+     "id": "model-1",
+     "n": 1,
+     "t": "Walking through the assumptions"
+    },
+    {
+     "id": "model-2",
+     "n": 2,
+     "t": "Defending the base case"
+    },
+    {
+     "id": "model-3",
+     "n": 3,
+     "t": "Sensitivities"
+    },
+    {
+     "id": "model-4",
+     "n": 4,
+     "t": "Reconciling two versions of a number"
+    },
+    {
+     "id": "model-5",
+     "n": 5,
+     "t": "Agreeing what to change"
+    }
+   ]
+  },
+  {
+   "id": "commercial",
+   "t": "Steel customers and logistics",
+   "you": "You handle a difficult commercial conversation with a customer or a carrier.",
+   "ru": "Сложный коммерческий разговор с клиентом или перевозчиком.",
+   "rps": [
+    {
+     "id": "commercial-1",
+     "n": 1,
+     "t": "Price renegotiation"
+    },
+    {
+     "id": "commercial-2",
+     "n": 2,
+     "t": "Freight and delays"
+    },
+    {
+     "id": "commercial-3",
+     "n": 3,
+     "t": "Force majeure wording"
+    },
+    {
+     "id": "commercial-4",
+     "n": 4,
+     "t": "Payment terms"
+    },
+    {
+     "id": "commercial-5",
+     "n": 5,
+     "t": "Rebuilding trust after a missed delivery"
+    }
+   ]
+  },
+  {
+   "id": "esg",
+   "t": "ESG, CBAM and regulators",
+   "you": "You explain carbon reporting to advisers, auditors and lenders.",
+   "ru": "Вы объясняете углеродную отчётность консультантам, аудиторам и кредиторам.",
+   "rps": [
+    {
+     "id": "esg-1",
+     "n": 1,
+     "t": "CBAM reporting questions"
+    },
+    {
+     "id": "esg-2",
+     "n": 2,
+     "t": "Carbon cost pass-through"
+    },
+    {
+     "id": "esg-3",
+     "n": 3,
+     "t": "An auditor asks for evidence"
+    },
+    {
+     "id": "esg-4",
+     "n": 4,
+     "t": "A lender asks about ESG KPIs"
+    },
+    {
+     "id": "esg-5",
+     "n": 5,
+     "t": "Explaining the transition plan"
+    }
+   ]
+  },
+  {
+   "id": "career",
+   "t": "Career and feedback conversations",
+   "you": "You talk to your manager about feedback, scope and development.",
+   "ru": "Вы говорите с руководителем об обратной связи, зоне ответственности и развитии.",
+   "rps": [
+    {
+     "id": "career-1",
+     "n": 1,
+     "t": "Annual review"
+    },
+    {
+     "id": "career-2",
+     "n": 2,
+     "t": "Asking for a bigger scope"
+    },
+    {
+     "id": "career-3",
+     "n": 3,
+     "t": "Pushing back on feedback"
+    },
+    {
+     "id": "career-4",
+     "n": 4,
+     "t": "Grade and pay discussion"
+    },
+    {
+     "id": "career-5",
+     "n": 5,
+     "t": "Agreeing a development plan"
+    }
+   ]
+  },
+  {
+   "id": "smalltalk",
+   "t": "Small talk and networking",
+   "you": "You chat with counterparts before meetings and at conferences.",
+   "ru": "Вы общаетесь с партнёрами перед встречами и на конференциях.",
+   "rps": [
+    {
+     "id": "smalltalk-1",
+     "n": 1,
+     "t": "Before the meeting"
+    },
+    {
+     "id": "smalltalk-2",
+     "n": 2,
+     "t": "Introducing yourself at a conference"
+    },
+    {
+     "id": "smalltalk-3",
+     "n": 3,
+     "t": "Amsterdam, travel and the weekend"
+    },
+    {
+     "id": "smalltalk-4",
+     "n": 4,
+     "t": "Politely leaving a conversation"
+    },
+    {
+     "id": "smalltalk-5",
+     "n": 5,
+     "t": "Following up after the event"
+    }
+   ]
+  }
+ ]
+}

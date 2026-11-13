@@ -661,6 +661,24 @@ h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wra
 .btn{text-wrap:balance}
 .f-row .code{width:3.3rem;padding-inline:0;box-sizing:border-box;text-align:center;align-self:start;margin-top:2px}.f-row .c{align-self:start}
 .f-row:not(:has(.code)){grid-template-columns:1fr}
+
+/* ---- v3.3 · Roleplay: underlined phrases, gaps, synonym popover ---- */
+.rp-u{text-decoration:underline;text-decoration-color:var(--primary);text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:3px}
+.rp-u.on{background:var(--primary-soft)}
+.rp-pop{border:1px solid var(--line);border-left:3px solid var(--primary);background:var(--surface);border-radius:var(--r-sm);padding:10px 12px;display:grid;gap:2px;overflow-wrap:anywhere}
+.rp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.rp-chips .chip{white-space:normal;text-align:left;font-family:var(--serif);font-size:.92rem;line-height:1.3;border-radius:12px}
+.rp-chips .chip.on{background:var(--primary-soft);border-color:var(--primary);color:var(--fg)}
+.rp-gap{max-width:calc(100vw - 120px);border:0;border-bottom:2px solid var(--primary);background:var(--primary-soft);font:inherit;color:inherit;padding:1px 5px;border-radius:4px 4px 0 0;min-width:4.5ch;margin:2px 0}
+.rp-gap.ok{border-color:var(--ok);background:var(--ok-soft)}.rp-gap.bad{border-color:var(--bad);background:var(--bad-soft)}
+.rp-ru{font-family:var(--sans,inherit);font-size:.86rem;margin-top:4px;line-height:1.35}
+.rp-fork{display:grid;gap:8px;border:1px dashed var(--line);border-radius:var(--r-sm);padding:12px}
+.rp-steps button:disabled{opacity:.4}
+.rp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0}
+.rp-row .t{flex:1;min-width:0;font-weight:600;font-size:.95rem}.rp-row .t small{display:block;font-weight:400;margin-top:2px}
+.rp-row .pill{flex:0 0 auto}
+.actions>.chip{flex:0 0 auto;padding:6px 14px}
+.t-msg>div:first-child{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -3181,7 +3199,7 @@ function fixBack(){
 //   contrast pairs, fine points, a text in context, lines to say aloud), your own errors as tasks, missed tasks come
 //   back at the end of the set (mastery), and a spaced schedule per rule: reviews after 1, 3 and 7 days, then fixed.
 // · Stutter filter for the error journal, offline app shell (service worker).
-const V3 = '3.2';
+const V3 = '3.3';
 const FIX_STEPS = [1, 3, 7];            // days until the review after: the lesson, review 1, review 2. Passing the last review marks the errors fixed.
 FTYPE.mine = 'Your own words';
 const dayLog = f => { const t=today(); log[t]=log[t]||{rev:0,ok:0,new:0}; log[t][f]=(log[t][f]||0)+1; LS.set(K.log,log); queueSync(); };
@@ -3563,111 +3581,134 @@ function vStats(){
 }
 actions.openStats = () => { go('stats'); if(syncOn()) errPull().then(ok=>{ if(ok && st.view==='stats') render(); }); };
 
-// ---- 18d. Live Roleplay (Mode 6): you speak or type, the partner answers in character and pushes back; the debrief comes at the end
-const TALK = [
-  { id:'lender', t:'Call with a lender', you:'You represent the company on a call with a relationship banker.', them:'a senior banker at a European bank, polite but sceptical about the refinancing timeline and the covenant headroom', open:'Thanks for joining. Before we go into the numbers: how confident are you that the refinancing can close before the notes mature?' },
-  { id:'rating', t:'Rating agency Q&A', you:'You answer an analyst during the annual rating review.', them:'a rating agency analyst who asks precise follow-up questions on liquidity, logistics and capex and does not accept vague answers', open:'Let us start with liquidity. What does your cash position look like today, and how much of it is actually available?' },
-  { id:'board', t:'Pushback from a board member', you:'You present a liability management proposal to the board.', them:'a non-executive director who thinks the transaction is premature and too expensive, and interrupts with objections', open:'I have read the paper. Frankly, I do not see why we should pay a premium to buy back bonds right now. Convince me.' },
-  { id:'investor', t:'Investor one-on-one', you:'You meet a bond investor during a non-deal roadshow.', them:'a portfolio manager at a credit fund who holds the bonds and worries about asset risk and transparency', open:'Thanks for the time. My first question is simple: what has changed since the last results that I should know about?' },
-  { id:'waiver', t:'Negotiating a covenant waiver', you:'You ask a lender for a temporary covenant waiver.', them:'a credit officer who is willing to help but wants a fee, tighter reporting and a clear recovery plan', open:'We have received your waiver request. Help me understand why the covenant is under pressure and how long you need.' },
-  { id:'team', t:'Aligning a cross-functional team', you:'You run a kick-off call for a transaction workstream.', them:'a legal counsel who thinks the timeline is unrealistic and pushes responsibilities back to finance', open:'I have looked at the timeline and, honestly, the documentation alone takes six weeks. Who signed off on this plan?' },
-  { id:'ceo', t:'Two-minute update for the CEO', you:'The CEO stops you in the corridor and wants a fast, clear update.', them:'a direct, impatient CEO who wants the bottom line first and cuts off long explanations', open:'I have two minutes. Where are we on the refinancing, and what do you need from me?' },
-  { id:'smalltalk', t:'Small talk before a meeting', you:'You are early for a meeting and chat with a counterpart you have met once.', them:'a friendly British lawyer who makes light conversation about travel, the weekend and life in Amsterdam, and expects you to ask questions back', open:'Morning! You made it before everyone else. Did you fly in today or were you already in town?' }
-];
-const talkHist = () => LS.get('bet3.talkhist', []);
+// ---- 18d. Roleplay (Mode 6): ready-made branching dialogues, learned in three passes (read, fill, recall).
+// Your lines carry underlined phrases from Mode 1 (Eng_Phrases) and Mode 2 (Eng_Chunks); tap one for its meaning and synonyms.
+const talkHist = () => LS.get('bet3.talkhist', []);          // history of the old live roleplay, kept for the Progress chart
 const wc = s => norm(s).split(' ').filter(Boolean).length;
-function talkTargets(){ const it=(data.phr?.items||[]).filter(inScope).filter(i=>i.en && i.en.length<60); if(it.length<3) return [];
-  return shuffle(shuffle(it.filter(isDue)).concat(shuffle(it.filter(i=>!isDue(i)&&!isNew(i))), shuffle(it.filter(isNew))).slice(0,9)).slice(0,3).map(i=>({ deck:i.deck, id:i.id, en:i.en, ru:i.ru })); }
-function talkTurnPrompt(T){
-  return { sys:`You are playing a role in a spoken business English practice for a Russian-speaking finance professional (level ${L().id}). Stay in character at all times.
-Your character: ${T.sc.them}. Tone: ${T.tough?'tough: challenge weak or vague answers, ask for specifics, interrupt politely when the answer is long':'professional and cooperative, but ask one real follow-up question each time'}.
-Rules: answer in 1 to 3 natural spoken sentences. React to what the learner actually said. Never correct their English and never explain language. Do not repeat your earlier questions. Use realistic detail from this context: ${cfg.aiDomain||C_DOMAIN}. No long dash.
-When the learner has given ${T.max} answers, close the conversation naturally in one sentence. Return ONLY JSON: {"reply":"your next line"}`,
-    user:`Scene: ${T.sc.t}. ${T.sc.you}\nConversation so far:\n${T.turns.map(x=>(x.who==='ai'?'YOU: ':'LEARNER: ')+x.text).join('\n')}\nLearner answers given: ${T.turns.filter(x=>x.who==='me').length} of ${T.max}.` };
-}
-function talkDebriefPrompt(T){
-  return { sys:`You are an English coach for a Russian-speaking finance professional, level ${L().id}, goal C1. Analyse ONLY the LEARNER lines of this role-play. Be strict and concrete; no praise inflation. Russian for explanations, English for examples. No long dash in English.
-Return ONLY JSON:
-{"headline_ru":"one sentence: the main takeaway","task":"achieved|partly|not","errors":[{"wrong":"the learner's exact words (short fragment)","fix":"corrected fragment","why_ru":"one short sentence","type":"topic id"}],"upgrades":[{"said":"a correct but plain or wordy line of the learner","better":"how a native executive would say it","why_ru":"one short sentence"}],"targets":[{"phrase":"...","used":true}],"next_ru":"one thing to do differently next time"}
-errors: real mistakes only (grammar, prepositions, articles, collocations, false friends), max 8, most important first. If the text came from speech recognition, ignore punctuation and capital letters. upgrades: max 3.
-${topicRule().replace(/ For a success \(S\)[^\n]*/,'')}`,
-    user:`Scene: ${T.sc.t}. ${T.sc.you}\nTarget phrases the learner was asked to use: ${T.targets.map(x=>x.en).join(' | ')||'none'}\n\n${T.turns.map(x=>(x.who==='ai'?'PARTNER: ':'LEARNER: ')+x.text).join('\n')}` };
-}
-function vTalk(){ const T=st.T||(st.T={phase:'start'}); return ({ start:talkStart, live:talkLive, wait:()=>`<div class="stack" style="text-align:center;padding-top:30px"><div class="spk-orb"><span></span><span></span><span></span></div><h2>Preparing the debrief</h2><p class="muted" id="coachStep"></p></div>`, sum:talkSum })[T.phase](); }
-function talkStart(){
-  const T=st.T, h=talkHist(), tough=LS.get('bet3.talktough',false);
+const RPK = 'bet3.rp';
+let RPD = LS.get('bet3.rpdata', null);
+const rpProg = () => LS.get(RPK, { done:{}, alt:{} });
+const rpTopics = () => RPD?.topics || [];
+async function rpLoad(){ try{ const r=await fetch('roleplay.json',{cache:'no-store'}); if(r.ok){ RPD=await r.json(); LS.set('bet3.rpdata',RPD); } }catch(e){} if(st.view==='talk') render(); }
+const rpOpen = (T,n) => n===1 || !!rpProg().done[T.id+'-'+(n-1)];
+const rpDoneCount = () => Object.keys(rpProg().done).length;
+const rpFind = id => { for(const T of rpTopics()){ const r=T.rps.find(x=>x.id===id); if(r) return { T, rp:r }; } return null; };
+function rpItem(id){ const [k,i]=String(id).split(':'); const a=(k==='p'?data.phr:data.voc)?.items||[]; return a.find(x=>x.id===i); }
+const rpLine = (R,i) => { const L=R.rp.lines[i]; return L.fork ? (R.branch ? L.fork[R.branch] : null) : L; };
+const rpKey = (R,i) => R.rp.id+'.'+i+(R.rp.lines[i].fork?'.'+R.branch:'');
+function rpVariants(s){ const it=rpItem(s.id), o=it?String(it.en).replace(/\s*(\.{3}|…)\s*$/,'').trim():''; return [s.t,...s.alts,...(o?[o]:[])].map(norm).filter(Boolean); }
+function rpSegs(R,i){ const L=rpLine(R,i), k=rpKey(R,i), al=rpProg().alt; return L.t.map((s,j)=> typeof s==='string' ? { s } : { s:al[k+'.'+j] ?? s.t, seg:s, j, k }); }
+const rpPlain = (R,i) => rpSegs(R,i).map(x=>x.s).join('');
+function rpHtml(R,i){ return rpSegs(R,i).map(x=> x.seg ? `<span class="rp-u ${R.pop&&R.pop.k===x.k&&R.pop.j===x.j?'on':''}" data-act="rpPop" data-k="${esc(x.k)}" data-j="${x.j}">${esc(x.s)}</span>` : esc(x.s)).join(''); }
+function rpPopHtml(R,i){ const p=R.pop; if(!p) return ''; const x=rpSegs(R,i).find(y=>y.seg&&y.k===p.k&&y.j===p.j); if(!x) return '';
+  const it=rpItem(x.seg.id), vs=[x.seg.t,...x.seg.alts], deck=x.seg.id[0]==='p'?'Mode 1':'Mode 2';
+  return `<div class="rp-pop"><div class="eyebrow">${deck} · ${esc(it?.cat||it?.context||'phrase')}</div>${it?`<div class="serif" style="font-size:1.02rem">${esc(it.en)}</div><div class="muted" style="font-size:.9rem">${esc(it.ru||'')}</div>`:''}
+    ${vs.length>1?`<div class="eyebrow" style="margin-top:8px">Say it another way</div><div class="rp-chips">${vs.map((v,n)=>`<button class="chip ${v===x.s?'on':''}" data-act="rpAlt" data-k="${esc(x.k)}" data-j="${x.j}" data-n="${n}">${esc(v)}</button>`).join('')}</div>`:''}</div>`; }
+function rpBubble(R,i,o={}){ const L=rpLine(R,i), me=R.rp.lines[i].w==='Y', plain=rpPlain(R,i);
+  return `<div class="t-msg ${me?'me':'ai'}"><div>${o.gap?o.gap:rpHtml(R,i)}${o.ru&&L.ru&&R.ru?`<div class="muted rp-ru">${esc(L.ru)}</div>`:''}</div>${o.gap?'':audioBtn(plain)}</div>${R.pop&&R.pop.i===i?rpPopHtml(R,i):''}`; }
+const rpYs = R => R.rp.lines.map((l,i)=>l.w==='Y'?i:-1).filter(i=>i>=0);
+
+function vTalk(){ const R=st.R||(st.R={phase:'home'}); if(!rpTopics().length){ rpLoad(); return `<div class="stack"><p class="hint">Loading dialogues…</p></div>`; }
+  return ({ home:rpHome, topic:rpTopicV, read:rpRead, fill:rpFill, recall:rpRecall, end:rpEnd })[R.phase](); }
+function rpHome(){ const P=rpProg();
   return `<div class="stack">
-    <div class="hero spk-hero"><div class="lbl">Mode 6 · Live Roleplay</div><div class="q">A real conversation. The other side pushes back.</div>
-      <ol class="spk-how"><li>Pick a scene. Your partner opens, you answer by voice or keyboard</li><li>Six exchanges, no corrections while you talk: keep the conversation going</li><li>Debrief at the end: errors go to your journal, plus how an executive would have said it</li></ol></div>
-    ${aiKeysOk()?'':'<div class="note warn-note"><b>AI key needed</b>Connect sync or add a Gemini key in Settings.</div>'}
-    <div class="seg"><button class="${tough?'':'on'}" data-act="talkTough" data-v="0">Cooperative partner</button><button class="${tough?'on':''}" data-act="talkTough" data-v="1">Tough partner</button></div>
-    <section><h3 class="spk-h">Scenes</h3>${TALK.map(s=>`<button class="c-pat f-row" data-act="talkGo" data-id="${s.id}"><span class="t">${esc(s.t)}<small class="muted">${esc(s.you)}</small></span></button>`).join('')}
-      <button class="btn ghost" data-act="talkGo" data-id="" style="margin-top:12px;width:100%">Surprise me</button></section>
-    ${h.length?`<div class="eyebrow">Recent</div>${h.slice(0,5).map(x=>`<div class="row r-hist" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><span>${esc(x.title)} <small class="muted">${new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></span><span class="pill ${x.errors<=2?'ok':x.errors<=5?'new':'due'}">${x.errors} errors · ${x.words} words</span></div>`).join('')}`:''}
-  </div>`;
-}
-function talkLive(){
-  const T=st.T, n=T.turns.filter(x=>x.who==='me').length;
+    <div class="hero spk-hero"><div class="lbl">Mode 6 · Roleplay</div><div class="q">Ready dialogues. Learn your side, then own the call.</div>
+      <ol class="spk-how"><li>Read and listen. At the fork choose to agree or push back</li><li>Fill the gaps in your lines: underlined phrases come from Modes 1 and 2</li><li>Say your lines from memory. Tap an underlined phrase for its synonyms</li></ol></div>
+    <section><h3 class="spk-h">Topics</h3>${rpTopics().map(T=>{ const ready=T.rps.filter(r=>r.ready).length, done=T.rps.filter(r=>P.done[r.id]).length;
+      return `<button class="rp-row f-row" data-act="rpTopic" data-id="${T.id}"><span class="t">${esc(T.t)}<small class="muted">${esc(T.you)}</small></span><span class="pill ${done?'ok':''}">${done}/5${ready?'':' · soon'}</span></button>`; }).join('')}</section>
+  </div>`; }
+function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
   return `<div class="stack">
-    <div class="spk-dots">${[...Array(T.max)].map((_,i)=>`<span class="${i<n?'done':i===n?'on':''}"></span>`).join('')}<em>${Math.min(n+1,T.max)} / ${T.max}</em></div>
-    <div class="note"><b>${esc(T.sc.t)}</b>${esc(T.sc.you)}${T.targets.length?`<div class="row" style="gap:6px;margin-top:8px">${T.targets.map(x=>`<span class="pill ${T.turns.some(y=>y.who==='me'&&norm(y.text).includes(norm(x.en).replace(/\[.*?\]/g,'').trim()))?'ok':''}" title="${esc(x.ru||'')}">${esc(x.en)}</span>`).join('')}</div>`:''}</div>
-    <div class="t-chat" id="tChat">${T.turns.map(x=>`<div class="t-msg ${x.who}"><div>${esc(x.text)}</div>${x.who==='ai'?audioBtn(x.text):''}</div>`).join('')}${T.busy?'<div class="t-msg ai"><div class="t-typing"><i></i><i></i><i></i></div></div>':''}</div>
-    ${T.over?`<button class="btn spk-go" data-act="talkEnd">See the debrief</button>`
-      :`<div class="c-in"><textarea id="tAns" rows="3" spellcheck="false" autocomplete="off" placeholder="${SR?'Tap the mic and answer aloud, or type':'Type your answer'}" ${T.busy?'disabled':''}>${esc(T.draft||'')}</textarea>${SR?`<button class="c-mic ${T.dict?'on':''}" data-act="talkDict" aria-label="Dictate">${ICON_MIC}</button>`:''}</div>
-        <div class="actions"><button class="btn ghost" data-act="talkEnd" style="flex:0 0 auto" ${n?'':'disabled'}>End now</button><button class="btn" data-act="talkSend" ${T.busy?'disabled':''}>Send</button></div>`}
-  </div>`;
-}
-function talkSum(){
-  const T=st.T, R=T.res||{}, E=R.errors||[], U=R.upgrades||[], TG=R.targets||[], words=T.words||0;
-  return `<div class="stack spk-res">
-    <div class="summary-hero spk-sum"><div class="eyebrow">Roleplay · ${esc(T.sc.t)}</div><div class="n">${words?(E.length/words*100).toFixed(1):'–'}<small> errors / 100 words</small></div>
-      <div class="muted">${E.length} errors · ${words} words · task ${esc(R.task||'–')}</div></div>
-    ${R.headline_ru?`<div class="note"><b>Главное</b>${esc(R.headline_ru)}</div>`:''}
-    ${E.length?`<section><h3 class="spk-h">Errors · saved to your journal</h3>${E.map(e=>`<div class="f-pair"><div class="w">${esc(e.wrong)}</div><div class="r">${esc(e.fix)} ${audioBtn(e.fix)}</div><div class="muted" style="font-size:.88rem">${esc(e.why_ru||'')}${isTopic(e.type)?` · <span class="c-code">${esc(e.type)}</span>`:''}</div></div>`).join('')}</section>`:'<div class="note"><b>No errors found</b>Clean session.</div>'}
-    ${U.length?`<section><h3 class="spk-h">Say it like an executive</h3>${U.map(u=>`<div class="f-con"><div class="ab"><span>${esc(u.said)}</span><span>${esc(u.better)}</span></div><div class="muted" style="font-size:.88rem">${esc(u.why_ru||'')}</div></div>`).join('')}</section>`:''}
-    ${TG.length?`<section><h3 class="spk-h">Target phrases</h3>${TG.map(t=>`<div class="spk-t ${t.used?'ok':'bad'}"><div class="spk-ti">${t.used?'✓':'×'}</div><div class="meta"><span class="serif">${esc(t.phrase)}</span></div></div>`).join('')}</section>`:''}
-    ${R.next_ru?`<div class="spk-win" style="margin:0"><b>В следующий раз</b><div class="muted" style="font-size:.92rem;margin-top:2px">${esc(R.next_ru)}</div></div>`:''}
-    <details class="f-more"><summary>Transcript</summary><div class="t-chat" style="margin-top:8px">${T.turns.map(x=>`<div class="t-msg ${x.who}"><div>${esc(x.text)}</div></div>`).join('')}</div></details>
-    <div class="actions"><button class="btn ghost" data-act="talkHome">Scenes</button><button class="btn" data-act="talkGo" data-id="${esc(T.sc.id)}">Same scene again</button></div>
-    ${E.length?'<button class="btn ghost" data-act="openFix">Fix My Errors</button>':''}
-  </div>`;
-}
-let talkRec=null;
-function talkDictStop(){ try{ talkRec?.stop(); }catch(e){} talkRec=null; if(st.T) st.T.dict=false; document.querySelectorAll('.c-mic').forEach(b=>b.classList.remove('on')); }
-function talkAfter(){ const T=st.T, a=$('#tAns'); if(a){ a.oninput=()=>{ T.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); actions.talkSend(); } }; }
-  const c=$('#tChat'); if(c) c.lastElementChild?.scrollIntoView({ block:'nearest' }); bar(T?.phase==='live'?T.turns.filter(x=>x.who==='me').length/T.max*100:T?.phase==='sum'?100:0); }
-function talkBack(){ const T=st.T; if(T?.phase==='wait') return toast('One moment, the coach is working.');
-  if(T?.phase==='live'){ if(T.turns.some(x=>x.who==='me') && !confirm('Leave this conversation? Nothing will be saved.')) return; talkDictStop(); speechSynthesis?.cancel(); st.T={phase:'start'}; return go('talk'); }
-  if(T?.phase==='sum'){ st.T={phase:'start'}; return go('talk'); } go('home'); }
-actions.openTalk = () => { if(!st.T || st.T.phase==='sum') st.T={phase:'start'}; go('talk'); };
-actions.talkHome = () => { st.T={phase:'start'}; go('talk'); };
-actions.talkTough = d => { LS.set('bet3.talktough', d.v==='1'); render(); };
-actions.talkGo = d => { if(!aiKeysOk()) return toast('Add a Gemini key or connect sync in Settings first.');
-  const sc=TALK.find(s=>s.id===d.id) || TALK[Math.floor(Math.random()*TALK.length)];
-  st.T={ phase:'live', sc, tough:LS.get('bet3.talktough',false), max:6, at:Date.now(), targets:talkTargets(), turns:[{ who:'ai', text:sc.open }], draft:'' };
-  go('talk'); if(cfg.autoSpeak) speak(sc.open); };
-actions.talkDict = () => { if(talkRec) return talkDictStop(); const ta=$('#tAns'); if(!ta||!SR) return; speechSynthesis?.cancel();
+    <div class="note"><b>${esc(T.t)}</b>${esc(T.you)}</div>
+    <section><h3 class="spk-h">Five role plays</h3>${T.rps.map(r=>{ const d=P.done[r.id], open=r.ready&&rpOpen(T,r.n), state=d?`<span class="pill ok">done · ${d.acc}%</span>`:!r.ready?'<span class="pill">soon</span>':open?'<span class="pill">open</span>':'<span class="pill">locked</span>';
+      return `<button class="rp-row f-row" data-act="rpStart" data-id="${r.id}" ${open?'':'disabled'}><span class="t">${r.n}. ${esc(r.t)}</span>${state}</button>`; }).join('')}</section>
+    <p class="hint">Each role play opens when you finish the previous one. Every one has a fork where you can agree or push back.</p>
+  </div>`; }
+function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
+  return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" ${j+1>R.maxPass?'disabled':''}>${l}</button>`).join('')}</div>`; }
+function rpHead(R){ return `<div class="note"><b>${esc(R.rp.t)}</b>${R.phase==='read'?esc(R.rp.setup)+`<div class="muted rp-ru" style="margin-top:6px">${esc(R.rp.setup_ru||'')}</div>`:''}</div>
+  ${rpSteps(R)}<div class="actions" style="justify-content:flex-end"><button class="chip ${R.ru?'on':''}" data-act="rpRu">RU</button></div>`; }
+function rpRead(){ const R=st.R, lines=R.rp.lines, last=Math.min(R.i,lines.length-1); let out='';
+  for(let i=0;i<=last;i++){ const f=lines[i].fork;
+    if(f && !R.branch){ out+=`<div class="rp-fork"><div class="eyebrow">Your move</div>${['agree','push'].map(b=>`<button class="btn ghost" data-act="rpFork" data-v="${b}"><span style="text-align:left">${b==='agree'?'Agree':'Push back'}<small class="muted" style="display:block;font-weight:500">${esc(f[b].label)}</small></span></button>`).join('')}</div>`; break; }
+    out+=rpBubble(R,i,{ru:true}); }
+  const waiting=lines[last].fork&&!R.branch, end=R.i>=lines.length-1;
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>
+    ${waiting?'':end?`<button class="btn spk-go" data-act="rpPass" data-v="fill">Next: fill the gaps</button>`:`<button class="btn" data-act="rpNext">Next line</button>`}</div>`; }
+function rpGapLine(R,i){ const L=rpLine(R,i); let g=0;
+  return L.t.map((s,j)=> typeof s==='string' ? esc(s) : `<input class="rp-gap ${R.chk?(R.gres[g]?'ok':'bad'):''}" data-g="${g++}" size="${Math.max(5,Math.min(30,Math.round(s.t.length*0.8)))}" autocomplete="off" autocapitalize="off" spellcheck="false" ${R.chk?'disabled':''} value="${esc(R.gv?.[g-1]||'')}" aria-label="phrase ${g}">`).join(''); }
+function rpFill(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
+  for(let k=0;k<i;k++) out+=rpBubble(R,k,{ru:true});
+  out+=rpBubble(R,i,{gap:rpGapLine(R,i)});
+  const hint=R.chk?'':`<div class="muted" style="font-size:.88rem">Type each underlined phrase. Any synonym from the list is accepted.</div>`;
+  const fb=R.chk?`<div class="note ${R.gres.every(Boolean)?'':'warn-note'}"><b>${R.gres.every(Boolean)?'Right':'Check the model'}</b><div class="serif">${rpHtml(R,i)}</div><div class="muted" style="font-size:.88rem">${esc(rpLine(R,i).ru||'')}</div></div>`:'';
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}</div>${hint}${fb}
+    <div class="actions">${R.chk?`<button class="btn" data-act="rpFillNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Next: recall':'Continue'}</button>`
+      :`<button class="btn ghost" data-act="rpShow" style="flex:0 0 auto">Show</button><button class="btn" data-act="rpCheck">Check</button>`}</div></div>`; }
+function rpRecall(){ const R=st.R, i=R.i, lines=R.rp.lines; let out='';
+  for(let k=Math.max(0,i-2);k<i;k++){ if(lines[k].w==='B'||k===i-1) out+=rpBubble(R,k,{ru:true}); }
+  const L=rpLine(R,i);
+  const res=R.res?`<div class="note ${R.res.hits===R.res.tot?'':'warn-note'}"><b>${R.res.hits}/${R.res.tot} phrases${R.res.tot?'':' (none in this line)'} · ${R.res.score}% of the words</b>
+      <div class="serif" style="margin:4px 0">${rpHtml(R,i)}</div><div class="muted" style="font-size:.88rem">${esc(L.ru||'')}</div>${audioBtn(rpPlain(R,i))}
+      ${R.res.list.map(x=>`<div class="spk-t ${x.ok?'ok':'bad'}"><div class="spk-ti">${x.ok?'✓':'×'}</div><div class="meta"><span class="serif">${esc(x.s)}</span></div></div>`).join('')}</div>`:'';
+  return `<div class="stack">${rpHead(R)}<div class="t-chat">${out}${R.pop&&R.pop.i===i?rpPopHtml(R,i):''}</div>
+    <div class="muted" style="font-size:.9rem">Your line, from memory. Aim to use the phrases you studied.</div>
+    ${R.res?'':`<div class="c-in"><textarea id="rAns" rows="3" spellcheck="false" autocomplete="off" placeholder="${SR?'Tap the mic and say it, or type':'Type your line'}">${esc(R.draft||'')}</textarea>${SR?`<button class="c-mic ${R.dict?'on':''}" data-act="rpDict" aria-label="Dictate">${ICON.mic||'●'}</button>`:''}</div>`}
+    ${res}
+    <div class="actions">${R.res?`<button class="btn" data-act="rpRecNext">${rpYs(R).indexOf(i)===rpYs(R).length-1?'Finish':'Continue'}</button>`
+      :`<button class="btn ghost" data-act="rpGiveUp" style="flex:0 0 auto">Show line</button><button class="btn" data-act="rpRecCheck">Check</button>`}</div></div>`; }
+function rpEnd(){ const R=st.R, T=R.T, d=rpProg().done[R.rp.id]||{}, nx=T.rps[R.rp.n], other=R.branch==='agree'?'push':'agree';
+  return `<div class="stack spk-res"><div class="summary-hero spk-sum"><div class="eyebrow">Role play · ${esc(R.rp.t)}</div><div class="n">${R.acc}<small>% of phrases recalled</small></div>
+      <div class="muted">${R.hits} of ${R.tot} · route: ${R.branch==='agree'?'agree':'push back'}</div></div>
+    <section><h3 class="spk-h">Phrases in this dialogue</h3>${R.ph.map(x=>`<div class="spk-t ${x.ok?'ok':'bad'}"><div class="spk-ti">${x.ok?'✓':'×'}</div><div class="meta"><span class="serif">${esc(x.s)}</span><div class="muted" style="font-size:.85rem">${esc(x.ru||'')}</div></div></div>`).join('')}</section>
+    <div class="actions">${nx?`<button class="btn" data-act="rpStart" data-id="${nx.id}" ${nx.ready?'':'disabled'}>+ ${nx.ready?'Next role play':'Next one soon'}</button>`:''}<button class="btn ghost" data-act="rpOther" data-v="${other}">${other==='agree'?'Try: agree':'Try: push back'}</button></div>
+    <button class="btn ghost" data-act="rpTopic" data-id="${T.id}" style="width:100%">Back to the topic</button></div>`; }
+function talkAfter(){ const R=st.R; if(!R) return; bar(R.phase==='read'?R.i/Math.max(1,R.rp.lines.length-1)*33:R.phase==='fill'?33+rpYs(R).indexOf(R.i)/rpYs(R).length*33:R.phase==='recall'?66+rpYs(R).indexOf(R.i)/rpYs(R).length*34:R.phase==='end'?100:0);
+  document.querySelectorAll('.rp-gap').forEach(el=>{ el.oninput=()=>{ (R.gv=R.gv||[])[+el.dataset.g]=el.value; }; el.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); const n=document.querySelector(`.rp-gap[data-g="${+el.dataset.g+1}"]`); if(n) n.focus(); else actions.rpCheck(); } }; });
+  const a=$('#rAns'); if(a){ a.oninput=()=>{ R.draft=a.value; }; a.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); actions.rpRecCheck(); } }; }
+  if(R.phase==='fill'&&!R.chk) document.querySelector('.rp-gap')?.focus();
+  document.querySelector('.t-chat')?.lastElementChild?.scrollIntoView({ block:'nearest' }); }
+let rpRec=null;
+function rpDictStop(){ try{ rpRec?.stop(); }catch(e){} rpRec=null; if(st.R) st.R.dict=false; document.querySelectorAll('.c-mic').forEach(b=>b.classList.remove('on')); }
+function talkBack(){ const R=st.R||{}; rpDictStop(); speechSynthesis?.cancel();
+  if(['read','fill','recall','end'].includes(R.phase)){ st.R={ phase:'topic', topic:R.T.id }; return go('talk'); }
+  if(R.phase==='topic'){ st.R={ phase:'home' }; return go('talk'); } go('home'); }
+actions.openTalk = () => { if(!st.R||st.R.phase!=='home') st.R={ phase:'home' }; go('talk'); };
+actions.rpTopic = d => { st.R={ phase:'topic', topic:d.id }; go('talk'); };
+actions.rpStart = d => { const f=rpFind(d.id); if(!f||!f.rp.ready) return;
+  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru',true), pop:null, gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
+actions.rpOther = d => { const R=st.R; st.R={ ...R, phase:'read', i:0, branch:d.v, maxPass:1, pop:null, gv:[], hits:0, tot:0, ph:[], chk:false, res:null }; go('talk'); };
+actions.rpRu = () => { st.R.ru=!st.R.ru; LS.set('bet3.rpru',st.R.ru); render(); };
+actions.rpPop = d => { const R=st.R, i=+d.k.split('.')[1]; R.pop = R.pop&&R.pop.k===d.k&&R.pop.j===+d.j ? null : { k:d.k, j:+d.j, i }; render(); };
+actions.rpAlt = d => { const P=rpProg(), f=rpFind(st.R.rp.id), R=st.R, i=+d.k.split('.')[1], seg=(rpLine(R,i).t)[+d.j], v=[seg.t,...seg.alts][+d.n]; P.alt[d.k+'.'+d.j]=v; LS.set(RPK,P); render(); };
+actions.rpFork = d => { const R=st.R; R.branch=d.v; R.pop=null; render(); if(cfg.autoSpeak) speak(rpPlain(R,R.i)); };
+actions.rpNext = () => { const R=st.R; R.pop=null; R.i=Math.min(R.i+1,R.rp.lines.length-1); render(); if(cfg.autoSpeak&&R.rp.lines[R.i].w==='B') speak(rpPlain(R,R.i)); };
+actions.rpPass = d => { const R=st.R; rpDictStop(); R.pop=null; R.phase=d.v; R.chk=false; R.res=null; R.gv=[]; R.draft='';
+  if(d.v==='read'){ R.i=R.branch?R.rp.lines.length-1:0; } else { R.i=rpYs(R)[0]; R.maxPass=Math.max(R.maxPass,d.v==='fill'?2:3); }
+  if(d.v==='fill') R.maxPass=Math.max(R.maxPass,2); render(); };
+actions.rpCheck = () => { const R=st.R, L=rpLine(R,R.i), segs=L.t.filter(s=>typeof s!=='string'), vals=[...document.querySelectorAll('.rp-gap')].map(e=>e.value);
+  if(vals.some((v,n)=>!v.trim()&&false)) return; R.gv=vals; R.gres=segs.map((s,n)=>rpVariants(s).includes(norm(vals[n]||''))); R.chk=true;
+  buzz(R.gres.every(Boolean)?15:[30,40,30]); render(); };
+actions.rpShow = () => { const R=st.R, L=rpLine(R,R.i), segs=L.t.filter(s=>typeof s!=='string'); R.gv=segs.map(()=>''); R.gres=segs.map(()=>false); R.chk=true; render(); };
+actions.rpFillNext = () => { const R=st.R, ys=rpYs(R), n=ys.indexOf(R.i); R.chk=false; R.gv=[]; if(n>=ys.length-1){ return actions.rpPass({v:'recall'}); } R.i=ys[n+1]; render(); };
+actions.rpDict = () => { if(rpRec) return rpDictStop(); const ta=$('#rAns'); if(!ta||!SR) return; speechSynthesis?.cancel();
   const r=new SR(); r.lang=cfg.ygAccent==='uk'?'en-GB':'en-US'; r.interimResults=true; r.continuous=true; const base=ta.value.trim(); let fin='';
   r.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const x=e.results[i]; if(x.isFinal) fin+=x[0].transcript+' '; else tmp+=x[0].transcript; }
-    const el=$('#tAns'); if(el){ el.value=(base?base+' ':'')+(fin+tmp).replace(/\s+/g,' ').trim(); st.T.draft=el.value; } };
-  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); talkDictStop(); };
-  r.onend=()=>{ if(talkRec===r) talkDictStop(); };
-  try{ r.start(); talkRec=r; st.T.dict=true; document.querySelectorAll('.c-mic').forEach(b=>b.classList.add('on')); buzz(20); }catch(e){ toast('Dictation is not available here.'); } };
-actions.talkSend = async () => { const T=st.T, text=($('#tAns')?.value||T.draft||'').trim(); if(T.busy) return; if(!text) return toast('Say or type your answer first.');
-  talkDictStop(); T.turns.push({ who:'me', text }); T.draft=''; T.busy=true; render();
-  try{ const r=await aiJSON(talkTurnPrompt(T), { temp:0.8, max:400, label:'', kind:'gen' }); const reply=String(r.reply||'').trim(); if(!reply) throw new Error('empty reply');
-    T.turns.push({ who:'ai', text:reply }); if(cfg.autoSpeak && st.view==='talk') speak(reply); }
-  catch(e){ toast('The partner did not answer: '+String(e.message||e).slice(0,120)); T.turns.pop(); T.draft=text; }
-  T.busy=false; if(T.turns.filter(x=>x.who==='me').length>=T.max) T.over=true; if(st.view==='talk') render(); };
-actions.talkEnd = async () => { const T=st.T; if(!T.turns.some(x=>x.who==='me')) return; talkDictStop(); speechSynthesis?.cancel(); T.phase='wait'; go('talk');
-  T.words=T.turns.filter(x=>x.who==='me').reduce((t,x)=>t+wc(x.text),0);
-  try{ const R=await aiJSON(talkDebriefPrompt(T), { temp:0.2, max:3000, label:'Debrief · ', kind:'eval' }); ['errors','upgrades','targets'].forEach(k=>{ if(!Array.isArray(R[k])) R[k]=[]; });
-    R.errors=R.errors.filter(e=>e&&e.wrong&&e.fix&&norm(e.wrong)!==norm(e.fix)); T.res=R;
-    errLog(R.errors.map((e,i)=>({ key:`r${T.at}#${i}`, date:today(), mode:'roleplay', task:T.sc.t, type:String(e.type||'').trim(), code:typeCode(e.type), wrong:String(e.wrong).trim(), fix:String(e.fix).trim(), why_ru:String(e.why_ru||'').trim(), context:'', target:T.targets.map(x=>x.deck+':'+x.id).join(' '), level:L().id })));
-    const h=talkHist(); h.unshift({ at:T.at, id:T.sc.id, title:T.sc.t, errors:R.errors.length, words:T.words }); LS.set('bet3.talkhist', h.slice(0,30));
-    dayLog('out'); markActive(); T.phase='sum'; }
-  catch(e){ toast('Could not write the debrief: '+String(e.message||e).slice(0,140)); T.phase='live'; T.over=true; }
-  if(st.view==='talk') go('talk'); };
+    const el=$('#rAns'); if(el){ el.value=(base?base+' ':'')+(fin+tmp).replace(/\s+/g,' ').trim(); st.R.draft=el.value; } };
+  r.onerror=e=>{ if(e.error==='not-allowed') toast('Microphone access was blocked.'); rpDictStop(); };
+  r.onend=()=>{ if(rpRec===r) rpDictStop(); };
+  try{ r.start(); rpRec=r; st.R.dict=true; document.querySelectorAll('.c-mic').forEach(b=>b.classList.add('on')); buzz(20); }catch(e){ toast('Dictation is not available here.'); } };
+function rpScore(R, answer, i){ const L=rpLine(R,i), segs=L.t.filter(s=>typeof s!=='string'), a=' '+norm(answer)+' ';
+  const list=segs.map(s=>({ s:rpSegs(R,i).find(x=>x.seg===s).s, ru:rpItem(s.id)?.ru||'', ok:rpVariants(s).some(v=>a.includes(' '+v+' ')) }));
+  return { list, hits:list.filter(x=>x.ok).length, tot:list.length, score:sayScore(rpPlain(R,i), answer||'') }; }
+actions.rpRecCheck = () => { const R=st.R, ans=($('#rAns')?.value||R.draft||'').trim(); if(!ans) return toast('Say or type your line first.'); rpDictStop(); R.res=rpScore(R,ans,R.i); rpTally(R); render(); };
+actions.rpGiveUp = () => { const R=st.R; rpDictStop(); R.res=rpScore(R,'',R.i); rpTally(R); render(); };
+function rpTally(R){ R.hits+=R.res.hits; R.tot+=R.res.tot; R.res.list.forEach(x=>{ const o=R.ph.find(y=>y.s===x.s); if(o) o.ok=o.ok&&x.ok; else R.ph.push({ s:x.s, ru:x.ru, ok:x.ok }); }); }
+actions.rpRecNext = () => { const R=st.R, ys=rpYs(R), n=ys.indexOf(R.i); R.res=null; R.draft=''; R.pop=null;
+  if(n>=ys.length-1){ R.acc=R.tot?Math.round(R.hits/R.tot*100):100; const P=rpProg(), old=P.done[R.rp.id];
+    P.done[R.rp.id]={ at:Date.now(), acc:Math.max(R.acc,old?.acc||0), branches:[...new Set([...(old?.branches||[]),R.branch])] }; LS.set(RPK,P); dayLog('out'); markActive(); queueSync();
+    R.phase='end'; return render(); }
+  R.i=ys[n+1]; render(); };
 
 // ---- 18e. FSRS-4.5 (optional). Classic = your first-answer intervals + SM-2 growth. FSRS = intervals from a memory model
 // (stability, difficulty) so that the chance of recall at review time equals the target. Cards keep ivl/ease too, so switching back is safe.
@@ -3701,12 +3742,12 @@ SYNC_CFG_KEYS.push('sched','fsrsR');
 // ---- 18f. Wiring: home tiles, Today step 3 rotates speak / write / roleplay, settings
 { const _home=vHome; vHome=function(){ const h=talkHist()[0];
     const tile=`<button class="deck" data-act="openTalk"><div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON.chat}</div>
-      <div class="meta"><h3>Live Roleplay</h3><div class="muted" style="font-size:.85rem">Mode 6 · a partner who answers and pushes back</div>
-      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">${TALK.length} scenes</span>${h?`<span class="pill ${h.errors<=2?'ok':''}">last ${h.errors} errors</span>`:''}${aiKeysOk()?'':'<span class="pill new">connect AI</span>'}</div></div></button>
+      <div class="meta"><h3>Roleplay</h3><div class="muted" style="font-size:.85rem">Mode 6 · ready dialogues with your phrases</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">${rpTopics().length||12} topics</span>${rpDoneCount()?`<span class="pill ok">${rpDoneCount()} done</span>`:''}</div></div></button>
       <button class="deck" data-act="openStats" style="padding:14px 18px"><div class="meta"><h3>Progress</h3><small class="muted">Error rate in speech, rule families, cards, activity</small></div></button>`;
     return _home().replace('<p class="hint">', tile+'<p class="hint">'); }; }
 { const _tp=todayPlan; todayPlan=function(){ const k=Math.floor(Date.now()/DAY)%3; let h=_tp();
-    if(k===2) h=h.replace(/data-act="open(Speak|Coach)"([^>]*)>(<span class="t-n">[^<]*<\/span><span class="t-m">)<b>[^<]*<\/b><small>[^<]*<\/small>/, 'data-act="openTalk"$2>$3<b>Roleplay</b><small>Six exchanges with a partner who pushes back</small>');
+    if(k===2) h=h.replace(/data-act="open(Speak|Coach)"([^>]*)>(<span class="t-n">[^<]*<\/span><span class="t-m">)<b>[^<]*<\/b><small>[^<]*<\/small>/, 'data-act="openTalk"$2>$3<b>Roleplay</b><small>One ready dialogue: read, fill, recall</small>');
     return h; }; }
 { const _set=vSettings; vSettings=function(){ const on=fsrsOn(), r=fsrsTarget();
     const card=`<div class="card stack"><h3>Scheduler</h3>
@@ -3716,6 +3757,7 @@ SYNC_CFG_KEYS.push('sched','fsrsR');
        :`<p class="hint" style="margin:0">Classic uses your first-answer intervals (${ivl0('again')} / ${ivl0('hard')} / ${ivl0('good')} / ${ivl0('easy')} days) and grows them by a fixed factor. FSRS replaces both with a memory model. You can switch back at any time; cards keep both sets of numbers.</p>`}</div>`;
     return _set().replace('<div class="card stack"><h3>Version', card+'<div class="card stack"><h3>Version'); }; }
 actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
+rpLoad();
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
 render();

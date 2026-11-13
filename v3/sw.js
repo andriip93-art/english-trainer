@@ -1,7 +1,7 @@
 // Business English Trainer v3: offline shell. Network first for the app and its lesson bank (so updates arrive at once),
 // cache as the fallback. Fonts and icons: cache first. Sheets, Apps Script and AI calls are never touched.
-const C = 'bet-v3-shell-1';
-const SHELL = ['./', 'fixbank.json', 'manifest.webmanifest', '../icon-192.png', '../icon-512.png'];
+const C = 'bet-v3-shell-2';
+const SHELL = ['./', 'fixbank.json', 'roleplay.json', 'manifest.webmanifest', '../icon-192.png', '../icon-512.png'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(SHELL)).catch(() => {})); });
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('bet-v3-') && k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {

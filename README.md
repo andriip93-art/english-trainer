@@ -122,3 +122,12 @@ To promote v3 later: copy `v3/index.html`, `v3/fixbank.json` and `v3/sw.js` to t
 ### v3.2
 
 Layout pass, same visual language. Progress: deck rows are a label line, a full-width bar and a legend (the bar no longer runs into the label), the review schedule and streak are stat tiles. Fix My Errors: rule rows have the title on one line and the status below, badges share one width. Action rows wrap instead of leaving the screen, long words break, the filter chips fade at the edge to show they scroll. Checked with an automated overlap and overflow audit of 39 screens at 320, 360 and 412 px.
+
+## v3.3: Roleplay rebuilt (pilot)
+
+Mode 6 is no longer a live Gemini chat. It is now a set of ready dialogues you learn: 12 topics, 5 role plays each, opened one after another.
+
+- **Data:** `v3/roleplay.json`. Topic 1 (Call with a lender), role play 1 is written. The other 59 are titled and marked "soon".
+- **Three passes:** read and listen (with a fork: agree or push back), fill the gaps in your lines, say your lines from memory (voice or keyboard).
+- **Phrases:** underlined phrases come from Mode 1 (`p:<id>`) and Mode 2 (`v:<id>`). Tap one to see the original, the Russian and synonyms; a chosen synonym replaces the phrase in the line. Gap and recall checks accept any listed synonym.
+- Progress is stored in `bet3.rp` on the device.
