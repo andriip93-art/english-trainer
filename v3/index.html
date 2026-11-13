@@ -3649,11 +3649,10 @@ function rpTopicV(){ const T=rpTopics().find(x=>x.id===st.R.topic), P=rpProg();
   </div>`; }
 function rpSteps(R){ const ph=R.phase, n={read:1,fill:2,recall:3}[ph]||0;
   return `<div class="seg rp-steps">${[['read','1 Read'],['fill','2 Fill'],['recall','3 Recall']].map(([k,l],j)=>`<button class="${ph===k?'on':''}" data-act="rpPass" data-v="${k}" ${j+1>R.maxPass?'disabled':''}>${l}</button>`).join('')}</div>`; }
-function rpBankOpen(R){ return R.bank===undefined ? (R.phase==='read'&&R.i===0) : R.bank; }
+function rpBankOpen(R){ return !!R.bank; }
 function rpBank(R){ const al=rpProg().alt, rows=[]; let n=0;
   R.rp.lines.forEach((L,i)=>{ if(L.w!=='Y') return; const parts=L.fork?Object.entries(L.fork).map(([b,x])=>[b,x]):[[null,L]];
     parts.forEach(([b,x])=>{ const k=R.rp.id+'.'+i+(b?'.'+b:''), segs=x.t.map((q,j)=>[q,j]).filter(([q])=>typeof q!=='string'); if(!segs.length) return;
-      rows.push(`<div class="eyebrow" style="margin-top:12px">Your line ${rpYs(R).indexOf(i)+1}${b?' · '+(b==='agree'?'agree':'push back'):''}</div>`);
       segs.forEach(([q,j])=>{ n++; const cur=rpVar(R,k,j,q).t, it=rpItem(q.id), vs=rpVs(q).map(v=>v.t);
         rows.push(`<div class="rp-bk">${vs.length>1?`<div class="rp-chips">${vs.map((v,m)=>`<button class="chip ${v===cur?'on':''}" data-act="rpAlt" data-k="${esc(k)}" data-j="${j}" data-n="${m}">${esc(v)}</button>`).join('')}</div>`:`<div class="serif"><span class="rp-u">${esc(cur)}</span></div>`}${it?`<div class="muted" style="font-size:.86rem">${esc(it.ru||'')}</div>`:''}</div>`); }); }); });
   const open=rpBankOpen(R);
@@ -3708,9 +3707,9 @@ function talkBack(){ const R=st.R||{}; rpDictStop(); speechSynthesis?.cancel();
 actions.openTalk = () => { if(!st.R||st.R.phase!=='home') st.R={ phase:'home' }; go('talk'); };
 actions.rpTopic = d => { st.R={ phase:'topic', topic:d.id }; go('talk'); };
 actions.rpStart = d => { const f=rpFind(d.id); if(!f||!f.rp.ready) return;
-  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru',true), pop:null, bank:undefined, pick:rpPick(f.rp), gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
+  st.R={ phase:'read', T:f.T, rp:f.rp, i:0, branch:null, maxPass:1, ru:LS.get('bet3.rpru2',false), pop:null, bank:undefined, pick:rpPick(f.rp), gv:[], hits:0, tot:0, ph:[] }; go('talk'); if(cfg.autoSpeak) speak(rpPlain(st.R,0)); };
 actions.rpOther = d => { const R=st.R; st.R={ ...R, pick:rpPick(R.rp), phase:'read', i:0, branch:d.v, maxPass:1, pop:null, gv:[], hits:0, tot:0, ph:[], chk:false, res:null }; go('talk'); };
-actions.rpRu = () => { st.R.ru=!st.R.ru; LS.set('bet3.rpru',st.R.ru); render(); };
+actions.rpRu = () => { st.R.ru=!st.R.ru; LS.set('bet3.rpru2',st.R.ru); render(); };
 actions.rpPop = d => { const R=st.R, i=+d.k.split('.')[1]; R.pop = R.pop&&R.pop.k===d.k&&R.pop.j===+d.j ? null : { k:d.k, j:+d.j, i }; render(); };
 actions.rpAlt = d => { const R=st.R, [, i, b]=d.k.split('.'), L=R.rp.lines[+i], X=L.fork?L.fork[b]:L, seg=X.t[+d.j], v=rpVs(seg)[+d.n].t, P=rpProg(); P.alt[d.k+'.'+d.j]=v; LS.set(RPK,P); render(); };
 actions.rpShuffle = () => { const R=st.R, P=rpProg(); Object.keys(P.alt).filter(x=>x.startsWith(R.rp.id+'.')).forEach(x=>delete P.alt[x]); LS.set(RPK,P); R.pick=rpPick(R.rp); render(); };
