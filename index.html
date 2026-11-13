@@ -3607,7 +3607,7 @@ async function rpLoad(){
           Object.assign(rp,o,{ ready:true }); T.rps.sort((x,y)=>x.n-y.n); }catch(e){} }); } }catch(e){}
     RPD=base; LS.set('bet3.rpdata',RPD); }
   if(st.view==='talk') render(); }
-const rpOpen = (T,n) => n===1 || !!rpProg().done[T.id+'-'+(n-1)];
+const rpOpen = (T,n) => true;
 const rpDoneCount = () => Object.keys(rpProg().done).length;
 const rpFind = id => { for(const T of rpTopics()){ const r=T.rps.find(x=>x.id===id); if(r) return { T, rp:r }; } return null; };
 function rpItem(id){ const [k,i]=String(id).split(':'); const a=(k==='p'?data.phr:data.voc)?.items||[]; return a.find(x=>x.id===i); }
