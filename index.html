@@ -1828,42 +1828,63 @@ function wpick(arr, n, w){
   }
   return out;
 }
+// Rule-based, fully offline. SRS state is ignored for picking (this mode is used rarely, so it says little).
+// 1) A conversation frame is drawn at random (frames shown less recently weigh more). Each frame = 4 moves, each move = one phrase category.
+// 2) One phrase per move from Core + Main (Alt and Drop never), 2 chunks from all active chunks go to the "make your case" move.
+// 3) Memory: items used in the last 5 saved sessions are skipped; after that their weight climbs back to 1 over ~20 sessions.
+const SPK_SEEN='bet3.spkSeen';
+const SPK_FRAMES=[
+  { id:'argue', name:'Push back and land a decision', moves:[
+    { t:'Open', q:'Bring the issue to the table and say why it matters now.', cat:'Steering the Conversation' },
+    { t:'Make your case', q:'State your view with one number or fact and the risk behind it.', cat:'Emphasis & Risk' },
+    { t:'Handle push-back', q:'They disagree. Acknowledge it, then hold your position politely.', cat:'Polite Disagreement' },
+    { t:'Land it', q:'Agree concrete next steps, owners and timing.', cat:'Getting Things Done' } ] },
+  { id:'unclear', name:'Work through an unclear situation', moves:[
+    { t:'Open', q:'Check what exactly they mean or what the numbers show.', cat:'Clarification' },
+    { t:'Make your case', q:'Give a careful view: you are not fully sure yet, say why.', cat:'Hedging' },
+    { t:'Reframe', q:'Look at it from another angle or break it into parts.', cat:'Reframing & Structuring' },
+    { t:'Land it', q:'Sum up where you landed and what is still open.', cat:'Summarizing' } ] },
+  { id:'cutin', name:'Cut in and buy time', moves:[
+    { t:'Cut in', q:'Someone is moving on too fast. Step in politely.', cat:'Interrupting & Holding the Floor' },
+    { t:'Make your case', q:'Flag the risk they missed, with one fact.', cat:'Emphasis & Risk' },
+    { t:'Handle pressure', q:'They want an answer now. Buy time without sounding evasive.', cat:'Buying Time' },
+    { t:'Land it', q:'Agree what happens next and by when.', cat:'Getting Things Done' } ] },
+  { id:'negotiate', name:'Negotiate terms', moves:[
+    { t:'Open', q:'Set the agenda: what you want to agree today.', cat:'Steering the Conversation' },
+    { t:'Make your case', q:'Frame your offer so it looks fair to both sides.', cat:'Reframing & Structuring' },
+    { t:'Soften', q:'Keep options open, do not commit too hard.', cat:'Hedging' },
+    { t:'Land it', q:'Recap what was agreed and what is parked.', cat:'Summarizing' } ] },
+  { id:'pressure', name:'Stay calm under pressure', moves:[
+    { t:'Open', q:'They come in hard. Make sure you understand the question.', cat:'Clarification' },
+    { t:'Buy time', q:'You need a moment or more data. Say so calmly.', cat:'Buying Time' },
+    { t:'Make your case', q:'Disagree with their assumption, with a reason.', cat:'Polite Disagreement' },
+    { t:'Land it', q:'Close with a clear summary.', cat:'Summarizing' } ] }
+];
+const spkSeen = () => LS.get(SPK_SEEN, { n:0, it:{}, fr:{} });
+function spkFresh(n, last){ if(last==null) return 1; const ago=n-last; return ago<=5 ? 0 : Math.min(1, (ago-5)/15); }
+function spkMarkSeen(K){
+  if(K.free || K.seenMarked || !K.frame) return;
+  const S=spkSeen(); S.n++; K.items.forEach(i=>S.it[keyOf(i)]=S.n); S.fr[K.frame]=S.n; LS.set(SPK_SEEN,S); K.seenMarked=true;
+}
+function spkPickOne(arr, S){
+  if(!arr.length) return null;
+  let w=arr.map(i=>spkFresh(S.n, S.it[keyOf(i)]));
+  if(!w.some(x=>x>0)) w=arr.map(()=>1);                        // category exhausted: lift the penalty
+  return wpick(arr.map((x,k)=>({x,k})), 1, o=>w[o.k])[0]?.x || null;
+}
 function buildSet(){
-  const n=4+Math.floor(Math.random()*3);
-  const P=(data.phr?.items||[]).filter(i=>inScope(i) && i.status!=='Alt');
-  const V=(data.voc?.items||[]).filter(inScope);
-  let nP=Math.min(n===4?2:n-2, P.length), nV=Math.min(n-nP, V.length);
-  if(nP+nV<n) nP=Math.min(P.length, n-nV);
-  const withDlg=P.filter(i=>i.dialogue);
-  const anchor = wpick(withDlg.length?withDlg:P, 1, spkWeight)[0];
-  const rest = anchor ? wpick(P.filter(i=>i!==anchor), nP-1, i=>spkWeight(i)*(i.cat===anchor.cat?2.5:1)) : [];
-  return [anchor, ...rest, ...wpick(V, nV, i=>spkWeight(i)*(rank(i)===0?1.2:1))].filter(Boolean);
+  const S=spkSeen(), phrOk=i=>isLive(i) && i.status!=='Alt' && !(cfg.hideCaution && i.register==='Caution');
+  const P=(data.phr?.items||[]).filter(phrOk);
+  const V=(data.voc?.items||[]).filter(i=>isLive(i) && i.status!=='Passive' && i.status!=='Alt' && !(cfg.hideCaution && i.register==='Caution'));
+  const frames=SPK_FRAMES.filter(f=>f.moves.every(m=>P.some(i=>i.cat===m.cat)));
+  const list=frames.length?frames:SPK_FRAMES;
+  const frame=wpick(list, 1, f=>{ const l=S.fr[f.id]; return l==null ? 3 : 0.3+Math.min(2.7,(S.n-l)*0.6); })[0];
+  const items=[], beats=frame.moves.map(m=>({ t:m.t, q:m.q, cat:m.cat, use:[] }));
+  frame.moves.forEach((m,k)=>{ const it=spkPickOne(P.filter(i=>i.cat===m.cat && !items.includes(i)), S); if(it){ beats[k].use.push(items.length); items.push(it); } });
+  const caseK=Math.max(0, frame.moves.findIndex(m=>m.t==='Make your case'));
+  for(let j=0;j<2;j++){ const it=spkPickOne(V.filter(i=>!items.includes(i)), S); if(it){ beats[caseK].use.push(items.length); items.push(it); } }
+  return { items, frame:frame.id, scene:{ cat:frame.name, desc:'', dialogue:'', beats } };
 }
-// Story beats: a business-conversation arc. Targets are spread over the beats as gentle prompts, never as a script.
-function spkScene(items){
-  const a=items.find(i=>i.deck==='phr' && i.dialogue) || items.find(i=>i.deck==='phr') || items[0];
-  const beats=[
-    { t:'Set the scene', q:'Who are you talking to, what is on the table, why now?' },
-    { t:'Make your case', q:'Give your view with one number or fact and a reason.' },
-    { t:'Handle push-back', q:'Imagine an objection. Acknowledge it, then hold or adjust your position.' },
-    { t:'Land it', q:'Summarise and agree concrete next steps, owners and timing.' }
-  ];
-  // Each target goes to the part of the conversation where it is most natural (by its wording, intent and category),
-  // while every part keeps at least one target when there are enough of them.
-  const CUE=[ /\b(before i|how do you see|your (view|take|thoughts)|let me (start|set|frame)|background|context|to (start|begin)|as you know|the (real )?question|where we are|first of all|the reason (i|we)|steer|open)/i,
-    /\b(i (think|believe|would argue|'d argue)|the (point|data|numbers|evidence)|because|what (this|that) means|in (fact|practice)|to put (it|this) (in|into)|the key|clearly|bottom line|case for|driv|square the circle|trade-?off)/i,
-    /\b(i hear you|fair (point|enough)|i take your point|i('d| would) push back|with respect|that said|however|i understand|concern|risk|disagree|not (entirely|fully|quite) (convinced|sure)|i('m| am) not sure|on the other hand|i see (it|where)|animosity|tension|object|not always|in most cases|to be fair)/i,
-    /\b(next steps?|to (sum|wrap|recap)|so (let'?s|we)|agree (on|to)|action|follow[- ]up|owner|by (friday|monday|end)|land|close (the|this) loop|park|decision|let'?s (take|move|align))/i ];
-  const score=it=>{ const t=[it.en,it.note,it.type,it.cat].filter(Boolean).join(' '); return CUE.map((re,k)=>(re.test(it.en)?3:0)+(re.test(t)?1:0)+(it.deck==='voc'&&(k===1||k===2)?0.5:0)); };
-  const sc=items.map(score), done=new Set(), put=(i,k)=>{ (beats[k].use=beats[k].use||[]).push(i); done.add(i); };
-  // 1) fill every part with its best-fitting target, strongest matches first
-  const pairs=[]; items.forEach((_,i)=>beats.forEach((_,k)=>pairs.push([sc[i][k]+Math.random()*0.01,i,k]))); pairs.sort((x,y)=>y[0]-x[0]);
-  pairs.forEach(([v,i,k])=>{ if(v>=1 && !done.has(i) && !(beats[k].use||[]).length) put(i,k); });
-  // 2) the rest go where they fit best
-  items.forEach((_,i)=>{ if(done.has(i)) return; const m=Math.max(...sc[i]); put(i, m>=1 ? sc[i].indexOf(m) : ([1,2,0].find(k=>!(beats[k].use||[]).length) ?? sc[i].indexOf(m))); });
-  return { cat:a?.cat||'Business conversation', desc:(typeof CAT_DESC!=='undefined' && CAT_DESC[a?.cat])||'', dialogue:a?.dialogue||'', beats };
-}
-
 // ---- 10b. Views ----
 function vSpeak(){
   const K=st.K||(st.K={phase:'start'});
@@ -1888,7 +1909,7 @@ function spkStart(){
       <div class="ico spk-score ${spkTone(s)}">${!s.result?'–':s.free?esc(s.result.summary?.cefr||'Free'):spkUsed(s.result)+'/'+s.items.length}</div>
       <div class="meta"><h3>${esc(s.scene||'Session')}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtSec(s.sec||0)}${s.result?` · ${esc(s.result.summary?.cefr||'')} · ${esc(s.provider||'')}`:' · not analysed'}</div>
       <div class="row" style="margin-top:6px;gap:6px">${s.items.slice(0,4).map(x=>`<span class="pill">${esc(x.en.length>26?x.en.slice(0,24)+'…':x.en)}</span>`).join('')}</div></div></button>`).join('')}`:''}
-    <p class="hint">Targets come from both decks, weighted towards cards that are due or weak. The result updates their review dates: used well = Good, used with an error = Hard, avoided = back tomorrow.</p>
+    <p class="hint">Each set is a random conversation frame (one phrase per move from Core + Main, two chunks for your case). Items from your last 5 saved sessions are skipped. The result updates their review dates: used well = Good, used with an error = Hard, avoided = back tomorrow.</p>
   </div>`;
 }
 const spkUsed = r => (r.targets||[]).filter(t=>t.status==='used').length;
@@ -2073,9 +2094,9 @@ actions.spkNew = async () => {
   if(st.K?.phase==='rec') return;
   go('loading');
   try{ await spkEnsureData(); }catch(e){ toast('Could not load the sheet: '+e.message); return go('home'); }
-  const items=buildSet(); if(items.length<2){ toast('Not enough cards in scope. Check Settings > scope.'); return go('home'); }
+  const set=buildSet(), items=set.items; if(items.length<2){ toast('Not enough cards in scope. Check Settings > scope.'); return go('home'); }
   if(st.K?.audio?.url) URL.revokeObjectURL(st.K.audio.url);
-  st.K={ phase:'cards', i:0, items, said:{}, scene:spkScene(items), at:Date.now() };
+  st.K={ phase:'cards', i:0, items, said:{}, scene:set.scene, frame:set.frame, at:Date.now() };
   go('speak');
 };
 actions.spkFree = () => {
@@ -2171,7 +2192,7 @@ function spkSaveHist(result, extra={}){
   if(!s){ s={ at, items:K.items.map(i=>({deck:i.deck,id:i.id,en:i.en})), scene:K.free?'Free talk'+(K.scene?.topic?': '+K.scene.topic:''):K.scene?.cat||'' }; h.unshift(s); }
   if(K.free){ s.free=true; s.topic=K.scene?.topic||''; s.scene='Free talk'+(s.topic?': '+s.topic:''); }
   s.sec=K.audio?.sec||s.sec||0; if(result){ s.result=result; Object.assign(s,extra); }
-  LS.set(SPK.hist, h.slice(0,20)); K.histAt=at;
+  LS.set(SPK.hist, h.slice(0,20)); K.histAt=at; spkMarkSeen(K);
 }
 
 // ---- 10f. Analysis ----
