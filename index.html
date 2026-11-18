@@ -2194,6 +2194,7 @@ function spkUpload(f){
 }
 function spkSaveHist(result, extra={}){
   const K=st.K, h=spkHist(), at=K.histAt||K.at; let s=h.find(x=>x.at===at);
+  if(!s && !result) return;   // a take that was never analysed is not saved at all
   if(!s){ s={ at, items:K.items.map(i=>({deck:i.deck,id:i.id,en:i.en})), scene:K.free?'Free talk'+(K.scene?.topic?': '+K.scene.topic:''):K.scene?.cat||'' }; h.unshift(s); }
   if(K.free){ s.free=true; s.topic=K.scene?.topic||''; s.scene='Free talk'+(s.topic?': '+s.topic:''); }
   s.sec=K.audio?.sec||s.sec||0; if(result){ s.result=result; Object.assign(s,extra); }
@@ -3859,6 +3860,7 @@ actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
 rpLoad();
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
+LS.set(SPK.hist, spkHist().filter(s=>s.result));   // one-off clean-up: drop takes that were saved without an analysis
 // Outermost render wrapper: a finished Speak session is counted before any other screen (Progress, home, decks) is drawn
 { const _r=render; render=function(){ spkFlushPending(); return _r(); }; }
 render();
