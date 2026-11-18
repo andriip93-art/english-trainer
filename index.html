@@ -1864,7 +1864,8 @@ const spkSeen = () => LS.get(SPK_SEEN, { n:0, it:{}, fr:{} });
 function spkFresh(n, last){ if(last==null) return 1; const ago=n-last; return ago<=5 ? 0 : Math.min(1, (ago-5)/15); }
 function spkMarkSeen(K){
   if(K.free || K.seenMarked || !K.frame) return;
-  const S=spkSeen(); S.n++; K.items.forEach(i=>S.it[keyOf(i)]=S.n); S.fr[K.frame]=S.n; LS.set(SPK_SEEN,S); K.seenMarked=true;
+  const S=spkSeen(); K.seenPrev=JSON.parse(JSON.stringify(S));   // kept so "Don't count this session" can undo the mark
+  S.n++; K.items.forEach(i=>S.it[keyOf(i)]=S.n); S.fr[K.frame]=S.n; LS.set(SPK_SEEN,S); K.seenMarked=true;
 }
 function spkPickOne(arr, S){
   if(!arr.length) return null;
@@ -1907,7 +1908,7 @@ function spkStart(){
     ${h.length?`<div class="eyebrow" style="margin-top:6px">Past sessions</div>
     ${h.map((s,i)=>`<button class="deck spk-past" data-act="spkOpen" data-i="${i}">
       <div class="ico spk-score ${spkTone(s)}">${!s.result?'–':s.free?esc(s.result.summary?.cefr||'Free'):spkUsed(s.result)+'/'+s.items.length}</div>
-      <div class="meta"><h3>${esc(s.scene||'Session')}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtSec(s.sec||0)}${s.result?` · ${esc(s.result.summary?.cefr||'')} · ${esc(s.provider||'')}`:' · not analysed'}</div>
+      <div class="meta"><h3>${esc(s.scene||'Session')}</h3><div class="muted" style="font-size:.85rem">${new Date(s.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtSec(s.sec||0)}${s.result?` · ${esc(s.result.summary?.cefr||'')} · ${esc(s.provider||'')}${s.result._state==='discarded'?' · not counted':''}`:' · not analysed'}</div>
       <div class="row" style="margin-top:6px;gap:6px">${s.items.slice(0,4).map(x=>`<span class="pill">${esc(x.en.length>26?x.en.slice(0,24)+'…':x.en)}</span>`).join('')}</div></div></button>`).join('')}`:''}
     <p class="hint">Each set is a random conversation frame (one phrase per move from Core + Main, two chunks for your case). Items from your last 5 saved sessions are skipped. The result updates their review dates: used well = Good, used with an error = Hard, avoided = back tomorrow.</p>
   </div>`;
@@ -2079,8 +2080,12 @@ function spkResult(){
 
     ${(r.transcript||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Full transcript</summary><div class="spk-trans">${r.transcript.map(x=>`<p><span>${esc(x.t||'')}</span>${esc(x.text)}</p>`).join('')}</div></details>`:''}
 
-    ${r._applied&&n?`<p class="hint" style="text-align:center">Review dates updated for ${n} cards.</p>`:''}
     ${K.audio?'<button class="btn soft small" data-act="spkSave" style="align-self:center">'+ICON_SAVE+' Save audio</button>':''}
+    ${r._state==='discarded'
+      ?`<div class="note spk-skip"><b>Not counted</b>This take stays in your history, but it does not change Progress, the error journal, card review dates or activity.<div style="margin-top:8px"><button class="btn soft small" data-act="spkCount">Count it after all</button></div></div>`
+      :r._state==='pending'
+      ?`<div class="note spk-skip"><b>Counts when you leave this screen</b>${n?`Review dates of ${n} cards, the`:'The'} error journal, Progress and activity are updated then. Tried the mode by accident or just testing?<div style="margin-top:8px"><button class="btn ghost small" data-act="spkSkip">Don't count this session</button></div></div>`
+      :(r._applied&&n?`<p class="hint" style="text-align:center">Review dates updated for ${n} cards.</p>`:'')}
     <div class="actions"><button class="btn ghost" data-act="spkHome">Main menu</button><button class="btn" data-act="${K.free?'spkFree':'spkNew'}">${K.free?'Talk again':'New set'}</button></div>
   </div>`;
 }
@@ -2194,6 +2199,40 @@ function spkSaveHist(result, extra={}){
   s.sec=K.audio?.sec||s.sec||0; if(result){ s.result=result; Object.assign(s,extra); }
   LS.set(SPK.hist, h.slice(0,20)); K.histAt=at; spkMarkSeen(K);
 }
+
+// ---- 10e2. Counting a session (or not) ----
+// result._state: 'pending' (analysed, not counted yet) -> 'counted' (card dates, error journal and activity applied)
+// or 'discarded' (the user tapped "Don't count this session": nothing is applied, nothing reaches Progress).
+// Sessions saved before this existed have no _state and count as already counted.
+const SPK_GRACE = 30*60*1000;      // a pending session left open (app closed) is counted after this long
+const spkShown = new Set();        // sessions whose result was on screen during this page life
+function spkSetState(at, state){
+  const h=spkHist(), s=h.find(x=>x.at===at); if(s?.result){ s.result._state=state; LS.set(SPK.hist,h); }
+  if(st.K?.result && (st.K.histAt||st.K.at)===at) st.K.result._state=state;
+}
+function spkCommitAt(at){
+  const h=spkHist(), s=h.find(x=>x.at===at), r=s?.result; if(!r || r._state!=='pending') return false;
+  if(s.items?.length && !s.items.every(i=>data[i.deck]?.items)) return false;   // decks not loaded yet: try again at the next render
+  if(s.items?.length && !r._applied) spkApplySRS(r, s.items);
+  if(!r._logged){ errLog(errFromSpeak(s.at, r, s.scene)); r._logged=true; }
+  if(!r._out){ r._out=true; dayLog('out'); }
+  r._state='counted'; LS.set(SPK.hist,h); return true;
+}
+function spkFlushPending(){
+  const showing=(st.view==='speak' && st.K?.phase==='result') ? (st.K.histAt||st.K.at) : null;
+  if(showing!=null) spkShown.add(showing);
+  spkHist().forEach(s=>{ if(s.result?._state==='pending' && s.at!==showing && (spkShown.has(s.at) || Date.now()-(s.result._ts||0)>SPK_GRACE)) spkCommitAt(s.at); });
+}
+actions.spkSkip = () => {
+  const K=st.K, at=K?.histAt||K?.at; if(K?.result?._state!=='pending') return;
+  spkSetState(at,'discarded');
+  if(K.seenMarked){ LS.set(SPK_SEEN, K.seenPrev||{ n:0, it:{}, fr:{} }); K.seenMarked=false; }   // the set no longer counts as recently practised
+  toast('Not counted'); render();
+};
+actions.spkCount = () => {
+  const K=st.K, at=K?.histAt||K?.at; if(K?.result?._state!=='discarded') return;
+  spkSetState(at,'pending'); spkMarkSeen(K); toast('Will be counted when you leave'); render();
+};
 
 // ---- 10f. Analysis ----
 const spkKeysOk = () => aiKeysOk();
@@ -2340,7 +2379,9 @@ actions.spkAnalyse = async () => {
       try{
         const P=spkPrompt(K.items, p==='gemini');
         let r=await viaGemini(key,a,P);
-        r=spkClean(r, K.items); spkApplySRS(r, K.items); K.result=r; K.phase='result';
+        // Nothing is counted yet: card dates, error journal and activity are applied by spkCommitAt() when the result screen is left,
+        // unless the user taps "Don't count this session" there.
+        r=spkClean(r, K.items); r._state='pending'; r._ts=Date.now(); K.result=r; K.phase='result';
         spkSaveHist(r,{provider:r._provider}); if(st.view==='speak') go('speak'); return;
       }catch(e){
         if(e instanceof SpkFatal && pass===0 && fromVault()){ await ensureKeys(true); continue; }
@@ -2359,7 +2400,7 @@ function spkBack(){
 }
 
 // ---- 10g. Wiring into the existing app (home card, settings, back button, title) ----
-{ const _home=vHome; vHome=function(){ const k=spkHist()[0];
+{ const _home=vHome; vHome=function(){ const k=spkHist().find(x=>x.result?._state!=='discarded');
     const tile=`<button class="deck" data-act="openSpeak">
       <div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON_MIC}</div>
       <div class="meta"><h3>${SPK_META.name}</h3><div class="muted" style="font-size:.85rem">${SPK_META.sub}</div>
@@ -2566,7 +2607,7 @@ function vCoach(){
 function coachPatterns(){
   const tally={};
   coachHist().slice(0,12).forEach(s=>(s.codes||[]).forEach(c=>{ tally[c]=(tally[c]||0)+1; }));
-  spkHist().slice(0,6).forEach(s=>(s.result?.patterns||[]).forEach(p=>{ tally[p.code]=(tally[p.code]||0)+(p.count||1); }));
+  spkHist().filter(s=>s.result?._state!=='discarded').slice(0,6).forEach(s=>(s.result?.patterns||[]).forEach(p=>{ tally[p.code]=(tally[p.code]||0)+(p.count||1); }));
   return Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,6);
 }
 const CODE_RU = { OTHER:'Other', ART:'Articles', PERF:'Tenses: Perfect vs Past', PREP:'Prepositions', SUBJ:'Missing subject', UNC:'Uncountable nouns', COMP:'Verb patterns', WO:'Word order', COND:'Future after if / when', NEG:'Negation', QUES:'Questions', MOD:'Modals and softening', FF:'False friends', CLICHE:'Calqued phrases', REG:'Register', LEX:'Word choice', PRON:'Pronunciation', GRAM:'Grammar' };
@@ -2915,9 +2956,8 @@ function errFromSpeak(at, r, scene){
   (r?.log||[]).forEach(e=>errRows(e.original,{ date:dstr(at), mode:'speak', task:scene||'', context:e.native||stripMarks(e.original), target:'', level:L().id }).forEach(x=>rows.push(x)));
   return rows.map((x,i)=>({ ...x, key:`s${at}#${i}` }));
 }
-// Hooks: Speak result saved -> log once. Drills first attempt graded -> log once.
-{ const _sh=spkSaveHist; spkSaveHist=function(result, extra={}){ _sh(result, extra);
-    if(result && !result._logged){ const K=st.K, at=K.histAt||K.at; errLog(errFromSpeak(at, result, K.free?'Free talk'+(K.scene?.topic?': '+K.scene.topic:''):K.scene?.cat)); result._logged=true; _sh(result, extra); } }; }
+// Hooks: Speak errors are logged once by spkCommitAt() when the session is counted (see 10e2), not when it is saved,
+// so "Don't count this session" keeps them out of the journal. Drills first attempt graded -> log once.
 { const _cs=coachSRS; coachSRS=function(t){ _cs(t); const C=st.C, r=t.res;
     errLog(errRows(r.marked, { date:today(), mode:'drill', task:t.fmt, context:r.fix||'', target:t.targets.map(x=>x.deck+':'+x.id).join(' '), level:L().id })
       .map((x,j)=>({ ...x, key:`d${C.at}#${C.i}#${j}` }))); }; }
@@ -2926,7 +2966,7 @@ function errBackfill(){
   // Once: resend every error kept on this device. Rows sent before the script had the Errors tab were lost there; the sheet drops duplicates by key.
   if(!LS.get('bet3.errResend',false)){ const have=new Set(LS.get(ERR.q,[]).map(r=>r.key)); LS.set(ERR.q,[...LS.get(ERR.q,[]),...errAll().filter(r=>!have.has(r.key))]); LS.set('bet3.errResend',true); }
   if(LS.get(ERR.back,false)) return;
-  const h=spkHist(); h.forEach(s=>{ if(s.result && !s.result._logged){ errLog(errFromSpeak(s.at, s.result, s.scene)); s.result._logged=true; } });
+  const h=spkHist(); h.forEach(s=>{ if(s.result && !s.result._logged && !s.result._state){ errLog(errFromSpeak(s.at, s.result, s.scene)); s.result._logged=true; } });
   LS.set(SPK.hist, h); LS.set(ERR.back, true);
 }
 
@@ -3421,7 +3461,6 @@ fixStart = function(){
 };
 
 // ---- 17j. Today: one guided path. Review what is due, repair one rule, then produce (speak and write on alternate days).
-{ const _sh=spkSaveHist; spkSaveHist=function(result, extra={}){ _sh(result, extra); const K=st.K; if(result && K && !K._out){ K._out=true; dayLog('out'); } }; }
 { const _cs=coachSRS; coachSRS=function(t){ _cs(t); const C=st.C; if(C && !C._out){ C._out=true; dayLog('out'); } }; }
 function todayPlan(){
   const t=log[today()]||{}, items=k=>(data[k]?.items||[]).filter(inScope), dP=items('phr').filter(isDue).length, dV=items('voc').filter(isDue).length, due=dP+dV;
@@ -3567,7 +3606,7 @@ const wkStart = d => { const x=new Date(d); x.setHours(12,0,0,0); x.setDate(x.ge
 function vStats(){
   const errs=errAll(), now=Date.now(), bars=(vals,labels,fmt)=>{ const mx=Math.max(1,...vals); return `<div class="s-bars">${vals.map((v,i)=>`<div><em>${fmt?fmt(v):v}</em><span style="height:${4+Math.round(v/mx*56)}px"></span><small>${labels[i]}</small></div>`).join('')}</div>`; };
   // 1. speech accuracy: errors per 100 words, per recorded session
-  const sp=spkHist().filter(s=>s.result?.metrics?.words>30).map(s=>({ at:s.at, r:(s.result.metrics.errors_total||0)/s.result.metrics.words*100 })).reverse().slice(-10);
+  const sp=spkHist().filter(s=>s.result?._state!=='discarded' && s.result?.metrics?.words>30).map(s=>({ at:s.at, r:(s.result.metrics.errors_total||0)/s.result.metrics.words*100 })).reverse().slice(-10);
   const tk=LS.get('bet3.talkhist',[]).filter(t=>t.words>30).map(t=>({ at:t.at, r:t.errors/t.words*100 })).reverse().slice(-10);
   const acc=[...sp,...tk].sort((a,b)=>a.at-b.at).slice(-10), half=Math.floor(acc.length/2), avg=a=>a.reduce((t,x)=>t+x.r,0)/Math.max(1,a.length);
   const a0=avg(acc.slice(0,half)), a1=avg(acc.slice(half)), dl=a0?Math.round((a1-a0)/a0*100):0;
@@ -3820,6 +3859,8 @@ actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
 rpLoad();
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
+// Outermost render wrapper: a finished Speak session is counted before any other screen (Progress, home, decks) is drawn
+{ const _r=render; render=function(){ spkFlushPending(); return _r(); }; }
 render();
 bankLoad();
 if(syncOn()){ syncNow({silent:true}); ensureKeys(); errFlush(); }

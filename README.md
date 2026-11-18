@@ -35,6 +35,7 @@ each answer and pulls on open, on return to the tab and on reconnect. Cards: new
 - **With my cards**: 4 to 6 targets from both decks, a business scene with four parts, 2 to 3 minutes. Review dates update from how each target was used.
 - **Free talk**: any topic (optional topic field and idea chips), no targets, up to 15 minutes, or upload a call/meeting (only the learner is analysed). Same Gemini analysis (audio-tutor rules: patterns before instances, no inflation, hooks, praise as data), no review-date changes. Mistakes go to the error journal with task `Free talk: <topic>`.
 - The result screen has **Main menu** next to New set / Talk again.
+- **Don't count this session** (both paths): a finished analysis is counted only when you leave the result screen. Until then the result screen offers a button that keeps the take in the history ("not counted") but applies nothing: no card review dates, no rows in the error journal, no point in Progress or the Mode 4 pattern hints, no activity tick, and the set is not treated as recently practised. "Count it after all" undoes the choice. If the app is closed on the result screen, the session is counted after 30 minutes. Sessions saved before this change count as already counted.
 
 ## AI keys (Mode 3 Speak & Record, Mode 4 Context Drills)
 
