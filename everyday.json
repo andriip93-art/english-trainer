@@ -1,0 +1,211 @@
+{
+ "v": 1,
+ "topics": [
+  {
+   "id": "housing",
+   "t": "House hunting",
+   "ru": "Поиск и покупка жилья",
+   "partner": "Dan",
+   "items": [
+    {
+     "id": "housing.hunt",
+     "en": "go house hunting",
+     "ru": "искать жильё, ходить смотреть варианты",
+     "def": "look at several homes you might buy or rent",
+     "ex": "We're going **house hunting** on Saturday.",
+     "ex_ru": "В субботу мы идём смотреть жильё.",
+     "trap": {
+      "s": "We're ___ on Saturday.",
+      "ok": "going house hunting",
+      "bad": [
+       "doing house hunting",
+       "making house hunting"
+      ],
+      "why_ru": "Искать жильё: go house hunting. Глаголы do и make здесь не используются."
+     }
+    },
+    {
+     "id": "housing.own",
+     "en": "a place of my own",
+     "ru": "собственное жильё",
+     "def": "a home that is only yours, not shared with anyone",
+     "ex": "After years of flatmates, I want **a place of my own**.",
+     "ex_ru": "После многих лет с соседями я хочу своё жильё."
+    },
+    {
+     "id": "housing.kidding",
+     "en": "No kidding.",
+     "ru": "Да ладно! / И не говори.",
+     "def": "a reaction: 'really?' (surprise) or 'I know, it's true' (agreement)",
+     "ex": "Rents are insane. — **No kidding.** Mine went up 15%.",
+     "ex_ru": "Аренда бешеная. — И не говори. У меня выросла на 15%.",
+     "note_ru": "Смысл задаёт интонация: удивление или «ещё бы»."
+    },
+    {
+     "id": "housing.save",
+     "en": "save up a down payment",
+     "ru": "копить первоначальный взнос",
+     "def": "put money aside for the first big payment when you buy a home",
+     "ex": "It took us four years to **save up a down payment**.",
+     "ex_ru": "Нам понадобилось четыре года, чтобы накопить первоначальный взнос.",
+     "trap": {
+      "s": "It took us four years to ___.",
+      "ok": "save up a down payment",
+      "bad": [
+       "collect a down payment",
+       "gather a down payment"
+      ],
+      "why_ru": "Копить деньги на что-то: save up. Collect и gather говорят про сбор вещей или людей."
+     }
+    },
+    {
+     "id": "housing.takeout",
+     "en": "take out a mortgage",
+     "ru": "взять ипотеку",
+     "def": "borrow money from a bank to buy a home",
+     "ex": "We had to **take out a mortgage** to afford the flat.",
+     "ex_ru": "Нам пришлось взять ипотеку, чтобы позволить себе квартиру.",
+     "trap": {
+      "s": "We had to ___ to afford the flat.",
+      "ok": "take out a mortgage",
+      "bad": [
+       "take a mortgage",
+       "make a mortgage"
+      ],
+      "why_ru": "Кредит или ипотеку «берут» с частицей out: take out a loan, take out a mortgage."
+     }
+    },
+    {
+     "id": "housing.payoff",
+     "en": "pay off a mortgage",
+     "ru": "полностью выплатить ипотеку",
+     "def": "pay the last of the money you owe, so the debt is gone",
+     "ex": "I'd love to **pay off the mortgage** before I turn fifty.",
+     "ex_ru": "Я бы хотел полностью выплатить ипотеку до пятидесяти.",
+     "trap": {
+      "s": "I'd love to ___ before I turn fifty.",
+      "ok": "pay off the mortgage",
+      "bad": [
+       "close the mortgage",
+       "return the mortgage"
+      ],
+      "why_ru": "Погасить долг целиком: pay off. Close и return так не говорят."
+     }
+    },
+    {
+     "id": "housing.offer",
+     "en": "make an offer",
+     "ru": "сделать предложение о покупке",
+     "def": "tell the seller the price you are ready to pay",
+     "ex": "If you like the flat, **make an offer** quickly.",
+     "ex_ru": "Если квартира нравится, быстро делайте предложение.",
+     "trap": {
+      "s": "If you like the flat, ___ quickly.",
+      "ok": "make an offer",
+      "bad": [
+       "do an offer",
+       "give an offer"
+      ],
+      "why_ru": "Offer сочетается с make. Give an offer здесь калька с русского."
+     }
+    },
+    {
+     "id": "housing.party",
+     "en": "throw a housewarming party",
+     "ru": "устроить новоселье",
+     "def": "have a party to celebrate your new home",
+     "ex": "We're going to **throw a housewarming party** in May.",
+     "ex_ru": "В мае мы устроим новоселье.",
+     "trap": {
+      "s": "We're going to ___ in May.",
+      "ok": "throw a housewarming party",
+      "bad": [
+       "make a housewarming party",
+       "do a housewarming party"
+      ],
+      "why_ru": "Вечеринку «бросают»: throw a party (ещё можно have или host). Make и do — калька."
+     }
+    },
+    {
+     "id": "housing.move",
+     "en": "help someone move",
+     "ru": "помочь с переездом",
+     "def": "help carry boxes and furniture to a new home",
+     "ex": "Can you **help me move** on Sunday? I have a van.",
+     "ex_ru": "Поможешь мне с переездом в воскресенье? У меня есть фургон.",
+     "trap": {
+      "s": "Can you ___ on Sunday? I have a van.",
+      "ok": "help me move",
+      "bad": [
+       "help me to moving",
+       "help me with move"
+      ],
+      "why_ru": "После help идёт инфинитив без to: help me move (или help me with the move)."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Any plans for the weekend?",
+     "ru": "Какие планы на выходные?"
+    },
+    {
+     "w": "Y",
+     "t": "I'm going **house hunting**. Rents are insane, and I want **a place of my own**.",
+     "ru": "Иду смотреть жильё. Аренда бешеная, и я хочу своё."
+    },
+    {
+     "w": "B",
+     "t": "**No kidding.** My landlord just raised the rent again. Have you managed to **save up a down payment**?",
+     "ru": "И не говори. Мой арендодатель опять поднял плату. Ты уже накопил на первоначальный взнос?"
+    },
+    {
+     "w": "Y",
+     "t": "Almost. It took me three years. I'll have to **take out a mortgage** for the rest, though.",
+     "ru": "Почти. На это ушло три года. На остальное придётся взять ипотеку."
+    },
+    {
+     "w": "B",
+     "t": "How long for?",
+     "ru": "На какой срок?"
+    },
+    {
+     "w": "Y",
+     "t": "Twenty-five years. I'd love to **pay off the mortgage** early, but we'll see.",
+     "ru": "На двадцать пять лет. Хотелось бы выплатить её раньше, но посмотрим."
+    },
+    {
+     "w": "B",
+     "t": "Once you find something good, **make an offer** fast. Nice places go quickly.",
+     "ru": "Как найдёшь что-то хорошее, сразу делай предложение. Хорошие варианты уходят быстро."
+    },
+    {
+     "w": "Y",
+     "t": "Good advice. I'll let you know how it goes.",
+     "ru": "Хороший совет. Расскажу, как всё пройдёт."
+    },
+    {
+     "w": "B",
+     "t": "And when you **throw a housewarming party**, count me in. I can **help you move**, too.",
+     "ru": "А когда устроишь новоселье, меня зови. Могу ещё помочь с переездом."
+    },
+    {
+     "w": "Y",
+     "t": "Deal. I'll hold you to that.",
+     "ru": "Договорились. Буду держать тебя за слово."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: where would you like to live in five years, and how would you pay for it?",
+    "ru": "Расскажите за минуту: где вы хотели бы жить через пять лет и как за это заплатите?",
+    "targets": [
+     "save up a down payment",
+     "take out a mortgage",
+     "a place of my own",
+     "make an offer"
+    ]
+   }
+  }
+ ]
+}
