@@ -206,6 +206,4094 @@
      "make an offer"
     ]
    }
+  },
+  {
+   "id": "weather",
+   "t": "Weather forecast",
+   "ru": "Погода и прогноз",
+   "partner": "Sam",
+   "items": [
+    {
+     "id": "weather.1",
+     "en": "the forecast calls for",
+     "ru": "по прогнозу ожидается",
+     "def": "the weather report says this is coming",
+     "ex": "The forecast **calls for** scattered showers on Sunday.",
+     "ex_ru": "По прогнозу в воскресенье местами дожди.",
+     "trap": {
+      "s": "The forecast ___ scattered showers on Sunday.",
+      "ok": "calls for",
+      "bad": [
+       "asks for",
+       "waits for"
+      ],
+      "why_ru": "В прогнозе «ожидается»: the forecast calls for. Ask for и wait for здесь не подходят."
+     }
+    },
+    {
+     "id": "weather.2",
+     "en": "scattered showers",
+     "ru": "местами кратковременные дожди",
+     "def": "rain that falls in some places and keeps stopping and starting",
+     "ex": "Expect **scattered showers** in the afternoon.",
+     "ex_ru": "После обеда ожидаются местами дожди."
+    },
+    {
+     "id": "weather.3",
+     "en": "hot and humid",
+     "ru": "жарко и душно (влажно)",
+     "def": "very warm, with a lot of moisture in the air",
+     "ex": "It was **hot and humid** all week, and nobody slept well.",
+     "ex_ru": "Всю неделю было жарко и душно, и никто нормально не спал.",
+     "note_ru": "Порядок фиксированный: hot and humid, а не humid and hot."
+    },
+    {
+     "id": "weather.4",
+     "en": "gale-force winds",
+     "ru": "штормовой ветер",
+     "def": "extremely strong wind that can cause damage",
+     "ex": "**Gale-force winds** closed the bridge for two hours.",
+     "ex_ru": "Штормовой ветер на два часа закрыл мост."
+    },
+    {
+     "id": "weather.5",
+     "en": "change on a dime",
+     "ru": "мгновенно меняться",
+     "def": "change suddenly and completely",
+     "ex": "The weather in the mountains can **change on a dime**.",
+     "ex_ru": "Погода в горах может поменяться в одно мгновение."
+    },
+    {
+     "id": "weather.6",
+     "en": "storm clouds roll in",
+     "ru": "надвигаются грозовые тучи",
+     "def": "dark rain clouds arrive and cover the sky",
+     "ex": "Then the **storm clouds rolled in** and we ran for the car.",
+     "ex_ru": "Потом надвинулись грозовые тучи, и мы побежали к машине."
+    },
+    {
+     "id": "weather.7",
+     "en": "be prepared for anything",
+     "ru": "быть готовым ко всему",
+     "def": "have what you need, whatever happens",
+     "ex": "In the mountains you have to **be prepared for anything**.",
+     "ex_ru": "В горах нужно быть готовым ко всему.",
+     "trap": {
+      "s": "In the mountains you have to ___.",
+      "ok": "be prepared for anything",
+      "bad": [
+       "be prepared to anything",
+       "be ready on anything"
+      ],
+      "why_ru": "Готов к чему-то: prepared for + существительное. Предлог for, а не to и не on."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Are we still on for the hike? The forecast **calls for** **scattered showers**.",
+     "ru": "Мы всё ещё идём в поход? По прогнозу местами дожди."
+    },
+    {
+     "w": "Y",
+     "t": "It will be **hot and humid** too, but I'm in. What if the weather turns?",
+     "ru": "Будет ещё и жарко и душно, но я с вами. А если погода испортится?"
+    },
+    {
+     "w": "B",
+     "t": "Last time on Mount Hood it **changed on a dime**.",
+     "ru": "В прошлый раз на Маунт-Худ погода поменялась мгновенно."
+    },
+    {
+     "w": "Y",
+     "t": "I remember. The **storm clouds rolled in**, and then we got **gale-force winds**.",
+     "ru": "Помню. Надвинулись грозовые тучи, а потом налетел штормовой ветер."
+    },
+    {
+     "w": "B",
+     "t": "Exactly. In the mountains you have to **be prepared for anything**.",
+     "ru": "Именно. В горах нужно быть готовым ко всему."
+    },
+    {
+     "w": "Y",
+     "t": "Fair point. I'll pack rain jackets and extra layers.",
+     "ru": "Справедливо. Возьму дождевики и тёплую одежду."
+    },
+    {
+     "w": "B",
+     "t": "And check the app again on Friday night.",
+     "ru": "И проверь приложение ещё раз в пятницу вечером."
+    },
+    {
+     "w": "Y",
+     "t": "Will do. See you at eight.",
+     "ru": "Сделаю. Увидимся в восемь."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe the worst weather you have ever been caught in, and what you did.",
+    "ru": "Расскажите за минуту о худшей погоде, в которую вы попадали, и что вы делали.",
+    "targets": [
+     "storm clouds roll in",
+     "change on a dime",
+     "be prepared for anything"
+    ]
+   }
+  },
+  {
+   "id": "noise",
+   "t": "Noise pollution",
+   "ru": "Шум и жизнь в большом городе",
+   "partner": "Maya",
+   "items": [
+    {
+     "id": "noise.1",
+     "en": "noise pollution",
+     "ru": "шумовое загрязнение, городской шум",
+     "def": "loud, constant noise from traffic, building sites and crowds",
+     "ex": "I wear earplugs because of the **noise pollution**.",
+     "ex_ru": "Я сплю в берушах из-за городского шума.",
+     "trap": {
+      "s": "I wear earplugs because of the ___.",
+      "ok": "noise pollution",
+      "bad": [
+       "noise contamination",
+       "sound pollution"
+      ],
+      "why_ru": "Устойчивое сочетание: noise pollution. Noise contamination и sound pollution не используются."
+     }
+    },
+    {
+     "id": "noise.2",
+     "en": "light pollution",
+     "ru": "световое загрязнение",
+     "def": "so much artificial light at night that you cannot see the stars",
+     "ex": "Because of **light pollution**, you can barely see any stars here.",
+     "ex_ru": "Из-за светового загрязнения здесь почти не видно звёзд.",
+     "trap": {
+      "s": "Because of ___, you can barely see any stars here.",
+      "ok": "light pollution",
+      "bad": [
+       "light contamination",
+       "lighting pollution"
+      ],
+      "why_ru": "Говорят light pollution. Contamination и lighting pollution — кальки."
+     }
+    },
+    {
+     "id": "noise.3",
+     "en": "trendy cafés",
+     "ru": "модные кафе",
+     "def": "coffee shops that are fashionable and popular with young people",
+     "ex": "The neighbourhood is full of **trendy cafés** and small galleries.",
+     "ex_ru": "Район полон модных кафе и небольших галерей."
+    },
+    {
+     "id": "noise.4",
+     "en": "street food",
+     "ru": "уличная еда",
+     "def": "food sold from stalls or carts outdoors",
+     "ex": "The best **street food** is near the harbour.",
+     "ex_ru": "Лучшая уличная еда возле порта."
+    },
+    {
+     "id": "noise.5",
+     "en": "within city limits",
+     "ru": "в черте города",
+     "def": "inside the official boundary of the city",
+     "ex": "There are six beaches **within city limits**.",
+     "ex_ru": "В черте города шесть пляжей."
+    },
+    {
+     "id": "noise.6",
+     "en": "get stuck in a traffic jam",
+     "ru": "застрять в пробке",
+     "def": "be unable to move because there are too many cars",
+     "ex": "We **got stuck in a traffic jam** for an hour.",
+     "ex_ru": "Мы час простояли в пробке."
+    },
+    {
+     "id": "noise.7",
+     "en": "rush hour",
+     "ru": "час пик",
+     "def": "the busiest time on the roads, in the morning and after work",
+     "ex": "Avoid driving during **rush hour** if you can.",
+     "ex_ru": "По возможности не ездите на машине в час пик."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Is it true there is a lot of **noise pollution** where you live?",
+     "ru": "Правда, что там, где ты живёшь, много шума?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes, and **light pollution** too. I can't see a single star from my balcony.",
+     "ru": "Да, и световое загрязнение тоже. С балкона не видно ни одной звезды."
+    },
+    {
+     "w": "B",
+     "t": "So why stay? Is it the **street food**?",
+     "ru": "Тогда почему ты остаёшься? Из-за уличной еды?"
+    },
+    {
+     "w": "Y",
+     "t": "Partly. Also the **trendy cafés**, and six beaches **within city limits**.",
+     "ru": "Отчасти. И модные кафе, и шесть пляжей в черте города."
+    },
+    {
+     "w": "B",
+     "t": "And the commute? I'd hate to **get stuck in a traffic jam** every morning.",
+     "ru": "А дорога на работу? Я бы не хотел каждое утро стоять в пробке."
+    },
+    {
+     "w": "Y",
+     "t": "I never drive during **rush hour**. The train is faster.",
+     "ru": "В час пик я не езжу на машине. На поезде быстрее."
+    },
+    {
+     "w": "B",
+     "t": "Smart. Send me the name of that café.",
+     "ru": "Разумно. Пришли мне название этого кафе."
+    },
+    {
+     "w": "Y",
+     "t": "Will do. I'll take you there on Saturday.",
+     "ru": "Пришлю. В субботу отведу тебя туда."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what do you like and dislike about the place where you live?",
+    "ru": "Расскажите за минуту, что вам нравится и не нравится в месте, где вы живёте.",
+    "targets": [
+     "noise pollution",
+     "within city limits",
+     "rush hour",
+     "street food"
+    ]
+   }
+  },
+  {
+   "id": "divorce",
+   "t": "A bitter divorce",
+   "ru": "Развод и семья",
+   "partner": "Brian",
+   "items": [
+    {
+     "id": "divorce.1",
+     "en": "go through a bitter divorce",
+     "ru": "переживать тяжёлый, скандальный развод",
+     "def": "end a marriage in a hostile way, with a lot of anger",
+     "ex": "They are **going through a bitter divorce**.",
+     "ex_ru": "Они переживают тяжёлый развод.",
+     "trap": {
+      "s": "They are ___.",
+      "ok": "going through a bitter divorce",
+      "bad": [
+       "passing a bitter divorce",
+       "making a bitter divorce"
+      ],
+      "why_ru": "Через развод «проходят»: go through a divorce. Pass и make не подходят."
+     }
+    },
+    {
+     "id": "divorce.2",
+     "en": "an amicable divorce",
+     "ru": "мирный развод",
+     "def": "a divorce where both people stay polite and fair",
+     "ex": "My cousin had **an amicable divorce** and they still celebrate birthdays together.",
+     "ex_ru": "У моего двоюродного брата был мирный развод, и они до сих пор вместе отмечают дни рождения."
+    },
+    {
+     "id": "divorce.3",
+     "en": "joint custody",
+     "ru": "совместная опека",
+     "def": "both divorced parents share the care of the children",
+     "ex": "They agreed on **joint custody**.",
+     "ex_ru": "Они договорились о совместной опеке."
+    },
+    {
+     "id": "divorce.4",
+     "en": "pay child support",
+     "ru": "платить алименты",
+     "def": "give money regularly to help raise your children after a divorce",
+     "ex": "He has to **pay child support** every month.",
+     "ex_ru": "Он должен ежемесячно платить алименты.",
+     "trap": {
+      "s": "He has to ___ every month.",
+      "ok": "pay child support",
+      "bad": [
+       "give child support",
+       "pay alimony for children"
+      ],
+      "why_ru": "Алименты на ребёнка: pay child support. Give и «alimony for children» здесь не говорят."
+     }
+    },
+    {
+     "id": "divorce.5",
+     "en": "a dysfunctional family",
+     "ru": "неблагополучная семья",
+     "def": "a family with serious, ongoing problems",
+     "ex": "It was **a dysfunctional family** for years.",
+     "ex_ru": "Годами это была неблагополучная семья."
+    },
+    {
+     "id": "divorce.6",
+     "en": "a troubled childhood",
+     "ru": "трудное детство",
+     "def": "growing up with a lot of problems and little stability",
+     "ex": "Katie had **a troubled childhood** too.",
+     "ex_ru": "У Кэти тоже было трудное детство."
+    },
+    {
+     "id": "divorce.7",
+     "en": "be on good terms",
+     "ru": "быть в хороших отношениях",
+     "def": "get along well with someone, especially after a disagreement",
+     "ex": "They were never **on good terms**.",
+     "ex_ru": "Они никогда не были в хороших отношениях.",
+     "trap": {
+      "s": "They were never ___.",
+      "ok": "on good terms",
+      "bad": [
+       "in good terms",
+       "at good terms"
+      ],
+      "why_ru": "Устойчиво: be on good terms (with someone). Предлог on."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Did you hear about Jeremy and Katie? They're **going through a bitter divorce**.",
+     "ru": "Слышал про Джереми и Кэти? У них тяжёлый развод."
+    },
+    {
+     "w": "Y",
+     "t": "Really? What about the kids?",
+     "ru": "Правда? А как же дети?"
+    },
+    {
+     "w": "B",
+     "t": "They agreed on **joint custody**, but he'll have to **pay child support**.",
+     "ru": "Они договорились о совместной опеке, но он должен будет платить алименты."
+    },
+    {
+     "w": "Y",
+     "t": "Poor kids. Their parents were never **on good terms**, and it was **a dysfunctional family** for years.",
+     "ru": "Бедные дети. Родители никогда не ладили, и годами это была неблагополучная семья."
+    },
+    {
+     "w": "B",
+     "t": "Katie told me she had **a troubled childhood** too. Maybe that's why they argue so much.",
+     "ru": "Кэти говорила, что у неё тоже было трудное детство. Может, поэтому они так ссорятся."
+    },
+    {
+     "w": "Y",
+     "t": "My cousin had **an amicable divorce**, and they still celebrate birthdays together.",
+     "ru": "У моего двоюродного брата развод был мирным, и они до сих пор вместе отмечают дни рождения."
+    },
+    {
+     "w": "B",
+     "t": "That's the dream. Much better for the children.",
+     "ru": "Вот это идеал. Для детей гораздо лучше."
+    },
+    {
+     "w": "Y",
+     "t": "Absolutely. Let's hope those two calm down.",
+     "ru": "Безусловно. Будем надеяться, что эти двое успокоятся."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what makes a divorce easier or harder on a family, in your opinion?",
+    "ru": "Расскажите за минуту, что, по-вашему, делает развод для семьи легче или тяжелее.",
+    "targets": [
+     "go through a bitter divorce",
+     "joint custody",
+     "on good terms",
+     "an amicable divorce"
+    ]
+   }
+  },
+  {
+   "id": "dawn",
+   "t": "Working from dawn till dusk",
+   "ru": "Работа без передышки",
+   "partner": "Eric",
+   "items": [
+    {
+     "id": "dawn.1",
+     "en": "same old, same old",
+     "ru": "всё по-старому, без перемен",
+     "def": "nothing has changed; things are just as they always are",
+     "ex": "How's work? **Same old, same old.**",
+     "ex_ru": "Как работа? Всё как обычно."
+    },
+    {
+     "id": "dawn.2",
+     "en": "from dawn till dusk",
+     "ru": "с рассвета до заката, весь день напролёт",
+     "def": "for the whole day, from early morning to late evening",
+     "ex": "During the audit we worked **from dawn till dusk**.",
+     "ex_ru": "Во время аудита мы работали с утра до ночи."
+    },
+    {
+     "id": "dawn.3",
+     "en": "a strict deadline",
+     "ru": "жёсткий срок",
+     "def": "a date by which work must be finished, with no flexibility",
+     "ex": "Clients set **strict deadlines**, so there is no room for delays.",
+     "ex_ru": "Клиенты ставят жёсткие сроки, поэтому места для задержек нет."
+    },
+    {
+     "id": "dawn.4",
+     "en": "meet a deadline",
+     "ru": "уложиться в срок",
+     "def": "finish work on or before the agreed date",
+     "ex": "We must **meet the deadline** on Friday.",
+     "ex_ru": "Мы должны уложиться в срок в пятницу.",
+     "trap": {
+      "s": "We must ___ on Friday.",
+      "ok": "meet the deadline",
+      "bad": [
+       "catch the deadline",
+       "hold the deadline"
+      ],
+      "why_ru": "Срок «выдерживают»: meet a deadline. Catch и hold так не говорят."
+     }
+    },
+    {
+     "id": "dawn.5",
+     "en": "run out of time",
+     "ru": "не хватать времени, время истекает",
+     "def": "have no time left to finish something",
+     "ex": "We're **running out of time**, so please stay late.",
+     "ex_ru": "У нас заканчивается время, поэтому останьтесь, пожалуйста, допоздна.",
+     "trap": {
+      "s": "We're ___ time, so please stay late.",
+      "ok": "running out of",
+      "bad": [
+       "running away from",
+       "going out of"
+      ],
+      "why_ru": "Закончиться: run out of time. Running out of — устойчивое сочетание с предлогами out of."
+     }
+    },
+    {
+     "id": "dawn.6",
+     "en": "cut back on",
+     "ru": "сократить, урезать",
+     "def": "reduce the amount of something",
+     "ex": "I need to **cut back on** coffee.",
+     "ex_ru": "Мне нужно меньше пить кофе."
+    },
+    {
+     "id": "dawn.7",
+     "en": "get ahead",
+     "ru": "продвинуться, выбиться вперёд",
+     "def": "make progress and do better than other people",
+     "ex": "It's hard to **get ahead** without extra effort.",
+     "ex_ru": "Трудно выбиться вперёд без дополнительных усилий."
+    },
+    {
+     "id": "dawn.8",
+     "en": "not going to cut it",
+     "ru": "этого недостаточно, не годится",
+     "def": "not good enough to succeed",
+     "ex": "A half-hearted effort is **not going to cut it** here.",
+     "ex_ru": "Вполсилы здесь не получится."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "How's work these days? **Same old, same old**?",
+     "ru": "Как работа в последнее время? Всё как обычно?"
+    },
+    {
+     "w": "Y",
+     "t": "Pretty much. I'm working **from dawn till dusk**.",
+     "ru": "Почти. Я работаю с рассвета до заката."
+    },
+    {
+     "w": "B",
+     "t": "Why so much?",
+     "ru": "Почему так много?"
+    },
+    {
+     "w": "Y",
+     "t": "Clients set **strict deadlines**, and we're always **running out of time**.",
+     "ru": "Клиенты ставят жёсткие сроки, и нам вечно не хватает времени."
+    },
+    {
+     "w": "B",
+     "t": "Can't you **cut back on** the hours?",
+     "ru": "Нельзя сократить часы?"
+    },
+    {
+     "w": "Y",
+     "t": "Not if I want to **get ahead**. A half-hearted effort is **not going to cut it** in this industry.",
+     "ru": "Не если я хочу продвинуться. Вполсилы в этой отрасли не получится."
+    },
+    {
+     "w": "B",
+     "t": "Just make sure you **meet the deadline** and still sleep.",
+     "ru": "Главное, уложись в срок и всё-таки поспи."
+    },
+    {
+     "w": "Y",
+     "t": "I'll try. Friday is the big one.",
+     "ru": "Постараюсь. Пятница главная."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how do you handle a period when you have too much work and too little time?",
+    "ru": "Расскажите за минуту, как вы справляетесь с периодом, когда слишком много работы и мало времени.",
+    "targets": [
+     "run out of time",
+     "meet a deadline",
+     "get ahead",
+     "cut back on"
+    ]
+   }
+  },
+  {
+   "id": "eating",
+   "t": "Eating habits",
+   "ru": "Привычки питания",
+   "partner": "Sun",
+   "items": [
+    {
+     "id": "eating.1",
+     "en": "make a New Year's resolution",
+     "ru": "дать себе новогоднее обещание",
+     "def": "decide to change something about your life from the new year",
+     "ex": "Did you **make a New Year's resolution** this year?",
+     "ex_ru": "Ты дал себе новогоднее обещание в этом году?",
+     "trap": {
+      "s": "Did you ___ this year?",
+      "ok": "make a New Year's resolution",
+      "bad": [
+       "do a New Year's resolution",
+       "take a New Year's resolution"
+      ],
+      "why_ru": "Решение или обещание «принимают»: make a resolution. Do и take — калька."
+     }
+    },
+    {
+     "id": "eating.2",
+     "en": "eating habits",
+     "ru": "пищевые привычки",
+     "def": "the way you usually eat, healthy or not",
+     "ex": "I want to change my **eating habits**.",
+     "ex_ru": "Я хочу изменить свои пищевые привычки."
+    },
+    {
+     "id": "eating.3",
+     "en": "processed food",
+     "ru": "переработанные продукты",
+     "def": "food made in a factory, often with a lot of sugar, fat and salt",
+     "ex": "Try to eat less **processed food**.",
+     "ex_ru": "Старайтесь есть меньше переработанных продуктов."
+    },
+    {
+     "id": "eating.4",
+     "en": "home-cooked meals",
+     "ru": "домашняя еда",
+     "def": "meals you prepare yourself at home",
+     "ex": "I'm going to focus on **home-cooked meals**.",
+     "ex_ru": "Я буду делать упор на домашнюю еду."
+    },
+    {
+     "id": "eating.5",
+     "en": "go on a diet",
+     "ru": "сесть на диету",
+     "def": "start eating differently or less to lose weight",
+     "ex": "I'm not going to **go on a diet**.",
+     "ex_ru": "Я не собираюсь садиться на диету.",
+     "trap": {
+      "s": "I'm not going to ___.",
+      "ok": "go on a diet",
+      "bad": [
+       "sit on a diet",
+       "keep a diet"
+      ],
+      "why_ru": "На диету «идут»: go on a diet. Sit on a diet — калька с «сесть на диету»."
+     }
+    },
+    {
+     "id": "eating.6",
+     "en": "portion sizes",
+     "ru": "размеры порций",
+     "def": "how much food you put on your plate at one meal",
+     "ex": "I'll just watch my **portion sizes**.",
+     "ex_ru": "Я просто буду следить за размером порций."
+    },
+    {
+     "id": "eating.7",
+     "en": "an Achilles' heel",
+     "ru": "ахиллесова пята, слабое место",
+     "def": "a weakness in someone who is otherwise strong",
+     "ex": "Dessert is my **Achilles' heel**.",
+     "ex_ru": "Десерты — моя ахиллесова пята."
+    },
+    {
+     "id": "eating.8",
+     "en": "hold each other accountable",
+     "ru": "контролировать друг друга, отвечать друг перед другом",
+     "def": "check on each other so that both of you keep a promise",
+     "ex": "Let's **hold each other accountable** for the next month.",
+     "ex_ru": "Давай в течение месяца будем друг перед другом отвечать."
+    },
+    {
+     "id": "eating.9",
+     "en": "a balanced diet",
+     "ru": "сбалансированное питание",
+     "def": "a variety of healthy foods in sensible amounts",
+     "ex": "A **balanced diet** is better than skipping lunch.",
+     "ex_ru": "Сбалансированное питание лучше, чем пропускать обед."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Did you **make a New Year's resolution**?",
+     "ru": "Ты дал себе новогоднее обещание?"
+    },
+    {
+     "w": "Y",
+     "t": "A big one: I want to change my **eating habits**. Less **processed food**, more **home-cooked meals**.",
+     "ru": "Большое: хочу изменить пищевые привычки. Меньше переработанных продуктов, больше домашней еды."
+    },
+    {
+     "w": "B",
+     "t": "Same here, but I'm not going to **go on a diet**. I'll just watch my **portion sizes**.",
+     "ru": "У меня то же самое, но на диету я не сяду. Просто буду следить за порциями."
+    },
+    {
+     "w": "Y",
+     "t": "Dessert is my **Achilles' heel**, though.",
+     "ru": "Но десерты — моя ахиллесова пята."
+    },
+    {
+     "w": "B",
+     "t": "Then let's **hold each other accountable**. Send me a photo of your dinner every night.",
+     "ru": "Тогда будем друг друга контролировать. Присылай мне фото ужина каждый вечер."
+    },
+    {
+     "w": "Y",
+     "t": "Deal. And I'll aim for **a balanced diet** instead of skipping lunch.",
+     "ru": "Договорились. И я буду стараться питаться сбалансированно, а не пропускать обед."
+    },
+    {
+     "w": "B",
+     "t": "Great. Let's check in on Fridays.",
+     "ru": "Отлично. Давай сверяться по пятницам."
+    },
+    {
+     "w": "Y",
+     "t": "Friday it is.",
+     "ru": "По пятницам."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe your usual eating habits and one change you would like to make.",
+    "ru": "Расскажите за минуту о ваших обычных привычках питания и об одном изменении, которое вы хотели бы сделать.",
+    "targets": [
+     "eating habits",
+     "make a New Year's resolution",
+     "portion sizes",
+     "hold each other accountable"
+    ]
+   }
+  },
+  {
+   "id": "soccer",
+   "t": "A big match",
+   "ru": "Спорт и матч",
+   "partner": "Tom",
+   "items": [
+    {
+     "id": "soccer.1",
+     "en": "a big match",
+     "ru": "важный матч",
+     "def": "an important game, such as one against a strong rival",
+     "ex": "We have **a big match** against the league leaders tomorrow.",
+     "ex_ru": "Завтра у нас важный матч с лидером лиги."
+    },
+    {
+     "id": "soccer.2",
+     "en": "an away game",
+     "ru": "выездной матч",
+     "def": "a game played at the opponent's ground",
+     "ex": "It was **an away game**, so the crowd was against us.",
+     "ex_ru": "Матч был выездной, поэтому трибуны были против нас."
+    },
+    {
+     "id": "soccer.3",
+     "en": "the deck is stacked against us",
+     "ru": "всё против нас, шансы не на нашей стороне",
+     "def": "the situation makes it very hard for us to win",
+     "ex": "**The deck was stacked against us**, but we kept trying.",
+     "ex_ru": "Всё было против нас, но мы не сдавались."
+    },
+    {
+     "id": "soccer.4",
+     "en": "be down by two goals",
+     "ru": "проигрывать с разницей в два гола",
+     "def": "be losing by two goals",
+     "ex": "At half-time we were **down by two goals**.",
+     "ex_ru": "К перерыву мы проигрывали два гола.",
+     "trap": {
+      "s": "At half-time we were ___.",
+      "ok": "down by two goals",
+      "bad": [
+       "lower by two goals",
+       "under by two goals"
+      ],
+      "why_ru": "Проигрывать с разницей: be down by / behind by. Lower и under так не используются."
+     }
+    },
+    {
+     "id": "soccer.5",
+     "en": "a nail-biter",
+     "ru": "матч на нервах",
+     "def": "a game or contest that stays close and tense until the end",
+     "ex": "It was a real **nail-biter**.",
+     "ex_ru": "Это был настоящий матч на нервах."
+    },
+    {
+     "id": "soccer.6",
+     "en": "make a comeback",
+     "ru": "отыграться, вернуться в игру",
+     "def": "recover from a bad position and start winning",
+     "ex": "We **made a comeback** in the second half.",
+     "ex_ru": "Мы отыгрались во втором тайме.",
+     "trap": {
+      "s": "We ___ in the second half.",
+      "ok": "made a comeback",
+      "bad": [
+       "did a comeback",
+       "took a comeback"
+      ],
+      "why_ru": "Камбэк «делают» глаголом make: make a comeback. Do и take — калька."
+     }
+    },
+    {
+     "id": "soccer.7",
+     "en": "the final score",
+     "ru": "итоговый счёт",
+     "def": "the result of a game when it ends",
+     "ex": "What was **the final score**?",
+     "ex_ru": "Какой был итоговый счёт?"
+    },
+    {
+     "id": "soccer.8",
+     "en": "the second half",
+     "ru": "второй тайм",
+     "def": "the last part of a game after the break",
+     "ex": "The goals all came in **the second half**.",
+     "ex_ru": "Все голы были забиты во втором тайме."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "I heard you had **a big match** last weekend. Was it **an away game**?",
+     "ru": "Я слышал, у вас был важный матч на выходных. Выездной?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes. And at half-time we were **down by two goals**.",
+     "ru": "Да. И к перерыву мы проигрывали два гола."
+    },
+    {
+     "w": "B",
+     "t": "Ouch. **The deck was stacked against you**.",
+     "ru": "Ой. Всё было против вас."
+    },
+    {
+     "w": "Y",
+     "t": "It was a **nail-biter**, but we **made a comeback**.",
+     "ru": "Это был матч на нервах, но мы отыгрались."
+    },
+    {
+     "w": "B",
+     "t": "Fantastic! What was **the final score**?",
+     "ru": "Здорово! Какой итоговый счёт?"
+    },
+    {
+     "w": "Y",
+     "t": "Three–two. All our goals came in **the second half**.",
+     "ru": "Три–два. Все наши голы были во втором тайме."
+    },
+    {
+     "w": "B",
+     "t": "I'd have loved to watch that.",
+     "ru": "Я бы с удовольствием посмотрел."
+    },
+    {
+     "w": "Y",
+     "t": "Come next time. We have another game in two weeks.",
+     "ru": "Приходи в следующий раз. Через две недели ещё одна игра."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: tell the story of a game or contest you remember, and how it ended.",
+    "ru": "Расскажите за минуту историю матча или соревнования, которое вы запомнили, и чем оно закончилось.",
+    "targets": [
+     "make a comeback",
+     "be down by",
+     "a nail-biter",
+     "the final score"
+    ]
+   }
+  },
+  {
+   "id": "web",
+   "t": "Getting online",
+   "ru": "Интернет и гаджеты",
+   "partner": "Terry",
+   "items": [
+    {
+     "id": "web.1",
+     "en": "get the Internet hooked up",
+     "ru": "подключить интернет",
+     "def": "have the Internet connected at home or in an office",
+     "ex": "We finally got the **Internet hooked up** in the new flat.",
+     "ex_ru": "Мы наконец подключили интернет в новой квартире."
+    },
+    {
+     "id": "web.2",
+     "en": "get online",
+     "ru": "выйти в интернет, выйти в сеть",
+     "def": "start using the Internet",
+     "ex": "I have to help my grandmother **get online**.",
+     "ex_ru": "Мне надо помочь бабушке выйти в интернет."
+    },
+    {
+     "id": "web.3",
+     "en": "surf the web",
+     "ru": "бродить по интернету",
+     "def": "look at different websites without a clear aim",
+     "ex": "My mom barely knows how to **surf the web**.",
+     "ex_ru": "Моя мама почти не умеет пользоваться интернетом.",
+     "note_ru": "Выражение немного устарело: сегодня чаще говорят browse the web или просто go online."
+    },
+    {
+     "id": "web.4",
+     "en": "set up a social media account",
+     "ru": "завести аккаунт в соцсети",
+     "def": "create a profile on a social network and prepare it for use",
+     "ex": "She wants to **set up a social media account** for her bakery.",
+     "ex_ru": "Она хочет завести аккаунт в соцсети для своей пекарни."
+    },
+    {
+     "id": "web.5",
+     "en": "go viral",
+     "ru": "стать вирусным, разлететься по сети",
+     "def": "spread very quickly across the Internet",
+     "ex": "The video **went viral** overnight.",
+     "ex_ru": "Видео стало вирусным за одну ночь.",
+     "trap": {
+      "s": "The video ___ overnight.",
+      "ok": "went viral",
+      "bad": [
+       "became a viral",
+       "turned into viral"
+      ],
+      "why_ru": "Говорят go viral. «Became a viral» — ошибка: viral здесь прилагательное и нужен глагол go."
+     }
+    },
+    {
+     "id": "web.6",
+     "en": "check your email",
+     "ru": "проверить почту",
+     "def": "look at the messages in your email account",
+     "ex": "Does she **check her email** every day?",
+     "ex_ru": "Она проверяет почту каждый день?"
+    },
+    {
+     "id": "web.7",
+     "en": "download it for free",
+     "ru": "скачать бесплатно",
+     "def": "get a file from the Internet without paying",
+     "ex": "You can **download it for free** from the official site.",
+     "ex_ru": "Это можно скачать бесплатно с официального сайта."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Dinner after work?",
+     "ru": "Ужин после работы?"
+    },
+    {
+     "w": "Y",
+     "t": "Can't, sorry. My grandma just got the **Internet hooked up**, and I have to help her **get online**.",
+     "ru": "Не могу, прости. Бабушке только что подключили интернет, и мне надо помочь ей выйти в сеть."
+    },
+    {
+     "w": "B",
+     "t": "At ninety? Impressive. My mom barely knows how to **surf the web**.",
+     "ru": "В девяносто? Впечатляет. Моя мама почти не умеет пользоваться интернетом."
+    },
+    {
+     "w": "Y",
+     "t": "Gran has already **set up a social media account**, and she wants her posts to **go viral**.",
+     "ru": "Бабушка уже завела аккаунт в соцсети, и хочет, чтобы её посты стали вирусными."
+    },
+    {
+     "w": "B",
+     "t": "Ha! Does she **check her email** too?",
+     "ru": "Ха! А почту она проверяет?"
+    },
+    {
+     "w": "Y",
+     "t": "Every morning. She prefers it to phone calls.",
+     "ru": "Каждое утро. Она предпочитает её звонкам."
+    },
+    {
+     "w": "B",
+     "t": "Tell her she can **download it for free** from the official site.",
+     "ru": "Скажи ей, что это можно скачать бесплатно с официального сайта."
+    },
+    {
+     "w": "Y",
+     "t": "I already did. See you tomorrow.",
+     "ru": "Уже сказал. Увидимся завтра."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how did an older relative or friend learn to use technology, and was it easy?",
+    "ru": "Расскажите за минуту, как пожилой родственник или знакомый осваивал технику и было ли это легко.",
+    "targets": [
+     "get online",
+     "go viral",
+     "set up a social media account",
+     "download it for free"
+    ]
+   }
+  },
+  {
+   "id": "movies",
+   "t": "Opening night",
+   "ru": "Кино и премьеры",
+   "partner": "Manny",
+   "items": [
+    {
+     "id": "movies.1",
+     "en": "come out",
+     "ru": "выходить (в прокат)",
+     "def": "become available to the public, like a film, book or album",
+     "ex": "The new Bond film **comes out** on Friday.",
+     "ex_ru": "Новый фильм про Бонда выходит в пятницу.",
+     "trap": {
+      "s": "The new Bond film ___ on Friday.",
+      "ok": "comes out",
+      "bad": [
+       "goes out",
+       "gets out"
+      ],
+      "why_ru": "Выход фильма, книги, альбома: come out. Go out и get out означают другое."
+     }
+    },
+    {
+     "id": "movies.2",
+     "en": "opening night",
+     "ru": "первый вечер показа, премьерный вечер",
+     "def": "the first evening a film or play is shown",
+     "ex": "I never miss **opening night** for a Bond film.",
+     "ex_ru": "Я никогда не пропускаю премьерный вечер фильма про Бонда."
+    },
+    {
+     "id": "movies.3",
+     "en": "a movie trailer",
+     "ru": "трейлер фильма",
+     "def": "a short video that advertises a film",
+     "ex": "I've seen the **movie trailer** at least ten times.",
+     "ex_ru": "Я видел трейлер раз десять."
+    },
+    {
+     "id": "movies.4",
+     "en": "a box-office hit",
+     "ru": "кассовый хит",
+     "def": "a film that earns a lot of money in cinemas",
+     "ex": "It's going to be **a box-office hit**.",
+     "ex_ru": "Это будет кассовый хит."
+    },
+    {
+     "id": "movies.5",
+     "en": "a supporting role",
+     "ru": "роль второго плана",
+     "def": "a part that is important but not the main one",
+     "ex": "A famous comedian has **a supporting role** in it.",
+     "ex_ru": "Известный комик играет в нём роль второго плана."
+    },
+    {
+     "id": "movies.6",
+     "en": "play the lead role",
+     "ru": "играть главную роль",
+     "def": "act the main part in a film or play",
+     "ex": "Who **plays the lead role** in the new film?",
+     "ex_ru": "Кто играет главную роль в новом фильме?",
+     "trap": {
+      "s": "Who ___ in the new film?",
+      "ok": "plays the lead role",
+      "bad": [
+       "does the lead role",
+       "makes the lead role"
+      ],
+      "why_ru": "Роль «играют»: play a role. Do и make — калька с русского."
+     }
+    },
+    {
+     "id": "movies.7",
+     "en": "steal the show",
+     "ru": "затмить всех, стать главной звездой",
+     "def": "get more attention and praise than the other people involved",
+     "ex": "The young actress **stole the show**.",
+     "ex_ru": "Молодая актриса затмила всех."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Are you going to watch that new Bond film? It **comes out** on Friday.",
+     "ru": "Ты пойдёшь на новый фильм про Бонда? Он выходит в пятницу."
+    },
+    {
+     "w": "Y",
+     "t": "I never miss **opening night** for a Bond film. I've seen the **movie trailer** at least ten times.",
+     "ru": "Я никогда не пропускаю премьерный вечер фильма про Бонда. Трейлер я видел раз десять."
+    },
+    {
+     "w": "B",
+     "t": "It's going to be **a box-office hit**. I heard a famous comedian has **a supporting role**.",
+     "ru": "Это будет кассовый хит. Я слышал, что у известного комика там роль второго плана."
+    },
+    {
+     "w": "Y",
+     "t": "Really? Then who **plays the lead role**?",
+     "ru": "Правда? А кто тогда играет главную роль?"
+    },
+    {
+     "w": "B",
+     "t": "A young actress nobody knows. But I think the villain will **steal the show**.",
+     "ru": "Молодая актриса, которую никто не знает. Но, по-моему, всех затмит злодей."
+    },
+    {
+     "w": "Y",
+     "t": "Villains always do. Shall I book tickets for Friday?",
+     "ru": "Злодеи всегда так делают. Заказать билеты на пятницу?"
+    },
+    {
+     "w": "B",
+     "t": "Done. Seven o'clock?",
+     "ru": "Договорились. В семь?"
+    },
+    {
+     "w": "Y",
+     "t": "Perfect.",
+     "ru": "Отлично."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe a film you enjoyed and who stood out in it.",
+    "ru": "Расскажите за минуту о фильме, который вам понравился, и кто в нём выделялся.",
+    "targets": [
+     "play the lead role",
+     "steal the show",
+     "a supporting role",
+     "a box-office hit"
+    ]
+   }
+  },
+  {
+   "id": "health",
+   "t": "Lifestyle changes",
+   "ru": "Здоровье и образ жизни",
+   "partner": "Kim",
+   "items": [
+    {
+     "id": "health.1",
+     "en": "diagnose someone with",
+     "ru": "поставить кому-то диагноз",
+     "def": "tell a patient the name of the illness they have",
+     "ex": "She didn't **diagnose me with** anything serious.",
+     "ex_ru": "Она не поставила мне ничего серьёзного.",
+     "trap": {
+      "s": "She didn't ___ anything serious.",
+      "ok": "diagnose me with",
+      "bad": [
+       "put me a diagnosis of",
+       "make me a diagnosis of"
+      ],
+      "why_ru": "Говорят diagnose someone with an illness. «Поставить диагноз» дословно не переводится."
+     }
+    },
+    {
+     "id": "health.2",
+     "en": "make lifestyle changes",
+     "ru": "изменить образ жизни",
+     "def": "change your habits, such as how you eat, move or sleep",
+     "ex": "You'll need to **make lifestyle changes** to lower your risk.",
+     "ex_ru": "Вам нужно изменить образ жизни, чтобы снизить риск.",
+     "trap": {
+      "s": "You'll need to ___ to lower your risk.",
+      "ok": "make lifestyle changes",
+      "bad": [
+       "do lifestyle changes",
+       "take lifestyle changes"
+      ],
+      "why_ru": "Изменения «вносят»: make changes. Do и take — калька."
+     }
+    },
+    {
+     "id": "health.3",
+     "en": "overall health",
+     "ru": "общее состояние здоровья",
+     "def": "how healthy you are in general",
+     "ex": "My **overall health** is quite poor.",
+     "ex_ru": "Моё общее состояние здоровья довольно плохое."
+    },
+    {
+     "id": "health.4",
+     "en": "reduce stress",
+     "ru": "снизить уровень стресса",
+     "def": "make your life less tense and worrying",
+     "ex": "Try to **reduce stress** before the exam.",
+     "ex_ru": "Постарайтесь снизить стресс перед экзаменом."
+    },
+    {
+     "id": "health.5",
+     "en": "get plenty of sleep",
+     "ru": "высыпаться",
+     "def": "sleep enough, usually seven or eight hours",
+     "ex": "Please **get plenty of sleep** before the exam.",
+     "ex_ru": "Пожалуйста, хорошо выспитесь перед экзаменом."
+    },
+    {
+     "id": "health.6",
+     "en": "quit smoking",
+     "ru": "бросить курить",
+     "def": "stop using cigarettes",
+     "ex": "My goal this year is to **quit smoking**.",
+     "ex_ru": "Моя цель в этом году — бросить курить.",
+     "trap": {
+      "s": "My goal this year is to ___.",
+      "ok": "quit smoking",
+      "bad": [
+       "leave smoking",
+       "throw smoking"
+      ],
+      "why_ru": "Бросить курить: quit smoking или give up smoking. Leave и throw — калька."
+     }
+    },
+    {
+     "id": "health.7",
+     "en": "shake someone up",
+     "ru": "потрясти, выбить из колеи",
+     "def": "make someone feel nervous, worried or shocked",
+     "ex": "The news really **shook me up**.",
+     "ex_ru": "Эта новость меня очень потрясла."
+    },
+    {
+     "id": "health.8",
+     "en": "life expectancy",
+     "ru": "ожидаемая продолжительность жизни",
+     "def": "how long a person is likely to live",
+     "ex": "Smoking reduces your **life expectancy**.",
+     "ex_ru": "Курение сокращает продолжительность жизни."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "How was the check-up? Did she **diagnose you with** anything?",
+     "ru": "Как прошёл осмотр? Она поставила тебе какой-нибудь диагноз?"
+    },
+    {
+     "w": "Y",
+     "t": "No, but she said I have to **make lifestyle changes**. My **overall health** is poor.",
+     "ru": "Нет, но она сказала, что нужно изменить образ жизни. Моё общее здоровье неважное."
+    },
+    {
+     "w": "B",
+     "t": "Like what? I'd guess you need to **reduce stress** and **get plenty of sleep**.",
+     "ru": "Что именно? Думаю, тебе нужно снизить стресс и высыпаться."
+    },
+    {
+     "w": "Y",
+     "t": "Both, and I have to **quit smoking**.",
+     "ru": "И то и другое, и ещё мне надо бросить курить."
+    },
+    {
+     "w": "B",
+     "t": "That must have **shook you up**.",
+     "ru": "Это, наверное, тебя потрясло."
+    },
+    {
+     "w": "Y",
+     "t": "It did. She said my **life expectancy** would drop if nothing changes.",
+     "ru": "Да. Она сказала, что моя продолжительность жизни сократится, если ничего не изменится."
+    },
+    {
+     "w": "B",
+     "t": "Then you have a good reason to start today.",
+     "ru": "Тогда у тебя есть веская причина начать сегодня."
+    },
+    {
+     "w": "Y",
+     "t": "I know. I'm throwing away the last pack tonight.",
+     "ru": "Знаю. Сегодня вечером выброшу последнюю пачку."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: which healthy habit would you like to start, and what is stopping you?",
+    "ru": "Расскажите за минуту, какую полезную привычку вы хотели бы завести и что вам мешает.",
+    "targets": [
+     "make lifestyle changes",
+     "reduce stress",
+     "get plenty of sleep",
+     "overall health"
+    ]
+   }
+  },
+  {
+   "id": "university",
+   "t": "Applying to university",
+   "ru": "Поступление в университет",
+   "partner": "Ted",
+   "items": [
+    {
+     "id": "university.1",
+     "en": "apply to university",
+     "ru": "подавать документы в университет",
+     "def": "send in a request to study at a university",
+     "ex": "She is going to **apply to university** this autumn.",
+     "ex_ru": "Она будет подавать документы в университет этой осенью.",
+     "trap": {
+      "s": "She is going to ___ this autumn.",
+      "ok": "apply to university",
+      "bad": [
+       "enter to university",
+       "apply for university to"
+      ],
+      "why_ru": "Подать документы: apply to a university (или apply for a place). Enter to university — калька."
+     }
+    },
+    {
+     "id": "university.2",
+     "en": "get good grades",
+     "ru": "получать хорошие оценки",
+     "def": "receive high marks in your classes",
+     "ex": "She **gets good grades**, so she should get in.",
+     "ex_ru": "Она получает хорошие оценки, так что должна поступить."
+    },
+    {
+     "id": "university.3",
+     "en": "get a scholarship",
+     "ru": "получить стипендию (грант на учёбу)",
+     "def": "win money that pays for your studies",
+     "ex": "She might **get a scholarship** too.",
+     "ex_ru": "Возможно, она получит и стипендию."
+    },
+    {
+     "id": "university.4",
+     "en": "declare a major",
+     "ru": "выбрать основную специальность (США)",
+     "def": "officially choose your main subject at a university",
+     "ex": "You don't have to **declare a major** until your second year.",
+     "ex_ru": "Основную специальность можно выбрать только на втором курсе.",
+     "trap": {
+      "s": "You don't have to ___ until your second year.",
+      "ok": "declare a major",
+      "bad": [
+       "announce a major",
+       "say a major"
+      ],
+      "why_ru": "Официально выбрать специальность: declare a major. Announce и say здесь не используются."
+     }
+    },
+    {
+     "id": "university.5",
+     "en": "drop out of university",
+     "ru": "бросить университет",
+     "def": "leave university before finishing your degree",
+     "ex": "My nephew **dropped out of university** after a year.",
+     "ex_ru": "Мой племянник бросил университет через год."
+    },
+    {
+     "id": "university.6",
+     "en": "retake a class",
+     "ru": "пересдать курс",
+     "def": "take a course again because you did not pass it",
+     "ex": "He failed, so he has to **retake a class**.",
+     "ex_ru": "Он провалился, поэтому ему придётся пересдавать курс."
+    },
+    {
+     "id": "university.7",
+     "en": "pay tuition fees",
+     "ru": "платить за обучение",
+     "def": "pay the cost of studying at a university",
+     "ex": "It's hard enough to **pay tuition fees** once, let alone twice.",
+     "ex_ru": "Платить за обучение один раз уже непросто, не говоря о втором."
+    },
+    {
+     "id": "university.8",
+     "en": "graduate from university",
+     "ru": "окончить университет",
+     "def": "finish your studies and receive a degree",
+     "ex": "I want him to **graduate from university**.",
+     "ex_ru": "Я хочу, чтобы он окончил университет.",
+     "trap": {
+      "s": "I want him to ___.",
+      "ok": "graduate from university",
+      "bad": [
+       "finish from university",
+       "end the university"
+      ],
+      "why_ru": "Окончить вуз: graduate from university. Finish from и end the university — калька."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Is your daughter in her last year of high school?",
+     "ru": "Твоя дочь в последнем классе школы?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes. She's going to **apply to university**. She **gets good grades**, so she might **get a scholarship**.",
+     "ru": "Да. Она будет подавать документы в университет. Она получает хорошие оценки, так что, возможно, получит стипендию."
+    },
+    {
+     "w": "B",
+     "t": "Has she chosen what to study?",
+     "ru": "Она уже выбрала, что изучать?"
+    },
+    {
+     "w": "Y",
+     "t": "Not yet. She doesn't have to **declare a major** until her second year.",
+     "ru": "Пока нет. Основную специальность можно выбрать только на втором курсе."
+    },
+    {
+     "w": "B",
+     "t": "My nephew **dropped out of university** last year. Now he wants to **retake a class** and start over.",
+     "ru": "Мой племянник в прошлом году бросил университет. Теперь он хочет пересдать курс и начать заново."
+    },
+    {
+     "w": "Y",
+     "t": "That's costly. It's hard enough to **pay tuition fees** the first time.",
+     "ru": "Это дорого. Платить за обучение даже в первый раз непросто."
+    },
+    {
+     "w": "B",
+     "t": "True. I just want him to **graduate from university**.",
+     "ru": "Верно. Я просто хочу, чтобы он окончил университет."
+    },
+    {
+     "w": "Y",
+     "t": "Let's hope he finishes this time.",
+     "ru": "Будем надеяться, что на этот раз он доучится."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how did you choose your field of study, and would you choose the same today?",
+    "ru": "Расскажите за минуту, как вы выбирали специальность и выбрали бы её снова сегодня.",
+    "targets": [
+     "graduate from university",
+     "apply to university",
+     "get a scholarship",
+     "drop out of university"
+    ]
+   }
+  },
+  {
+   "id": "environment",
+   "t": "Protecting the environment",
+   "ru": "Климат и окружающая среда",
+   "partner": "Jimmy",
+   "items": [
+    {
+     "id": "environment.1",
+     "en": "protect the environment",
+     "ru": "защищать окружающую среду",
+     "def": "do things that reduce harm to nature",
+     "ex": "We have a duty to **protect the environment**.",
+     "ex_ru": "Мы обязаны защищать окружающую среду."
+    },
+    {
+     "id": "environment.2",
+     "en": "natural disasters",
+     "ru": "стихийные бедствия",
+     "def": "events like floods, earthquakes or wildfires",
+     "ex": "There were many **natural disasters** last year.",
+     "ex_ru": "В прошлом году было много стихийных бедствий."
+    },
+    {
+     "id": "environment.3",
+     "en": "be on the rise",
+     "ru": "расти, увеличиваться",
+     "def": "be increasing",
+     "ex": "Extreme weather is **on the rise**.",
+     "ex_ru": "Экстремальная погода становится всё чаще.",
+     "trap": {
+      "s": "Extreme weather is ___.",
+      "ok": "on the rise",
+      "bad": [
+       "on rise",
+       "in the rise"
+      ],
+      "why_ru": "Фиксированное сочетание с артиклем: be on the rise."
+     }
+    },
+    {
+     "id": "environment.4",
+     "en": "fossil fuels",
+     "ru": "ископаемое топливо",
+     "def": "energy sources like coal, oil and gas",
+     "ex": "Many countries still depend on **fossil fuels**.",
+     "ex_ru": "Многие страны по-прежнему зависят от ископаемого топлива."
+    },
+    {
+     "id": "environment.5",
+     "en": "run out",
+     "ru": "заканчиваться, иссякать",
+     "def": "be used up so that none is left",
+     "ex": "Cheap oil is **running out**.",
+     "ex_ru": "Дешёвая нефть заканчивается."
+    },
+    {
+     "id": "environment.6",
+     "en": "preach to the choir",
+     "ru": "убеждать тех, кто и так согласен",
+     "def": "give an argument to people who already agree with you",
+     "ex": "You're **preaching to the choir** here; I already agree.",
+     "ex_ru": "Вы убеждаете убеждённых: я уже согласен.",
+     "trap": {
+      "s": "You're ___ here; I already agree.",
+      "ok": "preaching to the choir",
+      "bad": [
+       "preaching to the church",
+       "teaching to the choir"
+      ],
+      "why_ru": "Идиома: preach to the choir. Церковь и «teaching» здесь неверны."
+     }
+    },
+    {
+     "id": "environment.7",
+     "en": "renewable energy",
+     "ru": "возобновляемая энергия",
+     "def": "power from sources that do not run out, like sun and wind",
+     "ex": "We need more **renewable energy**.",
+     "ex_ru": "Нам нужно больше возобновляемой энергии."
+    },
+    {
+     "id": "environment.8",
+     "en": "reduce your carbon footprint",
+     "ru": "сократить свой углеродный след",
+     "def": "cause less carbon dioxide through the way you live and travel",
+     "ex": "I'm trying to **reduce my carbon footprint**.",
+     "ex_ru": "Я стараюсь сократить свой углеродный след."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "What's your final project about? **Protecting the environment**?",
+     "ru": "О чём твой финальный проект? О защите окружающей среды?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes. **Natural disasters** are **on the rise**, and **fossil fuels** are **running out**.",
+     "ru": "Да. Стихийных бедствий становится больше, а ископаемое топливо заканчивается."
+    },
+    {
+     "w": "B",
+     "t": "You're **preaching to the choir**. I've pushed for **renewable energy** for years.",
+     "ru": "Ты убеждаешь убеждённого. Я годами выступаю за возобновляемую энергию."
+    },
+    {
+     "w": "Y",
+     "t": "I'm also trying to **reduce my carbon footprint**. No more short flights.",
+     "ru": "Я ещё стараюсь сократить свой углеродный след. Никаких коротких перелётов."
+    },
+    {
+     "w": "B",
+     "t": "That's hard for someone who travels for work.",
+     "ru": "Это трудно для того, кто ездит в командировки."
+    },
+    {
+     "w": "Y",
+     "t": "True. I replaced three trips with video calls.",
+     "ru": "Верно. Три поездки я заменил видеозвонками."
+    },
+    {
+     "w": "B",
+     "t": "That's real progress.",
+     "ru": "Это настоящий прогресс."
+    },
+    {
+     "w": "Y",
+     "t": "Small steps.",
+     "ru": "Маленькие шаги."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what is one thing you do, or could do, to protect the environment?",
+    "ru": "Расскажите за минуту, что вы делаете или могли бы делать для защиты окружающей среды.",
+    "targets": [
+     "reduce your carbon footprint",
+     "renewable energy",
+     "be on the rise",
+     "run out"
+    ]
+   }
+  },
+  {
+   "id": "doctor",
+   "t": "A bad cold",
+   "ru": "Болезнь и врач",
+   "partner": "Anita",
+   "items": [
+    {
+     "id": "doctor.1",
+     "en": "a rough couple of weeks",
+     "ru": "тяжёлые пара недель",
+     "def": "a difficult period of about two weeks",
+     "ex": "I've had **a rough couple of weeks**.",
+     "ex_ru": "У меня были тяжёлые пара недель."
+    },
+    {
+     "id": "doctor.2",
+     "en": "catch a cold",
+     "ru": "простудиться",
+     "def": "become ill with a cold",
+     "ex": "I **caught a cold** just before Christmas.",
+     "ex_ru": "Я простудился прямо перед Рождеством.",
+     "trap": {
+      "s": "I ___ just before Christmas.",
+      "ok": "caught a cold",
+      "bad": [
+       "took a cold",
+       "grabbed a cold"
+      ],
+      "why_ru": "Простудиться: catch a cold. Take и grab так не говорят."
+     }
+    },
+    {
+     "id": "doctor.3",
+     "en": "terrible timing",
+     "ru": "ужасное время для этого, не вовремя",
+     "def": "a very bad moment for something to happen",
+     "ex": "That's **terrible timing** for getting ill.",
+     "ex_ru": "Очень не вовремя заболеть."
+    },
+    {
+     "id": "doctor.4",
+     "en": "over-the-counter medication",
+     "ru": "лекарство без рецепта",
+     "def": "medicine you can buy without a prescription",
+     "ex": "Try **over-the-counter medication** first.",
+     "ex_ru": "Сначала попробуйте лекарство без рецепта."
+    },
+    {
+     "id": "doctor.5",
+     "en": "take antibiotics",
+     "ru": "принимать антибиотики",
+     "def": "use medicine that kills harmful bacteria",
+     "ex": "Did the doctor tell you to **take antibiotics**?",
+     "ex_ru": "Врач сказал вам принимать антибиотики?",
+     "trap": {
+      "s": "Did the doctor tell you to ___?",
+      "ok": "take antibiotics",
+      "bad": [
+       "drink antibiotics",
+       "eat antibiotics"
+      ],
+      "why_ru": "Лекарства «принимают»: take medicine или take antibiotics. Drink и eat — калька."
+     }
+    },
+    {
+     "id": "doctor.6",
+     "en": "come down with the flu",
+     "ru": "заболеть гриппом",
+     "def": "start to become ill with the flu",
+     "ex": "I **came down with the flu** last month.",
+     "ex_ru": "В прошлом месяце я заболел гриппом."
+    },
+    {
+     "id": "doctor.7",
+     "en": "make a full recovery",
+     "ru": "полностью выздороветь",
+     "def": "get completely well again",
+     "ex": "He is expected to **make a full recovery**.",
+     "ex_ru": "Ожидается, что он полностью выздоровеет.",
+     "trap": {
+      "s": "He is expected to ___.",
+      "ok": "make a full recovery",
+      "bad": [
+       "do a full recovery",
+       "take a full recovery"
+      ],
+      "why_ru": "Выздоровление: make a recovery. Do и take — калька."
+     }
+    },
+    {
+     "id": "doctor.8",
+     "en": "enough about me",
+     "ru": "хватит обо мне",
+     "def": "a polite way to change the subject and ask about the other person",
+     "ex": "Well, **enough about me**. How are you?",
+     "ex_ru": "Ну, хватит обо мне. Как ты?"
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "How have you been? I've had **a rough couple of weeks**. I **caught a cold** just before Christmas.",
+     "ru": "Как ты? У меня были тяжёлые пара недель. Я простудилась прямо перед Рождеством."
+    },
+    {
+     "w": "Y",
+     "t": "**Terrible timing**! What did the doctor say?",
+     "ru": "Ужасно не вовремя! Что сказал врач?"
+    },
+    {
+     "w": "B",
+     "t": "To use **over-the-counter medication**. It was a virus, so there was no point **taking antibiotics**.",
+     "ru": "Принимать лекарства без рецепта. Это был вирус, так что антибиотики были бесполезны."
+    },
+    {
+     "w": "Y",
+     "t": "Sensible. I **came down with the flu** last month, and I've only just **made a full recovery**.",
+     "ru": "Разумно. В прошлом месяце я заболел гриппом и только что полностью выздоровел."
+    },
+    {
+     "w": "B",
+     "t": "Poor you. Well, **enough about me**. How's work?",
+     "ru": "Бедняга. Ладно, хватит обо мне. Как работа?"
+    },
+    {
+     "w": "Y",
+     "t": "Busy, but fine.",
+     "ru": "Занят, но всё нормально."
+    },
+    {
+     "w": "B",
+     "t": "Good. Don't overdo it now.",
+     "ru": "Хорошо. Только не перегружайся."
+    },
+    {
+     "w": "Y",
+     "t": "I won't. See you at lunch on Friday?",
+     "ru": "Не буду. Увидимся на обеде в пятницу?"
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: tell about the last time you were ill and how you recovered.",
+    "ru": "Расскажите за минуту о последнем разе, когда вы болели, и как вы выздоравливали.",
+    "targets": [
+     "catch a cold",
+     "come down with the flu",
+     "make a full recovery",
+     "take antibiotics"
+    ]
+   }
+  },
+  {
+   "id": "controversy",
+   "t": "A controversial decision",
+   "ru": "Трудное решение и эмоции",
+   "partner": "June",
+   "items": [
+    {
+     "id": "controversy.1",
+     "en": "be grateful for",
+     "ru": "быть благодарным за",
+     "def": "feel thankful about something",
+     "ex": "I'm **grateful for** your support.",
+     "ex_ru": "Я благодарен за вашу поддержку.",
+     "trap": {
+      "s": "I'm ___ your support.",
+      "ok": "grateful for",
+      "bad": [
+       "grateful to",
+       "grateful of"
+      ],
+      "why_ru": "Благодарен за что-то: grateful for + существительное. Grateful to — «кому»."
+     }
+    },
+    {
+     "id": "controversy.2",
+     "en": "highly controversial",
+     "ru": "крайне спорный",
+     "def": "causing strong disagreement among people",
+     "ex": "It was **highly controversial** to cancel the project.",
+     "ex_ru": "Отмена проекта вызвала жаркие споры."
+    },
+    {
+     "id": "controversy.3",
+     "en": "make the right decision",
+     "ru": "принять верное решение",
+     "def": "choose the correct option after thinking",
+     "ex": "It was hard, but I think we **made the right decision**.",
+     "ex_ru": "Это было трудно, но, по-моему, мы приняли верное решение.",
+     "trap": {
+      "s": "It was hard, but we ___.",
+      "ok": "made the right decision",
+      "bad": [
+       "did the right decision",
+       "gave the right decision"
+      ],
+      "why_ru": "Решение «принимают»: make a decision. Do и give — калька."
+     }
+    },
+    {
+     "id": "controversy.4",
+     "en": "have someone's back",
+     "ru": "поддерживать, прикрывать кого-то",
+     "def": "support someone, especially when they are in a difficult position",
+     "ex": "Don't worry, I'll always **have your back**.",
+     "ex_ru": "Не волнуйтесь, я всегда вас поддержу."
+    },
+    {
+     "id": "controversy.5",
+     "en": "a mean streak",
+     "ru": "злобная жилка, склонность к злости",
+     "def": "a tendency to be unkind, often out of anger",
+     "ex": "He has **a mean streak** when he's under pressure.",
+     "ex_ru": "Под давлением у него проявляется злобная жилка."
+    },
+    {
+     "id": "controversy.6",
+     "en": "hold a grudge",
+     "ru": "затаить обиду, помнить зло",
+     "def": "stay angry at someone for something they did a long time ago",
+     "ex": "She **holds a grudge** for years.",
+     "ex_ru": "Она годами помнит обиду."
+    },
+    {
+     "id": "controversy.7",
+     "en": "a roller coaster of emotions",
+     "ru": "эмоциональные качели",
+     "def": "a period with extreme highs and lows",
+     "ex": "Last year was **a roller coaster of emotions**.",
+     "ex_ru": "Прошлый год был эмоциональными качелями."
+    },
+    {
+     "id": "controversy.8",
+     "en": "lose your temper",
+     "ru": "выйти из себя, вспылить",
+     "def": "become suddenly very angry",
+     "ex": "Please don't **lose your temper** in the meeting.",
+     "ex_ru": "Пожалуйста, не вспылите на встрече.",
+     "trap": {
+      "s": "Please don't ___ in the meeting.",
+      "ok": "lose your temper",
+      "bad": [
+       "lose your nerves",
+       "lose your anger"
+      ],
+      "why_ru": "Выйти из себя: lose your temper. Lose your nerves и lose your anger — калька."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "I'm **grateful for** your support this past year. Letting Jimmy go was **highly controversial**.",
+     "ru": "Я благодарна за вашу поддержку в этом году. Увольнение Джимми вызвало много споров."
+    },
+    {
+     "w": "Y",
+     "t": "It was **the right decision**, and you know I'll always **have your back**.",
+     "ru": "Это было верное решение, и вы знаете, что я всегда вас поддержу."
+    },
+    {
+     "w": "B",
+     "t": "He had **a mean streak**, and he would **hold a grudge** for months.",
+     "ru": "У него была злобная жилка, и он месяцами помнил обиды."
+    },
+    {
+     "w": "Y",
+     "t": "I remember. Honestly, last year was **a roller coaster of emotions**.",
+     "ru": "Помню. Честно говоря, прошлый год был эмоциональными качелями."
+    },
+    {
+     "w": "B",
+     "t": "I **lost my temper** twice, and I'm not proud of it.",
+     "ru": "Я дважды вспылила, и этим не горжусь."
+    },
+    {
+     "w": "Y",
+     "t": "Everyone has bad days. Next year will be calmer.",
+     "ru": "У всех бывают плохие дни. В следующем году будет спокойнее."
+    },
+    {
+     "w": "B",
+     "t": "Let's hope so.",
+     "ru": "Будем надеяться."
+    },
+    {
+     "w": "Y",
+     "t": "Cheers to that.",
+     "ru": "За это стоит выпить."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe a hard decision at work or in life and whether it turned out right.",
+    "ru": "Расскажите за минуту о трудном решении на работе или в жизни и о том, оказалось ли оно верным.",
+    "targets": [
+     "make the right decision",
+     "have someone's back",
+     "lose your temper",
+     "hold a grudge"
+    ]
+   }
+  },
+  {
+   "id": "job",
+   "t": "Losing a job",
+   "ru": "Работа и увольнение",
+   "partner": "Athena",
+   "items": [
+    {
+     "id": "job.1",
+     "en": "get fired",
+     "ru": "быть уволенным",
+     "def": "lose your job because of poor performance or behaviour",
+     "ex": "I heard he **got fired** last month.",
+     "ex_ru": "Я слышал, его уволили в прошлом месяце."
+    },
+    {
+     "id": "job.2",
+     "en": "a heavy workload",
+     "ru": "большая загрузка, много работы",
+     "def": "more work than a person can comfortably handle",
+     "ex": "The team has **a heavy workload** before year-end.",
+     "ex_ru": "У команды большая загрузка перед концом года."
+    },
+    {
+     "id": "job.3",
+     "en": "work overtime",
+     "ru": "работать сверхурочно",
+     "def": "work more hours than normal",
+     "ex": "They wanted us to **work overtime** for the same pay.",
+     "ex_ru": "Они хотели, чтобы мы работали сверхурочно за те же деньги.",
+     "trap": {
+      "s": "They wanted us to ___ for the same pay.",
+      "ok": "work overtime",
+      "bad": [
+       "make overtime",
+       "take overtime"
+      ],
+      "why_ru": "Сверхурочно «работают»: work overtime. Make и take — калька."
+     }
+    },
+    {
+     "id": "job.4",
+     "en": "minimum wage",
+     "ru": "минимальная оплата труда",
+     "def": "the lowest hourly pay allowed by law",
+     "ex": "Many students work on **minimum wage**.",
+     "ex_ru": "Многие студенты работают за минимальную оплату."
+    },
+    {
+     "id": "job.5",
+     "en": "without pay",
+     "ru": "без оплаты",
+     "def": "working but not receiving any money",
+     "ex": "Doing extra hours **without pay** is not fair.",
+     "ex_ru": "Работать сверхурочно без оплаты несправедливо."
+    },
+    {
+     "id": "job.6",
+     "en": "an emergency fund",
+     "ru": "резервный фонд на непредвиденные случаи",
+     "def": "money saved for sudden problems like illness or job loss",
+     "ex": "I built **an emergency fund** over five years.",
+     "ex_ru": "Я пять лет копил резервный фонд."
+    },
+    {
+     "id": "job.7",
+     "en": "cover your living expenses",
+     "ru": "покрыть расходы на жизнь",
+     "def": "have enough money to pay for housing, food and bills",
+     "ex": "My savings can **cover my living expenses** for six months.",
+     "ex_ru": "Моих сбережений хватит, чтобы покрыть расходы на жизнь на полгода.",
+     "trap": {
+      "s": "My savings can ___ for six months.",
+      "ok": "cover my living expenses",
+      "bad": [
+       "close my living expenses",
+       "pay off my living expenses"
+      ],
+      "why_ru": "Покрыть расходы: cover expenses. Close и pay off здесь не подходят."
+     }
+    },
+    {
+     "id": "job.8",
+     "en": "have an interview lined up",
+     "ru": "иметь запланированное собеседование",
+     "def": "have a job interview already arranged",
+     "ex": "I **have an interview lined up** for next week.",
+     "ex_ru": "У меня на следующей неделе запланировано собеседование."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "I heard you **got fired**. What happened?",
+     "ru": "Я слышала, тебя уволили. Что случилось?"
+    },
+    {
+     "w": "Y",
+     "t": "There was **a heavy workload**, and they wanted us to **work overtime**.",
+     "ru": "Была большая загрузка, и они хотели, чтобы мы работали сверхурочно."
+    },
+    {
+     "w": "B",
+     "t": "For the same rate? At **minimum wage**?",
+     "ru": "За ту же оплату? За минимальную?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes, and often **without pay**.",
+     "ru": "Да, и часто без оплаты."
+    },
+    {
+     "w": "B",
+     "t": "That's outrageous. Are you okay for money? Did you have an **emergency fund**?",
+     "ru": "Это возмутительно. С деньгами нормально? У тебя был резервный фонд?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes. It can **cover my living expenses** for a few months.",
+     "ru": "Да. Его хватит, чтобы покрыть расходы на жизнь на несколько месяцев."
+    },
+    {
+     "w": "B",
+     "t": "Good thinking. Any leads?",
+     "ru": "Хорошая мысль. Есть зацепки?"
+    },
+    {
+     "w": "Y",
+     "t": "I **have an interview lined up** for next week.",
+     "ru": "У меня на следующей неделе запланировано собеседование."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what financial safety net would you want before changing jobs?",
+    "ru": "Расскажите за минуту, какая финансовая подушка вам нужна перед сменой работы.",
+    "targets": [
+     "an emergency fund",
+     "cover your living expenses",
+     "work overtime",
+     "get fired"
+    ]
+   }
+  },
+  {
+   "id": "money",
+   "t": "Financially savvy",
+   "ru": "Деньги и бюджет",
+   "partner": "Tim",
+   "items": [
+    {
+     "id": "money.1",
+     "en": "money is tight",
+     "ru": "с деньгами туго",
+     "def": "you have little spare money at the moment",
+     "ex": "**Money is tight** this month.",
+     "ex_ru": "В этом месяце с деньгами туго."
+    },
+    {
+     "id": "money.2",
+     "en": "be broke",
+     "ru": "быть на мели",
+     "def": "have no money",
+     "ex": "I'm tired of being **broke**.",
+     "ex_ru": "Я устал сидеть без денег."
+    },
+    {
+     "id": "money.3",
+     "en": "make good money",
+     "ru": "хорошо зарабатывать",
+     "def": "earn a high income",
+     "ex": "She **makes good money** in finance.",
+     "ex_ru": "Она хорошо зарабатывает в финансах.",
+     "trap": {
+      "s": "She ___ in finance.",
+      "ok": "makes good money",
+      "bad": [
+       "earns a good money",
+       "does good money"
+      ],
+      "why_ru": "Хорошо зарабатывать: make good money (money без артикля). Does money — калька."
+     }
+    },
+    {
+     "id": "money.4",
+     "en": "waste money",
+     "ru": "транжирить деньги",
+     "def": "spend money on things that are not useful",
+     "ex": "I **waste money** on small things every day.",
+     "ex_ru": "Я каждый день трачу деньги на мелочи."
+    },
+    {
+     "id": "money.5",
+     "en": "make a budget",
+     "ru": "составить бюджет",
+     "def": "write down how much you will spend and save",
+     "ex": "It's time to **make a budget**.",
+     "ex_ru": "Пора составить бюджет.",
+     "trap": {
+      "s": "It's time to ___.",
+      "ok": "make a budget",
+      "bad": [
+       "do a budget",
+       "take a budget"
+      ],
+      "why_ru": "Бюджет «составляют»: make a budget (или draw up a budget). Do и take — калька."
+     }
+    },
+    {
+     "id": "money.6",
+     "en": "stick to a budget",
+     "ru": "придерживаться бюджета",
+     "def": "follow your spending plan without breaking it",
+     "ex": "It's hard to **stick to a budget** when you eat out.",
+     "ex_ru": "Трудно придерживаться бюджета, если часто ходишь по ресторанам.",
+     "trap": {
+      "s": "It's hard to ___ when you eat out.",
+      "ok": "stick to a budget",
+      "bad": [
+       "stick on a budget",
+       "keep on a budget"
+      ],
+      "why_ru": "Придерживаться плана: stick to a budget. Предлог to, а не on."
+     }
+    },
+    {
+     "id": "money.7",
+     "en": "save for retirement",
+     "ru": "копить на пенсию",
+     "def": "put money aside for the years after you stop working",
+     "ex": "I need to start **saving for retirement**.",
+     "ex_ru": "Мне пора начинать копить на пенсию.",
+     "trap": {
+      "s": "I need to start ___.",
+      "ok": "saving for retirement",
+      "bad": [
+       "saving to retirement",
+       "saving on retirement"
+      ],
+      "why_ru": "Копить на что-то: save for. Предлоги to и on не подходят."
+     }
+    },
+    {
+     "id": "money.8",
+     "en": "invest in the stock market",
+     "ru": "инвестировать в фондовый рынок",
+     "def": "buy shares of companies hoping their value will grow",
+     "ex": "He started to **invest in the stock market** last year.",
+     "ex_ru": "В прошлом году он начал инвестировать в фондовый рынок."
+    },
+    {
+     "id": "money.9",
+     "en": "financially savvy",
+     "ru": "разбирающийся в финансах",
+     "def": "good at managing money and understanding financial matters",
+     "ex": "She is very **financially savvy**.",
+     "ex_ru": "Она отлично разбирается в финансах."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "**Money is tight** this month, and I don't know why.",
+     "ru": "В этом месяце с деньгами туго, и я не понимаю почему."
+    },
+    {
+     "w": "Y",
+     "t": "You **make good money**. Aren't you tired of being **broke**?",
+     "ru": "Ты хорошо зарабатываешь. Тебе не надоело сидеть без денег?"
+    },
+    {
+     "w": "B",
+     "t": "Of course. I **waste money** on small things. I should **make a budget** and **stick to it**.",
+     "ru": "Конечно. Я трачу деньги на мелочи. Надо составить бюджет и его придерживаться."
+    },
+    {
+     "w": "Y",
+     "t": "Start by **saving for retirement** automatically. Then **invest in the stock market** with whatever is left.",
+     "ru": "Начни с автоматических отчислений на пенсию. Потом инвестируй в фондовый рынок то, что останется."
+    },
+    {
+     "w": "B",
+     "t": "You make it sound easy. You're so **financially savvy**.",
+     "ru": "У тебя это звучит просто. Ты так хорошо разбираешься в финансах."
+    },
+    {
+     "w": "Y",
+     "t": "Not really. I just automate everything.",
+     "ru": "Не совсем. Я просто всё автоматизирую."
+    },
+    {
+     "w": "B",
+     "t": "I'll try that.",
+     "ru": "Попробую."
+    },
+    {
+     "w": "Y",
+     "t": "Start this week.",
+     "ru": "Начни на этой неделе."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what is your approach to saving and spending, and what would you change?",
+    "ru": "Расскажите за минуту, как вы подходите к накоплениям и тратам и что бы вы изменили.",
+    "targets": [
+     "make a budget",
+     "stick to a budget",
+     "waste money",
+     "save for retirement"
+    ]
+   }
+  },
+  {
+   "id": "seat",
+   "t": "Running late",
+   "ru": "Опоздания и повседневные просьбы",
+   "partner": "Jerry",
+   "items": [
+    {
+     "id": "seat.1",
+     "en": "save me a seat",
+     "ru": "займи мне место",
+     "def": "keep a seat free for someone who has not arrived yet",
+     "ex": "Can you **save me a seat** in the front row?",
+     "ex_ru": "Займёшь мне место в первом ряду?"
+    },
+    {
+     "id": "seat.2",
+     "en": "be running late",
+     "ru": "задерживаться, опаздывать",
+     "def": "be going to arrive after the planned time",
+     "ex": "Sorry, I'm **running late**.",
+     "ex_ru": "Извини, я опаздываю."
+    },
+    {
+     "id": "seat.3",
+     "en": "take notes",
+     "ru": "делать записи, конспектировать",
+     "def": "write down the main points while listening",
+     "ex": "I always **take notes** during meetings.",
+     "ex_ru": "Я всегда делаю записи на встречах.",
+     "trap": {
+      "s": "I always ___ during meetings.",
+      "ok": "take notes",
+      "bad": [
+       "do notes",
+       "hold notes"
+      ],
+      "why_ru": "Конспект «ведут»: take notes. Do и hold не используются."
+     }
+    },
+    {
+     "id": "seat.4",
+     "en": "old school",
+     "ru": "по-старинке, старой закалки",
+     "def": "using traditional methods rather than modern ones",
+     "ex": "I'm **old school**: I use a paper pad.",
+     "ex_ru": "Я человек старой закалки: пишу на бумаге."
+    },
+    {
+     "id": "seat.5",
+     "en": "catch your eye",
+     "ru": "бросаться в глаза, привлечь внимание",
+     "def": "attract your attention because it is interesting or attractive",
+     "ex": "Something in the window **caught my eye**.",
+     "ex_ru": "Что-то в витрине бросилось мне в глаза."
+    },
+    {
+     "id": "seat.6",
+     "en": "pay attention",
+     "ru": "обращать внимание, слушать внимательно",
+     "def": "listen or look carefully",
+     "ex": "Please **pay attention** to the instructions.",
+     "ex_ru": "Пожалуйста, внимательно прочитайте инструкции.",
+     "trap": {
+      "s": "Please ___ to the instructions.",
+      "ok": "pay attention",
+      "bad": [
+       "give attention",
+       "make attention"
+      ],
+      "why_ru": "Внимание «обращают»: pay attention. Give и make — калька."
+     }
+    },
+    {
+     "id": "seat.7",
+     "en": "keep up the good work",
+     "ru": "так держать",
+     "def": "continue doing well",
+     "ex": "**Keep up the good work**, everyone.",
+     "ex_ru": "Так держать, коллеги."
+    },
+    {
+     "id": "seat.8",
+     "en": "my treat",
+     "ru": "угощаю я",
+     "def": "I will pay",
+     "ex": "Lunch is **my treat** today.",
+     "ex_ru": "Сегодня обед за мой счёт."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Can you **save me a seat** at the morning session? I'm **running late**.",
+     "ru": "Займёшь мне место на утренней сессии? Я опаздываю."
+    },
+    {
+     "w": "Y",
+     "t": "Sure. I'll **take notes** for you, but I'm **old school**: just a paper pad.",
+     "ru": "Конечно. Я буду записывать для тебя, но я старой закалки: просто блокнот."
+    },
+    {
+     "w": "B",
+     "t": "That's fine. The bakery on the corner always **catches my eye** on the way in, that's why I'm late.",
+     "ru": "Ничего. Булочная на углу всегда бросается мне в глаза по дороге, поэтому я и задерживаюсь."
+    },
+    {
+     "w": "Y",
+     "t": "Ha. Come in quietly and **pay attention**, because the speaker is excellent.",
+     "ru": "Ха. Входи тихо и слушай внимательно: докладчик отличный."
+    },
+    {
+     "w": "B",
+     "t": "Noted. And **keep up the good work**: your report impressed everyone.",
+     "ru": "Принято. И так держать: твой отчёт всех впечатлил."
+    },
+    {
+     "w": "Y",
+     "t": "Thanks. Lunch after the session?",
+     "ru": "Спасибо. Обед после сессии?"
+    },
+    {
+     "w": "B",
+     "t": "Yes. **My treat**.",
+     "ru": "Да. Угощаю я."
+    },
+    {
+     "w": "Y",
+     "t": "Deal.",
+     "ru": "Договорились."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: do you take notes by hand or on a device, and why?",
+    "ru": "Расскажите за минуту, делаете ли вы записи от руки или на устройстве и почему.",
+    "targets": [
+     "take notes",
+     "pay attention",
+     "old school",
+     "be running late"
+    ]
+   }
+  },
+  {
+   "id": "rest",
+   "t": "Needing a break",
+   "ru": "Отдых и выгорание",
+   "partner": "Sienna",
+   "items": [
+    {
+     "id": "rest.1",
+     "en": "to tell you the truth",
+     "ru": "по правде говоря",
+     "def": "to be honest",
+     "ex": "**To tell you the truth**, I'm exhausted.",
+     "ex_ru": "По правде говоря, я вымотан."
+    },
+    {
+     "id": "rest.2",
+     "en": "take a break",
+     "ru": "сделать перерыв",
+     "def": "stop working for a while",
+     "ex": "You should **take a break** from work.",
+     "ex_ru": "Вам стоит сделать перерыв в работе.",
+     "trap": {
+      "s": "You should ___ from work.",
+      "ok": "take a break",
+      "bad": [
+       "do a break",
+       "make a break"
+      ],
+      "why_ru": "Перерыв «берут»: take a break. Do и make — калька."
+     }
+    },
+    {
+     "id": "rest.3",
+     "en": "get away",
+     "ru": "вырваться, уехать отдохнуть",
+     "def": "go somewhere for a holiday or a break",
+     "ex": "We need to **get away** for a few days.",
+     "ex_ru": "Нам нужно вырваться на несколько дней."
+    },
+    {
+     "id": "rest.4",
+     "en": "life is short",
+     "ru": "жизнь коротка",
+     "def": "we should enjoy life because it does not last forever",
+     "ex": "**Life is short**, so use your holiday days.",
+     "ex_ru": "Жизнь коротка, так что используйте отпускные дни."
+    },
+    {
+     "id": "rest.5",
+     "en": "make time for",
+     "ru": "находить время для",
+     "def": "plan your day so that something important fits in",
+     "ex": "You have to **make time for** the people you love.",
+     "ex_ru": "Нужно находить время для тех, кого любишь.",
+     "trap": {
+      "s": "You have to ___ the people you love.",
+      "ok": "make time for",
+      "bad": [
+       "do time for",
+       "give time of"
+      ],
+      "why_ru": "Находить время: make time for. Do time for и give time of — не существуют."
+     }
+    },
+    {
+     "id": "rest.6",
+     "en": "recharge your batteries",
+     "ru": "восстановить силы, перезарядиться",
+     "def": "rest so that you have energy again",
+     "ex": "A week at the sea will **recharge my batteries**.",
+     "ex_ru": "Неделя на море поможет мне перезарядиться."
+    },
+    {
+     "id": "rest.7",
+     "en": "be close to retirement",
+     "ru": "быть близко к пенсии",
+     "def": "be nearly at the age when you stop working",
+     "ex": "He's **close to retirement**.",
+     "ex_ru": "Ему скоро на пенсию."
+    },
+    {
+     "id": "rest.8",
+     "en": "break the rules",
+     "ru": "нарушать правила",
+     "def": "do something that is not allowed",
+     "ex": "I'm tempted to **break the rules** and leave early.",
+     "ex_ru": "Меня подмывает нарушить правила и уйти пораньше."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "How are things? You look exhausted.",
+     "ru": "Как дела? Ты выглядишь измотанным."
+    },
+    {
+     "w": "Y",
+     "t": "**To tell you the truth**, I need to **take a break**. It's impossible to **get away** with this workload.",
+     "ru": "По правде говоря, мне нужен перерыв. С такой загрузкой невозможно вырваться."
+    },
+    {
+     "w": "B",
+     "t": "**Life is short**. You have to **make time for** the good stuff.",
+     "ru": "Жизнь коротка. Нужно находить время для хорошего."
+    },
+    {
+     "w": "Y",
+     "t": "I know. My kids keep telling me to **recharge my batteries**.",
+     "ru": "Знаю. Дети всё время говорят мне перезарядиться."
+    },
+    {
+     "w": "B",
+     "t": "They're right. Aren't you **close to retirement** anyway?",
+     "ru": "Они правы. Ты ведь и так близок к пенсии?"
+    },
+    {
+     "w": "Y",
+     "t": "Three years. Honestly, I'm tempted to **break the rules** and leave early on Fridays.",
+     "ru": "Три года. Честно говоря, меня подмывает нарушить правила и уходить по пятницам пораньше."
+    },
+    {
+     "w": "B",
+     "t": "Do it. Nobody will notice.",
+     "ru": "Сделай это. Никто не заметит."
+    },
+    {
+     "w": "Y",
+     "t": "I'll think about it.",
+     "ru": "Подумаю."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how do you recover when you are tired, and how long does it usually take?",
+    "ru": "Расскажите за минуту, как вы восстанавливаетесь, когда устали, и сколько это обычно занимает.",
+    "targets": [
+     "take a break",
+     "recharge your batteries",
+     "make time for",
+     "get away"
+    ]
+   }
+  },
+  {
+   "id": "colleague",
+   "t": "A difficult colleague",
+   "ru": "Раздражающий коллега",
+   "partner": "Ethan",
+   "items": [
+    {
+     "id": "colleague.1",
+     "en": "be fed up with",
+     "ru": "быть сытым по горло, устать от",
+     "def": "be tired of something and annoyed by it",
+     "ex": "I'm **fed up with** the constant delays.",
+     "ex_ru": "Я сыт по горло постоянными задержками."
+    },
+    {
+     "id": "colleague.2",
+     "en": "be addicted to",
+     "ru": "быть зависимым от",
+     "def": "be unable to stop doing or using something",
+     "ex": "He is **addicted to** his phone.",
+     "ex_ru": "Он зависим от своего телефона.",
+     "trap": {
+      "s": "He is ___ his phone.",
+      "ok": "addicted to",
+      "bad": [
+       "addicted by",
+       "addicted with"
+      ],
+      "why_ru": "Зависимость от чего-то: addicted to. By и with — калька."
+     }
+    },
+    {
+     "id": "colleague.3",
+     "en": "get anything done",
+     "ru": "хоть что-то успеть сделать",
+     "def": "complete any work at all",
+     "ex": "He can't **get anything done** in the office.",
+     "ex_ru": "Он не может ничего сделать в офисе."
+    },
+    {
+     "id": "colleague.4",
+     "en": "have a reputation for",
+     "ru": "иметь репутацию",
+     "def": "be generally known for a particular quality or habit",
+     "ex": "He **has a reputation for** missing deadlines.",
+     "ex_ru": "У него репутация человека, который срывает сроки."
+    },
+    {
+     "id": "colleague.5",
+     "en": "be fully aware of",
+     "ru": "прекрасно осознавать",
+     "def": "know about something completely",
+     "ex": "Everyone is **fully aware of** the problem.",
+     "ex_ru": "Все прекрасно осознают проблему."
+    },
+    {
+     "id": "colleague.6",
+     "en": "be impressed by",
+     "ru": "быть под впечатлением от",
+     "def": "admire someone's talent or achievement",
+     "ex": "The board was **impressed by** the presentation.",
+     "ex_ru": "Совет директоров был под впечатлением от презентации."
+    },
+    {
+     "id": "colleague.7",
+     "en": "get a promotion",
+     "ru": "получить повышение",
+     "def": "move to a higher position at work",
+     "ex": "She **got a promotion** last month.",
+     "ex_ru": "В прошлом месяце её повысили.",
+     "trap": {
+      "s": "She ___ last month.",
+      "ok": "got a promotion",
+      "bad": [
+       "got a raising",
+       "made a promotion"
+      ],
+      "why_ru": "Повысили в должности: get a promotion. A raise — прибавка к зарплате; raising так не используется."
+     }
+    },
+    {
+     "id": "colleague.8",
+     "en": "turn a blind eye to",
+     "ru": "закрывать глаза на",
+     "def": "pretend not to see something that is wrong",
+     "ex": "Management **turns a blind eye to** his behaviour.",
+     "ex_ru": "Руководство закрывает глаза на его поведение.",
+     "trap": {
+      "s": "Management ___ his behaviour.",
+      "ok": "turns a blind eye to",
+      "bad": [
+       "closes an eye on",
+       "shuts the eyes to"
+      ],
+      "why_ru": "Идиома: turn a blind eye to. «Close an eye» дословная калька."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "You seem upset. What's wrong?",
+     "ru": "Ты расстроен. Что случилось?"
+    },
+    {
+     "w": "Y",
+     "t": "I'm so **fed up with** Ted. He's **addicted to** his phone and can't **get anything done**.",
+     "ru": "Я сыт по горло Тедом. Он зависим от телефона и ничего не успевает."
+    },
+    {
+     "w": "B",
+     "t": "He **has a reputation for** that. Everyone is **fully aware of** it.",
+     "ru": "У него такая репутация. Все прекрасно это осознают."
+    },
+    {
+     "w": "Y",
+     "t": "Yet Bob is **impressed by** him, and he even **got a promotion**.",
+     "ru": "И всё же Боб под впечатлением от него, и того повысили."
+    },
+    {
+     "w": "B",
+     "t": "Management always **turns a blind eye to** it.",
+     "ru": "Руководство всегда закрывает на это глаза."
+    },
+    {
+     "w": "Y",
+     "t": "I'd have let him go years ago.",
+     "ru": "Я бы уволил его много лет назад."
+    },
+    {
+     "w": "B",
+     "t": "Don't let it ruin your week.",
+     "ru": "Не давай этому испортить тебе неделю."
+    },
+    {
+     "w": "Y",
+     "t": "True. Coffee?",
+     "ru": "Верно. Кофе?"
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe a work situation that annoyed you and how you dealt with it.",
+    "ru": "Расскажите за минуту о рабочей ситуации, которая вас раздражала, и как вы с ней справились.",
+    "targets": [
+     "be fed up with",
+     "turn a blind eye to",
+     "get a promotion",
+     "have a reputation for"
+    ]
+   }
+  },
+  {
+   "id": "weekend",
+   "t": "A difficult weekend",
+   "ru": "Выходные и неприятности",
+   "partner": "Jeremy",
+   "items": [
+    {
+     "id": "weekend.1",
+     "en": "go swimming",
+     "ru": "ходить плавать",
+     "def": "swim for sport or pleasure",
+     "ex": "We **went swimming** with the kids.",
+     "ex_ru": "Мы ходили плавать с детьми.",
+     "trap": {
+      "s": "We ___ with the kids.",
+      "ok": "went swimming",
+      "bad": [
+       "went to swim",
+       "made swimming"
+      ],
+      "why_ru": "Занятия на -ing: go swimming, go running. Went to swim и made swimming не используются."
+     }
+    },
+    {
+     "id": "weekend.2",
+     "en": "do yoga",
+     "ru": "заниматься йогой",
+     "def": "practise yoga exercises",
+     "ex": "I **did yoga** this morning and feel great.",
+     "ex_ru": "Утром я позанимался йогой и чувствую себя прекрасно.",
+     "trap": {
+      "s": "I ___ this morning and feel great.",
+      "ok": "did yoga",
+      "bad": [
+       "played yoga",
+       "went yoga"
+      ],
+      "why_ru": "Йога, пилатес, зарядка: do yoga. Play — для игр, go — для видов на -ing."
+     }
+    },
+    {
+     "id": "weekend.3",
+     "en": "break your leg",
+     "ru": "сломать ногу",
+     "def": "damage a bone in your leg so that it cracks",
+     "ex": "He **broke his leg** at football.",
+     "ex_ru": "Он сломал ногу на футболе."
+    },
+    {
+     "id": "weekend.4",
+     "en": "have a cast on",
+     "ru": "быть в гипсе",
+     "def": "wear a hard plaster cover on a broken bone",
+     "ex": "He has to **have a cast on** for six weeks.",
+     "ex_ru": "Ему шесть недель ходить в гипсе."
+    },
+    {
+     "id": "weekend.5",
+     "en": "a vivid imagination",
+     "ru": "богатое воображение",
+     "def": "a mind that creates very clear and detailed images",
+     "ex": "She has **a vivid imagination**, so I didn't believe her.",
+     "ex_ru": "У неё богатое воображение, поэтому я ей не поверил."
+    },
+    {
+     "id": "weekend.6",
+     "en": "an emotional wreck",
+     "ru": "эмоционально разбитый человек",
+     "def": "someone in a very bad state: worried, anxious or sad",
+     "ex": "I'm **an emotional wreck** after the news.",
+     "ex_ru": "После этой новости я эмоционально разбит."
+    },
+    {
+     "id": "weekend.7",
+     "en": "a first date",
+     "ru": "первое свидание",
+     "def": "the first time you spend time with a romantic interest",
+     "ex": "I had **a first date** last night.",
+     "ex_ru": "Вчера вечером у меня было первое свидание."
+    },
+    {
+     "id": "weekend.8",
+     "en": "meet someone online",
+     "ru": "познакомиться с кем-то онлайн",
+     "def": "get to know someone through the Internet instead of in person",
+     "ex": "They **met online** two years ago.",
+     "ex_ru": "Они познакомились онлайн два года назад."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Hey, how was your weekend?",
+     "ru": "Привет, как прошли выходные?"
+    },
+    {
+     "w": "Y",
+     "t": "It started well: we **went swimming**, and I **did yoga** in the morning. Then Tim fell at his soccer game.",
+     "ru": "Начались хорошо: мы ходили плавать, а утром я позанимался йогой. Потом Тим упал на футбольном матче."
+    },
+    {
+     "w": "B",
+     "t": "Did he **break his leg**?",
+     "ru": "Он сломал ногу?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes. He has to **have a cast on** for six weeks. He has **a vivid imagination**, so I didn't believe him at first. I'm **an emotional wreck**.",
+     "ru": "Да. Ему шесть недель ходить в гипсе. У него богатое воображение, так что сначала я не поверил. Я эмоционально разбит."
+    },
+    {
+     "w": "B",
+     "t": "That sounds rough. My weekend was calmer: I had **a first date** with a woman I **met online**.",
+     "ru": "Звучит тяжело. У меня выходные прошли спокойнее: первое свидание с девушкой, с которой познакомился онлайн."
+    },
+    {
+     "w": "Y",
+     "t": "How did it go?",
+     "ru": "Как всё прошло?"
+    },
+    {
+     "w": "B",
+     "t": "Well. We're seeing each other again on Saturday.",
+     "ru": "Хорошо. В субботу снова увидимся."
+    },
+    {
+     "w": "Y",
+     "t": "Good for you.",
+     "ru": "Рад за тебя."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe your last weekend, with something good and something that went wrong.",
+    "ru": "Расскажите за минуту о прошлых выходных: что-то хорошее и что-то, что пошло не так.",
+    "targets": [
+     "go swimming",
+     "do yoga",
+     "an emotional wreck",
+     "have a cast on"
+    ]
+   }
+  },
+  {
+   "id": "energy",
+   "t": "Saving energy at home",
+   "ru": "Экономия энергии дома",
+   "partner": "Keith",
+   "items": [
+    {
+     "id": "energy.1",
+     "en": "an electricity bill",
+     "ru": "счёт за электричество",
+     "def": "the monthly payment for the power you use",
+     "ex": "Why are you checking the **electricity bill**?",
+     "ex_ru": "Почему ты проверяешь счёт за электричество?"
+    },
+    {
+     "id": "energy.2",
+     "en": "rates go up",
+     "ru": "тарифы растут",
+     "def": "the price per unit of something increases",
+     "ex": "Electricity **rates went up** in January.",
+     "ex_ru": "Тарифы на электричество выросли в январе."
+    },
+    {
+     "id": "energy.3",
+     "en": "keep track of",
+     "ru": "следить за, вести учёт",
+     "def": "watch and record how something changes",
+     "ex": "I never **keep track of** my spending.",
+     "ex_ru": "Я никогда не веду учёт своих трат.",
+     "trap": {
+      "s": "I never ___ my spending.",
+      "ok": "keep track of",
+      "bad": [
+       "hold track of",
+       "follow track of"
+      ],
+      "why_ru": "Следить, вести учёт: keep track of. Hold и follow track — калька."
+     }
+    },
+    {
+     "id": "energy.4",
+     "en": "save energy",
+     "ru": "экономить энергию",
+     "def": "use less power",
+     "ex": "How can we **save energy** at home?",
+     "ex_ru": "Как нам экономить энергию дома?"
+    },
+    {
+     "id": "energy.5",
+     "en": "a waste of time",
+     "ru": "пустая трата времени",
+     "def": "something that does not bring any useful result",
+     "ex": "Isn't swapping lightbulbs **a waste of time**?",
+     "ex_ru": "Разве замена лампочек не пустая трата времени?",
+     "trap": {
+      "s": "Isn't swapping lightbulbs ___?",
+      "ok": "a waste of time",
+      "bad": [
+       "a loss of time",
+       "a lose of time"
+      ],
+      "why_ru": "Пустая трата времени: a waste of time. «Loss of time» так не говорят."
+     }
+    },
+    {
+     "id": "energy.6",
+     "en": "make a difference",
+     "ru": "иметь значение, изменить ситуацию",
+     "def": "have an important effect on something",
+     "ex": "Small changes can **make a difference**.",
+     "ex_ru": "Небольшие перемены могут многое изменить.",
+     "trap": {
+      "s": "Small changes can ___.",
+      "ok": "make a difference",
+      "bad": [
+       "do a difference",
+       "give a difference"
+      ],
+      "why_ru": "Изменить ситуацию: make a difference. Do и give — калька."
+     }
+    },
+    {
+     "id": "energy.7",
+     "en": "be on board",
+     "ru": "быть согласным, присоединиться к плану",
+     "def": "agree with a plan and be willing to help",
+     "ex": "Are you **on board** with the plan?",
+     "ex_ru": "Ты согласен с этим планом?"
+    },
+    {
+     "id": "energy.8",
+     "en": "bear in mind",
+     "ru": "иметь в виду, помнить",
+     "def": "remember something when making a decision",
+     "ex": "Please **bear in mind** that I'm new to this.",
+     "ex_ru": "Пожалуйста, имейте в виду, что я новичок в этом."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Why are you checking the **electricity bill**? It's not like you.",
+     "ru": "Почему ты проверяешь счёт за электричество? Это на тебя не похоже."
+    },
+    {
+     "w": "Y",
+     "t": "The **rates went up**. I never **keep track of** it, and this month it's $20 higher.",
+     "ru": "Тарифы выросли. Я никогда за этим не слежу, а в этом месяце счёт на 20 долларов больше."
+    },
+    {
+     "w": "B",
+     "t": "So how do we **save energy**? Isn't swapping lightbulbs **a waste of time**?",
+     "ru": "Так как нам экономить энергию? Разве замена лампочек не пустая трата времени?"
+    },
+    {
+     "w": "Y",
+     "t": "Small things can **make a difference**. I found a guide online.",
+     "ru": "Мелочи могут многое изменить. Я нашёл в интернете руководство."
+    },
+    {
+     "w": "B",
+     "t": "Fine, I'm **on board**, but **bear in mind** that I'm lazy about this.",
+     "ru": "Хорошо, я согласен, но имей в виду, что я ленив в этом."
+    },
+    {
+     "w": "Y",
+     "t": "Noted. We can start by switching things off at night.",
+     "ru": "Принято. Можно начать с того, чтобы выключать всё на ночь."
+    },
+    {
+     "w": "B",
+     "t": "That I can do.",
+     "ru": "Это я смогу."
+    },
+    {
+     "w": "Y",
+     "t": "Great.",
+     "ru": "Отлично."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how do you try to save energy or money at home, and does it work?",
+    "ru": "Расскажите за минуту, как вы стараетесь экономить энергию или деньги дома и работает ли это.",
+    "targets": [
+     "save energy",
+     "make a difference",
+     "keep track of",
+     "a waste of time"
+    ]
+   }
+  },
+  {
+   "id": "secret",
+   "t": "Keeping a secret",
+   "ru": "Секреты и подозрения",
+   "partner": "Min",
+   "items": [
+    {
+     "id": "secret.1",
+     "en": "keep a secret",
+     "ru": "хранить секрет",
+     "def": "not tell anyone something that was told to you privately",
+     "ex": "Can you **keep a secret**?",
+     "ex_ru": "Ты умеешь хранить секреты?",
+     "trap": {
+      "s": "Can you ___?",
+      "ok": "keep a secret",
+      "bad": [
+       "hold a secret",
+       "save a secret"
+      ],
+      "why_ru": "Секрет «хранят»: keep a secret. Hold и save — калька."
+     }
+    },
+    {
+     "id": "secret.2",
+     "en": "keep quiet about",
+     "ru": "промолчать, не говорить о",
+     "def": "say nothing about something",
+     "ex": "I'll **keep quiet about** it.",
+     "ex_ru": "Я об этом промолчу."
+    },
+    {
+     "id": "secret.3",
+     "en": "take someone's place",
+     "ru": "занять чьё-то место, подменить",
+     "def": "do something instead of another person",
+     "ex": "He paid someone to **take his place** at the exam.",
+     "ex_ru": "Он заплатил кому-то, чтобы тот сдал за него экзамен."
+    },
+    {
+     "id": "secret.4",
+     "en": "be capable of",
+     "ru": "быть способным на",
+     "def": "have the ability or the nerve to do something",
+     "ex": "Is he **capable of** that?",
+     "ex_ru": "Он способен на такое?"
+    },
+    {
+     "id": "secret.5",
+     "en": "can't say for sure",
+     "ru": "не могу сказать наверняка",
+     "def": "I am not certain",
+     "ex": "I **can't say for sure**, but I think he left.",
+     "ex_ru": "Не могу сказать наверняка, но, кажется, он ушёл."
+    },
+    {
+     "id": "secret.6",
+     "en": "cheat on an exam",
+     "ru": "списывать на экзамене",
+     "def": "break the rules to pass a test",
+     "ex": "People really do **cheat on exams** like that.",
+     "ex_ru": "Люди действительно так списывают на экзаменах.",
+     "trap": {
+      "s": "He was caught ___.",
+      "ok": "cheating on an exam",
+      "bad": [
+       "cheating at exam",
+       "deceiving an exam"
+      ],
+      "why_ru": "Жульничать на экзамене: cheat on an exam (или in an exam). Deceive — «обманывать» человека, не экзамен."
+     }
+    },
+    {
+     "id": "secret.7",
+     "en": "it's a thing",
+     "ru": "такое действительно существует",
+     "def": "a casual way to say that something is real and common",
+     "ex": "It's **a thing**: people hire others to take tests.",
+     "ex_ru": "Такое действительно бывает: люди нанимают других сдавать за них тесты."
+    },
+    {
+     "id": "secret.8",
+     "en": "be ashamed of yourself",
+     "ru": "стыдиться себя, как не стыдно",
+     "def": "feel guilty and embarrassed about your behaviour",
+     "ex": "He should be **ashamed of himself**.",
+     "ex_ru": "Ему должно быть стыдно.",
+     "trap": {
+      "s": "He should ___.",
+      "ok": "be ashamed of himself",
+      "bad": [
+       "be shy of himself",
+       "feel shame by himself"
+      ],
+      "why_ru": "Стыдиться: be ashamed of yourself. Shy — «застенчивый», не «стыдно»."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "You look worried. What's wrong?",
+     "ru": "Ты выглядишь обеспокоенным. Что случилось?"
+    },
+    {
+     "w": "Y",
+     "t": "Can you **keep a secret**? I think Ted paid someone to **take his place** at the CPA exam.",
+     "ru": "Ты умеешь хранить секреты? Мне кажется, Тед заплатил кому-то, чтобы тот сдал за него экзамен CPA."
+    },
+    {
+     "w": "B",
+     "t": "Are you sure? Is he **capable of** that?",
+     "ru": "Ты уверен? Он способен на такое?"
+    },
+    {
+     "w": "Y",
+     "t": "I **can't say for sure**, but I saw him posting online during the exam. People really do **cheat on exams** like that. It's **a thing**.",
+     "ru": "Наверняка сказать не могу, но я видел, как он писал в сети во время экзамена. Люди действительно так списывают. Это бывает."
+    },
+    {
+     "w": "B",
+     "t": "He should be **ashamed of himself**. I'll **keep quiet about** it, but you should tell HR.",
+     "ru": "Ему должно быть стыдно. Я промолчу, но тебе нужно сообщить в HR."
+    },
+    {
+     "w": "Y",
+     "t": "I'll think about it.",
+     "ru": "Подумаю."
+    },
+    {
+     "w": "B",
+     "t": "Don't wait too long.",
+     "ru": "Не тяни слишком долго."
+    },
+    {
+     "w": "Y",
+     "t": "I won't.",
+     "ru": "Не буду."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: when is it right to keep something quiet, and when should you speak up?",
+    "ru": "Расскажите за минуту, когда правильно промолчать, а когда нужно сказать вслух.",
+    "targets": [
+     "keep a secret",
+     "keep quiet about",
+     "can't say for sure",
+     "be capable of"
+    ]
+   }
+  },
+  {
+   "id": "trip",
+   "t": "A business trip gone wrong",
+   "ru": "Командировка и перелёты",
+   "partner": "Cayla",
+   "items": [
+    {
+     "id": "trip.1",
+     "en": "go on a business trip",
+     "ru": "поехать в командировку",
+     "def": "travel for work",
+     "ex": "I have to **go on a business trip** next week.",
+     "ex_ru": "На следующей неделе мне нужно ехать в командировку.",
+     "trap": {
+      "s": "I have to ___ next week.",
+      "ok": "go on a business trip",
+      "bad": [
+       "go in a business trip",
+       "make a business trip"
+      ],
+      "why_ru": "В командировку «едут»: go on a business trip. Предлог on; make — калька."
+     }
+    },
+    {
+     "id": "trip.2",
+     "en": "an overbooked flight",
+     "ru": "рейс с перепроданными билетами",
+     "def": "a flight where the airline sold more tickets than there are seats",
+     "ex": "The flight was **overbooked**, so they asked for volunteers.",
+     "ex_ru": "Билетов на рейс продали больше, чем мест, поэтому искали добровольцев."
+    },
+    {
+     "id": "trip.3",
+     "en": "a bumpy flight",
+     "ru": "рейс с сильной турбулентностью",
+     "def": "a flight with a lot of shaking in the air",
+     "ex": "It was **a bumpy flight** over the mountains.",
+     "ex_ru": "Над горами была сильная турбулентность."
+    },
+    {
+     "id": "trip.4",
+     "en": "carry-on luggage",
+     "ru": "ручная кладь",
+     "def": "a small bag you take with you into the plane cabin",
+     "ex": "I only travel with **carry-on luggage**.",
+     "ex_ru": "Я летаю только с ручной кладью."
+    },
+    {
+     "id": "trip.5",
+     "en": "checked luggage",
+     "ru": "сдаваемый багаж",
+     "def": "bags you give to the airline and collect after the flight",
+     "ex": "My **checked luggage** arrived a day late.",
+     "ex_ru": "Мой сданный багаж прибыл на день позже."
+    },
+    {
+     "id": "trip.6",
+     "en": "catch a connecting flight",
+     "ru": "успеть на стыковочный рейс",
+     "def": "get on a second flight on the way to your final destination",
+     "ex": "I had to run to **catch a connecting flight**.",
+     "ex_ru": "Мне пришлось бежать, чтобы успеть на стыковку.",
+     "trap": {
+      "s": "I had to run to ___.",
+      "ok": "catch a connecting flight",
+      "bad": [
+       "catch up a connecting flight",
+       "hit a connecting flight"
+      ],
+      "why_ru": "Успеть на рейс: catch a flight. Catch up — догонять; hit так не говорят."
+     }
+    },
+    {
+     "id": "trip.7",
+     "en": "to top it all off",
+     "ru": "в довершение всего",
+     "def": "as the last and worst in a series of problems",
+     "ex": "**To top it all off**, my laptop died.",
+     "ex_ru": "В довершение всего у меня сел ноутбук."
+    },
+    {
+     "id": "trip.8",
+     "en": "once in a while",
+     "ru": "время от времени",
+     "def": "not often, but sometimes",
+     "ex": "I only travel **once in a while**.",
+     "ex_ru": "Я езжу в командировки лишь изредка.",
+     "trap": {
+      "s": "I only travel ___.",
+      "ok": "once in a while",
+      "bad": [
+       "one time in while",
+       "once at a while"
+      ],
+      "why_ru": "Время от времени: once in a while. Фиксированная фраза с предлогом in."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "How was your **business trip**?",
+     "ru": "Как прошла командировка?"
+    },
+    {
+     "w": "Y",
+     "t": "A nightmare. The flight was **overbooked**, so we were packed in like sardines, and it was **a bumpy flight**.",
+     "ru": "Кошмар. Билетов на рейс продали больше, чем мест, мы сидели как сельди в бочке, а ещё сильно трясло."
+    },
+    {
+     "w": "B",
+     "t": "Did you at least keep your **carry-on luggage**? And did your **checked luggage** arrive?",
+     "ru": "Хотя бы ручную кладь сохранил? А сданный багаж прибыл?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes to the first. The suitcase came a day late, and I had to run to **catch a connecting flight**. **To top it all off**, my laptop died.",
+     "ru": "На первое да. Чемодан пришёл на день позже, а на стыковку пришлось бежать. В довершение всего сел ноутбук."
+    },
+    {
+     "w": "B",
+     "t": "I'm amazed by your bad luck.",
+     "ru": "Я поражена твоим невезением."
+    },
+    {
+     "w": "Y",
+     "t": "I shouldn't complain. It's my dream job, and I only travel **once in a while**.",
+     "ru": "Не стоит жаловаться. Это работа мечты, а в командировки я езжу лишь изредка."
+    },
+    {
+     "w": "B",
+     "t": "Fair enough.",
+     "ru": "Справедливо."
+    },
+    {
+     "w": "Y",
+     "t": "Next time I'm taking the train.",
+     "ru": "В следующий раз поеду поездом."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe the worst journey you have had and what went wrong.",
+    "ru": "Расскажите за минуту о худшей поездке в вашей жизни и о том, что пошло не так.",
+    "targets": [
+     "catch a connecting flight",
+     "checked luggage",
+     "to top it all off",
+     "once in a while"
+    ]
+   }
+  },
+  {
+   "id": "dinner",
+   "t": "Hosting a dinner",
+   "ru": "Приглашение на ужин и аллергии",
+   "partner": "Tom",
+   "items": [
+    {
+     "id": "dinner.1",
+     "en": "host a dinner party",
+     "ru": "устроить званый ужин",
+     "def": "invite guests to your home and cook for them",
+     "ex": "We're going to **host a dinner party** on Saturday.",
+     "ex_ru": "В субботу мы устраиваем званый ужин.",
+     "trap": {
+      "s": "We're going to ___ on Saturday.",
+      "ok": "host a dinner party",
+      "bad": [
+       "make a dinner party",
+       "do a dinner party"
+      ],
+      "why_ru": "Приём гостей: host / throw / have a dinner party. Make и do — калька."
+     }
+    },
+    {
+     "id": "dinner.2",
+     "en": "be allergic to",
+     "ru": "иметь аллергию на",
+     "def": "get an illness or a bad reaction from something",
+     "ex": "I'm **allergic to** nuts.",
+     "ex_ru": "У меня аллергия на орехи.",
+     "trap": {
+      "s": "I'm ___ nuts.",
+      "ok": "allergic to",
+      "bad": [
+       "allergic on",
+       "allergic of"
+      ],
+      "why_ru": "Аллергия на что-то: allergic to. Предлоги on и of — калька."
+     }
+    },
+    {
+     "id": "dinner.3",
+     "en": "take an allergy test",
+     "ru": "сдать тест на аллергию",
+     "def": "have a medical test that shows what you are allergic to",
+     "ex": "I **took an allergy test** last month.",
+     "ex_ru": "В прошлом месяце я сдавал тест на аллергию."
+    },
+    {
+     "id": "dinner.4",
+     "en": "be aware of",
+     "ru": "знать о, осознавать",
+     "def": "know that something exists or is happening",
+     "ex": "I wasn't **aware of** that.",
+     "ex_ru": "Я об этом не знал."
+    },
+    {
+     "id": "dinner.5",
+     "en": "keep in mind",
+     "ru": "иметь в виду, помнить",
+     "def": "remember something when you act or decide",
+     "ex": "Please **keep in mind** that I leave at nine.",
+     "ex_ru": "Пожалуйста, имейте в виду, что я ухожу в девять."
+    },
+    {
+     "id": "dinner.6",
+     "en": "save someone the trouble",
+     "ru": "избавить кого-то от хлопот",
+     "def": "prevent someone from having extra work or difficulty",
+     "ex": "Let me **save you the trouble** and book the table.",
+     "ex_ru": "Позвольте избавить вас от хлопот и забронировать столик."
+    },
+    {
+     "id": "dinner.7",
+     "en": "do some research",
+     "ru": "навести справки, изучить вопрос",
+     "def": "look for information about a subject",
+     "ex": "I'll **do some research** and send you the recipes.",
+     "ex_ru": "Я наведу справки и пришлю вам рецепты.",
+     "trap": {
+      "s": "I'll ___ and send you the recipes.",
+      "ok": "do some research",
+      "bad": [
+       "make some research",
+       "hold some research"
+      ],
+      "why_ru": "Изучить вопрос: do research. Make и hold — калька."
+     }
+    },
+    {
+     "id": "dinner.8",
+     "en": "say no more",
+     "ru": "всё ясно, больше ни слова",
+     "def": "I understand and will deal with it",
+     "ex": "**Say no more.** I'll take care of it.",
+     "ex_ru": "Всё ясно. Я этим займусь."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "We're going to **host a dinner party** on Saturday. Are you **allergic to** anything?",
+     "ru": "В субботу мы устраиваем званый ужин. У тебя есть на что-нибудь аллергия?"
+    },
+    {
+     "w": "Y",
+     "t": "Gluten. I only found out when I **took an allergy test** recently.",
+     "ru": "На глютен. Я узнал об этом, только когда недавно сдал тест на аллергию."
+    },
+    {
+     "w": "B",
+     "t": "That's a big one. I wasn't **aware of** that.",
+     "ru": "Это серьёзно. Я не знал."
+    },
+    {
+     "w": "Y",
+     "t": "**Keep in mind** that even soy sauce has gluten. I can **save you the trouble** and bring my own food.",
+     "ru": "Имей в виду, что даже в соевом соусе есть глютен. Я могу избавить тебя от хлопот и принести свою еду."
+    },
+    {
+     "w": "B",
+     "t": "**Say no more.** I'll **do some research** and send you the recipes first.",
+     "ru": "Всё ясно. Я наведу справки и сначала пришлю тебе рецепты."
+    },
+    {
+     "w": "Y",
+     "t": "Perfect. Thank you.",
+     "ru": "Отлично. Спасибо."
+    },
+    {
+     "w": "B",
+     "t": "No problem.",
+     "ru": "Не за что."
+    },
+    {
+     "w": "Y",
+     "t": "See you Saturday.",
+     "ru": "До субботы."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how do you prepare when you invite guests, and what do you do about dietary restrictions?",
+    "ru": "Расскажите за минуту, как вы готовитесь к приёму гостей и что делаете, если у них есть пищевые ограничения.",
+    "targets": [
+     "host a dinner party",
+     "be allergic to",
+     "keep in mind",
+     "do some research"
+    ]
+   }
+  },
+  {
+   "id": "holidays",
+   "t": "Holiday plans",
+   "ru": "Праздники и планы",
+   "partner": "Sam",
+   "items": [
+    {
+     "id": "holidays.1",
+     "en": "big plans",
+     "ru": "серьёзные планы, особые планы",
+     "def": "plans for something special, not the usual routine",
+     "ex": "Do you have any **big plans** for New Year's Eve?",
+     "ex_ru": "У тебя есть особые планы на Новый год?"
+    },
+    {
+     "id": "holidays.2",
+     "en": "get together with",
+     "ru": "встретиться, собраться с",
+     "def": "meet someone socially",
+     "ex": "I'll **get together with** my friends on Saturday.",
+     "ex_ru": "В субботу я встречусь с друзьями."
+    },
+    {
+     "id": "holidays.3",
+     "en": "extended family",
+     "ru": "дальние родственники",
+     "def": "relatives beyond your parents, children and siblings",
+     "ex": "The **extended family** gathers every Christmas.",
+     "ex_ru": "Каждое Рождество собирается вся родня."
+    },
+    {
+     "id": "holidays.4",
+     "en": "highly probable",
+     "ru": "весьма вероятно",
+     "def": "very likely to happen",
+     "ex": "It's **highly probable** that prices will rise.",
+     "ex_ru": "Весьма вероятно, что цены вырастут."
+    },
+    {
+     "id": "holidays.5",
+     "en": "have difficulty",
+     "ru": "с трудом делать, испытывать трудности",
+     "def": "find something hard to do",
+     "ex": "I **have difficulty** saying no to overtime.",
+     "ex_ru": "Мне трудно говорить «нет» сверхурочным.",
+     "trap": {
+      "s": "I ___ saying no to overtime.",
+      "ok": "have difficulty",
+      "bad": [
+       "have a difficult",
+       "make difficulty"
+      ],
+      "why_ru": "Трудно что-то делать: have difficulty doing. Difficult — прилагательное, make difficulty — калька."
+     }
+    },
+    {
+     "id": "holidays.6",
+     "en": "earn a living",
+     "ru": "зарабатывать на жизнь",
+     "def": "make enough money to pay for your life",
+     "ex": "It's hard to **earn a living** as a freelancer.",
+     "ex_ru": "Фрилансеру трудно зарабатывать на жизнь.",
+     "trap": {
+      "s": "It's hard to ___ as a freelancer.",
+      "ok": "earn a living",
+      "bad": [
+       "gain a living",
+       "win a living"
+      ],
+      "why_ru": "Зарабатывать на жизнь: earn a living или make a living. Gain и win — калька."
+     }
+    },
+    {
+     "id": "holidays.7",
+     "en": "a personal best",
+     "ru": "личный рекорд",
+     "def": "your own best result so far",
+     "ex": "I'm aiming for **a personal best** in the marathon.",
+     "ex_ru": "Я нацелен на личный рекорд в марафоне."
+    },
+    {
+     "id": "holidays.8",
+     "en": "eat in moderation",
+     "ru": "есть умеренно",
+     "def": "eat sensible amounts without overdoing it",
+     "ex": "I try to **eat in moderation**.",
+     "ex_ru": "Я стараюсь питаться умеренно."
+    },
+    {
+     "id": "holidays.9",
+     "en": "go out the window",
+     "ru": "полететь к чёрту, пойти насмарку",
+     "def": "stop applying or no longer matter",
+     "ex": "All my diet plans **go out the window** at Christmas.",
+     "ex_ru": "Все мои диетические планы летят к чёрту на Рождество."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Any **big plans** for the holidays? I'm sure you'll **get together with** your **extended family**.",
+     "ru": "Какие-нибудь особые планы на праздники? Уверен, ты соберёшься со всей роднёй."
+    },
+    {
+     "w": "Y",
+     "t": "Yes, but it's **highly probable** that I'll be called into work. I **have difficulty** saying no to overtime.",
+     "ru": "Да, но весьма вероятно, что меня вызовут на работу. Мне трудно отказываться от сверхурочных."
+    },
+    {
+     "w": "B",
+     "t": "You've got to **earn a living**, I suppose. I'm off for two weeks, and I'll reach a **personal best** in the amount of cookies eaten.",
+     "ru": "Приходится зарабатывать на жизнь, наверное. Я в отпуске две недели и установлю личный рекорд по съеденному печенью."
+    },
+    {
+     "w": "Y",
+     "t": "I try to **eat in moderation**, but it all **goes out the window** at my mother's table.",
+     "ru": "Я стараюсь есть умеренно, но за маминым столом всё это летит к чёрту."
+    },
+    {
+     "w": "B",
+     "t": "Same here.",
+     "ru": "У меня то же самое."
+    },
+    {
+     "w": "Y",
+     "t": "Let's go for a long walk on the first day.",
+     "ru": "Давай устроим долгую прогулку в первый же день."
+    },
+    {
+     "w": "B",
+     "t": "Deal. And hot chocolate afterwards.",
+     "ru": "Договорились. И горячий шоколад после."
+    },
+    {
+     "w": "Y",
+     "t": "So much for moderation.",
+     "ru": "Вот вам и умеренность."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what are your plans for the next holiday, and who will you spend it with?",
+    "ru": "Расскажите за минуту, какие у вас планы на ближайший праздник и с кем вы его проведёте.",
+    "targets": [
+     "get together with",
+     "have difficulty",
+     "eat in moderation",
+     "go out the window"
+    ]
+   }
+  },
+  {
+   "id": "visit",
+   "t": "Visiting a grandparent",
+   "ru": "Семья и обязательства",
+   "partner": "Cindy",
+   "items": [
+    {
+     "id": "visit.1",
+     "en": "pay someone a visit",
+     "ru": "навестить кого-то",
+     "def": "go to see someone at their home",
+     "ex": "I'll **pay my grandfather a visit** on Sunday.",
+     "ex_ru": "В воскресенье я навещу дедушку.",
+     "trap": {
+      "s": "I'll ___ on Sunday.",
+      "ok": "pay my grandfather a visit",
+      "bad": [
+       "make my grandfather a visit",
+       "do a visit to my grandfather"
+      ],
+      "why_ru": "Навестить: pay someone a visit или visit someone. Make и do a visit — калька."
+     }
+    },
+    {
+     "id": "visit.2",
+     "en": "tell the difference",
+     "ru": "отличать, видеть разницу",
+     "def": "see how two similar things are not the same",
+     "ex": "I can't **tell the difference** between the two cheeses.",
+     "ex_ru": "Я не вижу разницы между этими сырами."
+    },
+    {
+     "id": "visit.3",
+     "en": "break a promise",
+     "ru": "нарушить обещание",
+     "def": "fail to do what you said you would do",
+     "ex": "You can't **break a promise** like that.",
+     "ex_ru": "Нельзя нарушить такое обещание."
+    },
+    {
+     "id": "visit.4",
+     "en": "keep someone company",
+     "ru": "составить компанию, побыть с кем-то",
+     "def": "stay with someone so that they are not alone",
+     "ex": "I stayed to **keep him company**.",
+     "ex_ru": "Я остался, чтобы составить ему компанию."
+    },
+    {
+     "id": "visit.5",
+     "en": "time-consuming",
+     "ru": "отнимающий много времени",
+     "def": "taking a lot of time",
+     "ex": "Filling in these forms is **time-consuming**.",
+     "ex_ru": "Заполнять эти формы долго."
+    },
+    {
+     "id": "visit.6",
+     "en": "be hard of hearing",
+     "ru": "плохо слышать",
+     "def": "not be able to hear well",
+     "ex": "My grandfather is **hard of hearing**.",
+     "ex_ru": "Мой дедушка плохо слышит.",
+     "note_ru": "Вежливее, чем deaf («глухой»): так говорят о возрасте и о собеседнике."
+    },
+    {
+     "id": "visit.7",
+     "en": "do someone a favour",
+     "ru": "оказать кому-то услугу",
+     "def": "help someone with a small task, without being paid",
+     "ex": "Could you **do me a favour**?",
+     "ex_ru": "Не окажете мне услугу?",
+     "trap": {
+      "s": "Could you ___?",
+      "ok": "do me a favour",
+      "bad": [
+       "make me a favour",
+       "give me a favour"
+      ],
+      "why_ru": "Оказать услугу: do someone a favour. Make и give — калька."
+     }
+    },
+    {
+     "id": "visit.8",
+     "en": "keep a promise",
+     "ru": "сдержать обещание",
+     "def": "do what you said you would do",
+     "ex": "I'll **keep my promise** this time.",
+     "ex_ru": "На этот раз я сдержу обещание.",
+     "trap": {
+      "s": "I'll ___ this time.",
+      "ok": "keep my promise",
+      "bad": [
+       "hold my promise",
+       "save my promise"
+      ],
+      "why_ru": "Обещание «выполняют, держат»: keep a promise. Hold и save — калька."
+     }
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "What are you up to this weekend?",
+     "ru": "Какие у тебя планы на выходные?"
+    },
+    {
+     "w": "Y",
+     "t": "I have to **pay my grandfather a visit**. I'm not sure he can **tell the difference** between me and a stranger these days.",
+     "ru": "Мне нужно навестить дедушку. Не уверен, что он сейчас отличает меня от чужого."
+    },
+    {
+     "w": "B",
+     "t": "You can't **break a promise** like that. It's good that you **keep him company**.",
+     "ru": "Нельзя нарушить такое обещание. Хорошо, что ты составляешь ему компанию."
+    },
+    {
+     "w": "Y",
+     "t": "It's **time-consuming**: an hour's drive each way. And he's **hard of hearing**, so he often says nothing.",
+     "ru": "Это отнимает время: час езды в одну сторону. А он плохо слышит, поэтому часто молчит."
+    },
+    {
+     "w": "B",
+     "t": "The visits probably mean more to him than you think.",
+     "ru": "Эти визиты, наверное, значат для него больше, чем ты думаешь."
+    },
+    {
+     "w": "Y",
+     "t": "Could you **do me a favour** and call him on Wednesday?",
+     "ru": "Не окажешь мне услугу и не позвонишь ему в среду?"
+    },
+    {
+     "w": "B",
+     "t": "Of course. I'll **keep my promise** this time.",
+     "ru": "Конечно. На этот раз я сдержу обещание."
+    },
+    {
+     "w": "Y",
+     "t": "Thanks. I owe you lunch.",
+     "ru": "Спасибо. С меня обед."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: tell about an older relative and how you stay in touch with them.",
+    "ru": "Расскажите за минуту о пожилом родственнике и о том, как вы поддерживаете с ним связь.",
+    "targets": [
+     "pay someone a visit",
+     "keep someone company",
+     "do someone a favour",
+     "keep a promise"
+    ]
+   }
+  },
+  {
+   "id": "computer",
+   "t": "An IT problem",
+   "ru": "Компьютер завис",
+   "partner": "Terry",
+   "items": [
+    {
+     "id": "computer.1",
+     "en": "be good with computers",
+     "ru": "хорошо разбираться в компьютерах",
+     "def": "know how to use computers and fix common problems",
+     "ex": "Ask Sienna; she's **good with computers**.",
+     "ex_ru": "Спроси Сиенну: она хорошо разбирается в компьютерах.",
+     "trap": {
+      "s": "Ask Sienna; she's ___.",
+      "ok": "good with computers",
+      "bad": [
+       "good in computers",
+       "strong in computers"
+      ],
+      "why_ru": "Хорошо разбираться в технике: be good with computers (или good at using). In — калька."
+     }
+    },
+    {
+     "id": "computer.2",
+     "en": "the computer freezes",
+     "ru": "компьютер зависает",
+     "def": "the screen stops responding and nothing can be clicked",
+     "ex": "My computer **freezes** every few minutes.",
+     "ex_ru": "Мой компьютер зависает каждые несколько минут."
+    },
+    {
+     "id": "computer.3",
+     "en": "restart the computer",
+     "ru": "перезагрузить компьютер",
+     "def": "turn it off and on again",
+     "ex": "Did you **restart the computer** yet?",
+     "ex_ru": "Вы уже перезагрузили компьютер?"
+    },
+    {
+     "id": "computer.4",
+     "en": "install updates",
+     "ru": "установить обновления",
+     "def": "add the latest software versions to a device",
+     "ex": "Always **install updates** as soon as possible.",
+     "ex_ru": "Всегда устанавливайте обновления как можно скорее."
+    },
+    {
+     "id": "computer.5",
+     "en": "run a virus scan",
+     "ru": "запустить проверку на вирусы",
+     "def": "start a program that looks for harmful software",
+     "ex": "Let's **run a virus scan** first.",
+     "ex_ru": "Сначала запустим проверку на вирусы.",
+     "trap": {
+      "s": "Let's ___ first.",
+      "ok": "run a virus scan",
+      "bad": [
+       "lead a virus scan",
+       "go a virus scan"
+      ],
+      "why_ru": "Запустить проверку: run a scan. Lead и go не используются."
+     }
+    },
+    {
+     "id": "computer.6",
+     "en": "back up your files",
+     "ru": "сделать резервную копию файлов",
+     "def": "make a second copy of your files in a safe place",
+     "ex": "**Back up your files** before you update.",
+     "ex_ru": "Сделайте резервную копию файлов перед обновлением.",
+     "trap": {
+      "s": "___ before you update.",
+      "ok": "Back up your files",
+      "bad": [
+       "Backup your files",
+       "Reserve your files"
+      ],
+      "why_ru": "Глагол back up пишется в два слова; backup — существительное. Reserve — «забронировать», не «скопировать»."
+     }
+    },
+    {
+     "id": "computer.7",
+     "en": "first things first",
+     "ru": "для начала самое главное",
+     "def": "deal with the most important thing before anything else",
+     "ex": "**First things first**: save your work.",
+     "ex_ru": "Сначала самое главное: сохраните работу."
+    },
+    {
+     "id": "computer.8",
+     "en": "hold on",
+     "ru": "подожди, секунду",
+     "def": "wait for a moment",
+     "ex": "**Hold on**, I'll grab my laptop.",
+     "ex_ru": "Подожди, я возьму ноутбук."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "Hey, you're **good with computers**, right? Mine **freezes** every few minutes.",
+     "ru": "Слушай, ты же хорошо разбираешься в компьютерах? Мой зависает каждые несколько минут."
+    },
+    {
+     "w": "Y",
+     "t": "**Hold on.** **First things first**: did you **restart the computer**?",
+     "ru": "Подожди. Сначала главное: ты перезагрузил компьютер?"
+    },
+    {
+     "w": "B",
+     "t": "No. Should I **install updates** too?",
+     "ru": "Нет. Мне ещё и обновления установить?"
+    },
+    {
+     "w": "Y",
+     "t": "Yes, and then **run a virus scan**.",
+     "ru": "Да, а потом запусти проверку на вирусы."
+    },
+    {
+     "w": "B",
+     "t": "Okay. Anything else?",
+     "ru": "Хорошо. Что-нибудь ещё?"
+    },
+    {
+     "w": "Y",
+     "t": "Next time, **back up your files** before you do anything else.",
+     "ru": "В следующий раз сделай резервную копию файлов, прежде чем что-либо делать."
+    },
+    {
+     "w": "B",
+     "t": "Will do. Thanks.",
+     "ru": "Сделаю. Спасибо."
+    },
+    {
+     "w": "Y",
+     "t": "Anytime.",
+     "ru": "Всегда пожалуйста."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: describe a technical problem you solved or could not solve.",
+    "ru": "Расскажите за минуту о технической проблеме, которую вы решили или не смогли решить.",
+    "targets": [
+     "restart the computer",
+     "install updates",
+     "back up your files",
+     "first things first"
+    ]
+   }
+  },
+  {
+   "id": "hiring",
+   "t": "Hiring for a key role",
+   "ru": "Найм на ключевую должность",
+   "partner": "Marty",
+   "items": [
+    {
+     "id": "hiring.1",
+     "en": "a key role",
+     "ru": "ключевая роль, ключевая должность",
+     "def": "a very important position in a team or company",
+     "ex": "The CFO is **a key role** in any organisation.",
+     "ex_ru": "Финансовый директор — ключевая должность в любой организации."
+    },
+    {
+     "id": "hiring.2",
+     "en": "fill a position",
+     "ru": "закрыть вакансию",
+     "def": "find someone to do a job that is vacant",
+     "ex": "We need to **fill the position** quickly.",
+     "ex_ru": "Нам нужно быстро закрыть вакансию.",
+     "trap": {
+      "s": "We need to ___ quickly.",
+      "ok": "fill the position",
+      "bad": [
+       "close the position",
+       "complete the position"
+      ],
+      "why_ru": "Вакансию «заполняют»: fill a position. Close a position — про торговую позицию в финансах; complete здесь не подходит."
+     }
+    },
+    {
+     "id": "hiring.3",
+     "en": "a demanding job",
+     "ru": "требовательная, тяжёлая работа",
+     "def": "a job that is difficult and takes a lot of time and effort",
+     "ex": "It's **a demanding job**, but it pays well.",
+     "ex_ru": "Это тяжёлая работа, но она хорошо оплачивается."
+    },
+    {
+     "id": "hiring.4",
+     "en": "have a tendency to",
+     "ru": "иметь склонность",
+     "def": "often do something, especially something negative",
+     "ex": "We **have a tendency to** rush decisions.",
+     "ex_ru": "Мы склонны торопиться с решениями."
+    },
+    {
+     "id": "hiring.5",
+     "en": "the hiring process",
+     "ru": "процесс найма",
+     "def": "all the steps from advertising a job to making an offer",
+     "ex": "We shortened **the hiring process** to three weeks.",
+     "ex_ru": "Мы сократили процесс найма до трёх недель."
+    },
+    {
+     "id": "hiring.6",
+     "en": "give a presentation",
+     "ru": "выступить с презентацией",
+     "def": "speak to a group and show slides or ideas",
+     "ex": "He **gave a presentation** at the conference.",
+     "ex_ru": "Он выступил с презентацией на конференции.",
+     "trap": {
+      "s": "He ___ at the conference.",
+      "ok": "gave a presentation",
+      "bad": [
+       "did a presentation",
+       "made a performance"
+      ],
+      "why_ru": "Презентацию «проводят»: give или make a presentation. Do — калька; performance — выступление артиста."
+     }
+    },
+    {
+     "id": "hiring.7",
+     "en": "a competitive salary",
+     "ru": "конкурентная зарплата",
+     "def": "pay that is similar to or higher than what other employers offer",
+     "ex": "We offer **a competitive salary** and bonus.",
+     "ex_ru": "Мы предлагаем конкурентную зарплату и бонус.",
+     "trap": {
+      "s": "We offer ___ and bonus.",
+      "ok": "a competitive salary",
+      "bad": [
+       "a concurrent salary",
+       "a competition salary"
+      ],
+      "why_ru": "Конкурентная зарплата: competitive salary. Concurrent — «одновременный», ложный друг переводчика."
+     }
+    },
+    {
+     "id": "hiring.8",
+     "en": "ask around",
+     "ru": "поспрашивать, навести справки",
+     "def": "talk to different people to get information",
+     "ex": "I'll **ask around** and let you know.",
+     "ex_ru": "Я поспрашиваю и дам знать."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "We need to talk about Tom leaving. It's a **key role**, and we must **fill the position** carefully.",
+     "ru": "Нам нужно поговорить об уходе Тома. Это ключевая должность, и закрыть её нужно аккуратно."
+    },
+    {
+     "w": "Y",
+     "t": "Agreed. It's **a demanding job**, and we **have a tendency to** rush **the hiring process**.",
+     "ru": "Согласен. Это тяжёлая работа, а мы склонны торопиться с процессом найма."
+    },
+    {
+     "w": "B",
+     "t": "This time, no rush. What about Jim Jones? He **gave a presentation** at the conference.",
+     "ru": "В этот раз без спешки. Как насчёт Джима Джонса? Он выступал с презентацией на конференции."
+    },
+    {
+     "w": "Y",
+     "t": "I was impressed too. But he won't leave without **a competitive salary**.",
+     "ru": "Я тоже был впечатлён. Но он не уйдёт без конкурентной зарплаты."
+    },
+    {
+     "w": "B",
+     "t": "I'll **ask around** and find out what people in that role earn.",
+     "ru": "Я поспрашиваю и выясню, сколько зарабатывают на такой должности."
+    },
+    {
+     "w": "Y",
+     "t": "Good. Let's also check his references.",
+     "ru": "Хорошо. И давайте проверим его рекомендации."
+    },
+    {
+     "w": "B",
+     "t": "Already on it.",
+     "ru": "Уже занимаюсь."
+    },
+    {
+     "w": "Y",
+     "t": "Great.",
+     "ru": "Отлично."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: what qualities make someone right for a key role, and how would you test them?",
+    "ru": "Расскажите за минуту, какие качества делают человека подходящим для ключевой должности и как бы вы их проверяли.",
+    "targets": [
+     "fill a position",
+     "a competitive salary",
+     "give a presentation",
+     "a demanding job"
+    ]
+   }
+  },
+  {
+   "id": "war",
+   "t": "Arguing at home",
+   "ru": "Бытовые ссоры и зависть",
+   "partner": "Owen",
+   "items": [
+    {
+     "id": "war.1",
+     "en": "go to war",
+     "ru": "устроить большую ссору",
+     "def": "have a very bitter argument",
+     "ex": "My wife and I **went to war** over the holiday plans.",
+     "ex_ru": "Мы с женой сильно поссорились из-за планов на праздники."
+    },
+    {
+     "id": "war.2",
+     "en": "get upset with",
+     "ru": "расстроиться из-за, обидеться на",
+     "def": "feel angry or sad because of someone",
+     "ex": "She **got upset with** me for forgetting.",
+     "ex_ru": "Она расстроилась из-за того, что я забыл."
+    },
+    {
+     "id": "war.3",
+     "en": "do the dishes",
+     "ru": "помыть посуду",
+     "def": "wash the plates, pots and cups after a meal",
+     "ex": "It's my turn to **do the dishes**.",
+     "ex_ru": "Моя очередь мыть посуду."
+    },
+    {
+     "id": "war.4",
+     "en": "do the laundry",
+     "ru": "постирать бельё",
+     "def": "wash the dirty clothes",
+     "ex": "I have to **do the laundry** tonight.",
+     "ex_ru": "Сегодня вечером мне нужно постирать.",
+     "trap": {
+      "s": "I have to ___ tonight.",
+      "ok": "do the laundry",
+      "bad": [
+       "make the laundry",
+       "clean the laundry"
+      ],
+      "why_ru": "Стирать: do the laundry. Make — калька с «делать», clean — не про стирку."
+     }
+    },
+    {
+     "id": "war.5",
+     "en": "be happily married",
+     "ru": "быть счастливо женатым",
+     "def": "have a good and stable marriage",
+     "ex": "They seem **happily married**.",
+     "ex_ru": "Они кажутся счастливой парой."
+    },
+    {
+     "id": "war.6",
+     "en": "unwind after work",
+     "ru": "расслабиться после работы",
+     "def": "relax and let go of stress at the end of the day",
+     "ex": "I like to **unwind after work** with a walk.",
+     "ex_ru": "После работы я люблю расслабиться на прогулке."
+    },
+    {
+     "id": "war.7",
+     "en": "be jealous of",
+     "ru": "завидовать",
+     "def": "feel unhappy because someone has something you want",
+     "ex": "I'm **jealous of** your new car.",
+     "ex_ru": "Я завидую твоей новой машине.",
+     "trap": {
+      "s": "I'm ___ your new car.",
+      "ok": "jealous of",
+      "bad": [
+       "jealous to",
+       "jealous at"
+      ],
+      "why_ru": "Завидовать: be jealous of. To и at — калька."
+     }
+    },
+    {
+     "id": "war.8",
+     "en": "not all it's cracked up to be",
+     "ru": "не так хорош, как о нём говорят",
+     "def": "less good than people say it is",
+     "ex": "Working at a big firm is **not all it's cracked up to be**.",
+     "ex_ru": "Работа в большой фирме не так хороша, как о ней говорят."
+    }
+   ],
+   "dialogue": [
+    {
+     "w": "B",
+     "t": "You look upset. What's wrong?",
+     "ru": "Ты расстроен. Что случилось?"
+    },
+    {
+     "w": "Y",
+     "t": "My wife and I **went to war** this morning. She **got upset with** me for not doing **the dishes** or **the laundry** last night.",
+     "ru": "Мы с женой утром сильно поссорились. Она расстроилась, потому что вчера вечером я не помыл посуду и не постирал."
+    },
+    {
+     "w": "B",
+     "t": "Aren't you **happily married**?",
+     "ru": "Разве вы не счастливы в браке?"
+    },
+    {
+     "w": "Y",
+     "t": "Very. But we argue about this all the time. I prefer to **unwind after work**, and she likes to clear everything at once.",
+     "ru": "Очень. Но мы вечно спорим об этом. Я предпочитаю расслабиться после работы, а она любит всё убрать сразу."
+    },
+    {
+     "w": "B",
+     "t": "I'm **jealous of** your family life. Single life is **not all it's cracked up to be**.",
+     "ru": "Я завидую твоей семейной жизни. Одинокая жизнь не так хороша, как о ней говорят."
+    },
+    {
+     "w": "Y",
+     "t": "The grass is always greener, isn't it?",
+     "ru": "Трава всегда зеленее на другой стороне, да?"
+    },
+    {
+     "w": "B",
+     "t": "Always.",
+     "ru": "Всегда."
+    },
+    {
+     "w": "Y",
+     "t": "I'll do the dishes tonight, promise.",
+     "ru": "Сегодня вечером помою посуду, обещаю."
+    }
+   ],
+   "talk": {
+    "en": "Talk for one minute: how do you and the people you live with share household chores?",
+    "ru": "Расскажите за минуту, как вы и те, с кем вы живёте, делите домашние дела.",
+    "targets": [
+     "do the laundry",
+     "get upset with",
+     "unwind after work",
+     "be jealous of"
+    ]
+   }
   }
  ]
 }

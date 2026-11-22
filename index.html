@@ -3901,7 +3901,7 @@ function edHome(){ const P=engProg(), Q=engQueue();
     <div class="hero spk-hero"><div class="lbl">Mode 7 · Everyday English</div><div class="q">General English outside business. Learn collocations inside a dialogue, then say them yourself.</div></div>
     <button class="deck" data-act="edCards"><div class="meta"><h3>Everyday cards</h3><div class="muted" style="font-size:.85rem">Own deck, own daily limit. Finish the learning step of a topic to unlock its cards.</div>
       <div class="row" style="margin-top:8px;gap:6px"><span class="pill due">${Q.due.length} due</span><span class="pill new">${Q.fresh.length} new today</span><span class="pill">${Q.pool.length} in deck</span></div></div></button>
-    <div class="eyebrow" style="margin-top:6px">Topics</div>${engTopics().map(topic).join('')}
+    <div class="eyebrow" style="margin-top:6px">Topics · ${engTopics().filter(T=>P.done[T.id]).length} of ${engTopics().length} done</div>${[...engTopics().filter(T=>!P.done[T.id]),...engTopics().filter(T=>P.done[T.id])].map(topic).join('')}
     <div class="card stack"><h3>New cards per day</h3><div class="seg">${[3,5,8].map(v=>`<button class="${(P.npd||5)===v?'on':''}" data-act="edNpd" data-v="${v}">${v}</button>`).join('')}</div>
       <p class="hint" style="margin:0">Separate from the business decks, so this mode never crowds out Modes 1 and 2.</p></div></div>`; }
 
