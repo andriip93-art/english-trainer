@@ -683,6 +683,11 @@ h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wra
 .rp-row .pill{flex:0 0 auto}
 .actions>.chip{flex:0 0 auto;padding:6px 14px}
 .t-msg>div:first-child{min-width:0;overflow-wrap:anywhere}
+.ed-t{font-weight:700;background:linear-gradient(transparent 62%,var(--primary-soft) 0)}
+.ed-blank{display:inline-block;min-width:3.2em;border-bottom:2px solid var(--fg);margin:0 2px;line-height:1}
+.ed-in{font:inherit;border:0;border-bottom:2px solid var(--line);background:transparent;padding:2px 4px;margin:0 2px;width:var(--w,9em);max-width:100%;color:var(--fg);outline:0;border-radius:0}
+.ed-in:focus{border-color:var(--primary)}.ed-in.ok{border-color:var(--ok);color:var(--ok)}.ed-in.bad{border-color:var(--bad);color:var(--bad)}
+.ed-ans{color:var(--ok);font-weight:600}
 </style>
 </head>
 <body>
@@ -3857,7 +3862,161 @@ SYNC_CFG_KEYS.push('sched','fsrsR');
        :`<p class="hint" style="margin:0">Classic uses your first-answer intervals (${ivl0('again')} / ${ivl0('hard')} / ${ivl0('good')} / ${ivl0('easy')} days) and grows them by a fixed factor. FSRS replaces both with a memory model. You can switch back at any time; cards keep both sets of numbers.</p>`}</div>`;
     return _set().replace('<div class="card stack"><h3>Version', card+'<div class="card stack"><h3>Version'); }; }
 actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
+// ---- 19. Mode 7 · Everyday English (prototype)
+// General English, not business: collocations learned inside a short dialogue, then produced from memory.
+// Data: everyday.json (topics > items + dialogue). Cards live in their own SRS deck "eng" (keys eng:<id>) with their own daily limit,
+// so they never mix with Modes 1 and 2; they sync like every other card. Topic progress is kept on this device (bet3.eng).
+const ENK = 'bet3.eng';
+let END = LS.get('bet3.engdata', null);
+const engProg = () => LS.get(ENK, { learned:{}, done:{}, npd:5 });
+const engSet = f => { const p=engProg(); f(p); LS.set(ENK,p); return p; };
+const engTopics = () => END?.topics || [];
+const engItems = tid => engTopics().filter(T=>!tid||T.id===tid).flatMap(T=>T.items.map(it=>({ ...it, deck:'eng', topic:T.id })));
+async function engLoad(){ try{ const r=await fetch('everyday.json',{cache:'no-store'}); if(r.ok){ END=await r.json(); LS.set('bet3.engdata',END); } }catch(e){} if(st.view==='everyday') render(); }
+// New cards introduced today are counted here, not by reps: a card answered Again twice is still one new card.
+const engIntro = P => (P.intro&&P.intro.d===today()) ? P.intro.ids : [];
+function engQueue(){ const P=engProg(), pool=engItems().filter(it=>P.learned[it.topic]);
+  const due=pool.filter(isDue).sort((a,b)=>card(a).due-card(b).due), left=Math.max(0,(P.npd||5)-engIntro(P).length);
+  return { due, fresh:pool.filter(it=>!card(it)).slice(0,left), pool }; }
+const engMark = s => lsParts(s).map((x,i)=>i%2?`<b class="ed-t">${esc(x)}</b>`:esc(x)).join('');
+const engBlank = s => lsParts(s).map((x,i)=>i%2?`<span class="ed-blank">${'&nbsp;'.repeat(Math.max(6,Math.min(16,x.length)))}</span>`:esc(x)).join('');
+const engPlain = s => lsParts(s).join('');
+const engTargets = s => lsParts(s).filter((x,i)=>i%2);
+const engHint = t => t.split(' ').map(w=>w[0]+'…').join(' ');
+const edNorm = s => norm(s).replace(/\b(a|an|the)\b/g,' ').replace(/\s+/g,' ').trim();
+const edT = () => engTopics().find(x=>x.id===st.E.topic);
+const edPrev = (T,idx) => idx>0 && T.dialogue[idx-1].w!==st.E.role ? T.dialogue[idx-1] : null;
+const edBubble = (L,o={}) => `<div class="t-msg ${L.w===st.E.role?'me':'ai'}"><div>${engMark(L.t)}${o.ru&&st.E.ru&&L.ru?`<div class="muted rp-ru">${esc(L.ru)}</div>`:''}</div>${audioBtn(engPlain(L.t))}</div>`;
+const edTop = () => window.scrollTo(0,0);
+
+function vEveryday(){ const E=st.E||(st.E={phase:'home'});
+  if(!engTopics().length){ engLoad(); return '<div class="stack"><p class="hint">Loading…</p></div>'; }
+  return ({ home:edHome, topic:edTopic, learn:edLearn, trap:edTrap, read:edRead, fill:edFill, recall:edRecall, end:edEnd, cards:edCards })[E.phase](); }
+
+function edHome(){ const P=engProg(), Q=engQueue();
+  const topic = T => { const d=P.done[T.id];
+    return `<button class="deck" data-act="edTopic" data-id="${esc(T.id)}"><div class="meta"><h3>${esc(T.t)}</h3><div class="muted" style="font-size:.85rem">${esc(T.ru)}</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill">${T.items.length} collocations</span>${P.learned[T.id]?'<span class="pill ok">in cards</span>':''}${d?`<span class="pill ok">fill ${d.fill}% · recall ${d.recall}%</span>`:''}</div></div></button>`; };
+  return `<div class="stack">
+    <div class="hero spk-hero"><div class="lbl">Mode 7 · Everyday English</div><div class="q">General English outside business. Learn collocations inside a dialogue, then say them yourself.</div></div>
+    <button class="deck" data-act="edCards"><div class="meta"><h3>Everyday cards</h3><div class="muted" style="font-size:.85rem">Own deck, own daily limit. Finish the learning step of a topic to unlock its cards.</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill due">${Q.due.length} due</span><span class="pill new">${Q.fresh.length} new today</span><span class="pill">${Q.pool.length} in deck</span></div></div></button>
+    <div class="eyebrow" style="margin-top:6px">Topics</div>${engTopics().map(topic).join('')}
+    <div class="card stack"><h3>New cards per day</h3><div class="seg">${[3,5,8].map(v=>`<button class="${(P.npd||5)===v?'on':''}" data-act="edNpd" data-v="${v}">${v}</button>`).join('')}</div>
+      <p class="hint" style="margin:0">Separate from the business decks, so this mode never crowds out Modes 1 and 2.</p></div></div>`; }
+
+function edTopic(){ const E=st.E, T=edT(), role=E.role||'Y', gaps=T.dialogue.filter(L=>L.w===role).reduce((n,L)=>n+engTargets(L.t).length,0), p=T.partner||'Dan';
+  return `<div class="stack"><div class="hero spk-hero"><div class="lbl">${esc(T.ru)}</div><div class="q">${esc(T.t)}</div></div>
+    <div class="card stack"><h3>The lesson, about 10 minutes</h3>
+      <div class="muted">1. Learn ${T.items.length} collocations with examples<br>2. Spot the natural wording (${T.items.filter(x=>x.trap).length} traps)<br>3. Read and listen to the dialogue<br>4. Fill the gaps in your lines<br>5. Say your lines from memory</div>
+      <p class="hint" style="margin:0">After step 1 the collocations join Everyday cards.</p></div>
+    <div class="card stack"><div class="eyebrow">You play</div><div class="seg"><button class="${role==='Y'?'on':''}" data-act="edRole" data-v="Y">You</button><button class="${role==='B'?'on':''}" data-act="edRole" data-v="B">${esc(p)}</button></div>
+      <p class="hint" style="margin:0">${gaps} gaps in your lines. Play the other side next time to cover every collocation.</p></div>
+    <div class="actions"><button class="btn" data-act="edStart">Start</button></div></div>`; }
+
+function edLearn(){ const T=edT(); bar(8);
+  return `<div class="stack"><div class="eyebrow">Step 1 of 5 · Collocations</div>${T.items.map(it=>`<div class="card stack" style="gap:6px">
+    <div class="row" style="justify-content:space-between;gap:10px"><h3 style="margin:0">${esc(it.en)}</h3>${audioBtn(it.en)}</div>
+    <div>${esc(it.ru)}</div><div class="muted" style="font-size:.9rem">${esc(it.def)}</div>
+    <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:nowrap"><div class="serif" style="font-size:1rem">${engMark(it.ex)}</div>${audioBtn(engPlain(it.ex))}</div>
+    <div class="muted" style="font-size:.85rem">${esc(it.ex_ru)}</div>${it.note_ru?`<div class="hint" style="margin:0">${esc(it.note_ru)}</div>`:''}</div>`).join('')}
+    <div class="actions"><button class="btn" data-act="edLearnNext">Next: spot the natural wording</button></div></div>`; }
+
+function edTrap(){ const E=st.E, Q=E.tq, i=E.ti, it=Q[i], t=it.trap; bar(15+i/Q.length*15); if(!E.to) E.to=shuffle([t.ok,...t.bad]); const done=E.tp!==undefined;
+  return `<div class="stack"><div class="eyebrow">Step 2 of 5 · Which one would a native say? · ${i+1}/${Q.length}</div>
+    <div class="card stack"><div class="serif" style="font-size:1.15rem">${esc(t.s).replace('___','<span class="ed-blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>')}</div><div class="muted">${esc(it.ex_ru)}</div></div>
+    ${E.to.map((o,n)=>`<button class="opt ${done?(o===t.ok?'right':E.tp===n?'wrong':''):''}" data-act="edTrapPick" data-n="${n}">${esc(o)}</button>`).join('')}
+    ${done?`<div class="card stack"><div style="font-weight:600">${E.to[E.tp]===t.ok?'Right.':'Not quite.'} ${esc(t.ok)}</div><div class="muted">${esc(t.why_ru)}</div></div>
+      <div class="actions"><button class="btn" data-act="edTrapNext">${i+1<Q.length?'Next':'Next: the dialogue'}</button></div>`:''}</div>`; }
+
+function edRead(){ const E=st.E, T=edT(); bar(32);
+  return `<div class="stack"><div class="eyebrow">Step 3 of 5 · Read and listen</div>
+    <div class="row"><button class="chip ${E.ru?'on':''}" data-act="edRu">Show Russian</button></div>
+    <p class="hint" style="margin:0">Your lines are on the right. Tap the speaker to hear each line.</p>
+    ${T.dialogue.map(L=>edBubble(L,{ru:true})).join('')}
+    <div class="actions"><button class="btn" data-act="edReadNext">Next: fill the gaps</button></div></div>`; }
+
+function edFill(){ const E=st.E, T=edT(), idx=E.fl[E.fi], L=T.dialogue[idx], prev=edPrev(T,idx); bar(40+E.fi/E.fl.length*25); let n=0;
+  const line=lsParts(L.t).map((x,i)=>{ if(i%2===0) return esc(x); const k=n++, a=E.fa&&E.fa[k];
+    return `<input class="ed-in ${a?(a.ok?'ok':'bad'):''}" data-k="${k}" ${a?'disabled':''} value="${a?esc(a.v):''}" style="--w:${Math.max(5,Math.round(x.length*0.62))}em" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="gap ${k+1}">`; }).join('');
+  const tg=engTargets(L.t);
+  return `<div class="stack"><div class="eyebrow">Step 4 of 5 · Fill the gaps · ${E.fi+1}/${E.fl.length}</div>
+    ${prev?edBubble(prev,{ru:true}):''}
+    <div class="t-msg me"><div>${line}${st.E.ru&&L.ru?`<div class="muted rp-ru">${esc(L.ru)}</div>`:''}</div>${audioBtn(engPlain(L.t))}</div>
+    ${E.fa?(E.fa.every(a=>a.ok)?'<p class="hint" style="margin:0;color:var(--ok)">All correct.</p>':`<p class="hint" style="margin:0">Answer: ${E.fa.filter(a=>!a.ok).map(a=>`<span class="ed-ans">${esc(a.t)}</span>`).join(' · ')}</p>`)
+      :`<p class="hint" style="margin:0">First letters: ${tg.map(x=>esc(engHint(x))).join(' · ')}</p>`}
+    <div class="actions">${E.fa?`<button class="btn" data-act="edFillNext">${E.fi+1<E.fl.length?'Next':'Next: say it from memory'}</button>`:`<button class="btn" data-act="edCheck">Check</button>`}</div></div>`; }
+
+function edRecall(){ const E=st.E, T=edT(), idx=E.rl[E.ri], L=T.dialogue[idx], prev=edPrev(T,idx); bar(68+E.ri/E.rl.length*28);
+  return `<div class="stack"><div class="eyebrow">Step 5 of 5 · Say it from memory · ${E.ri+1}/${E.rl.length}</div>
+    ${prev?edBubble(prev,{ru:true}):''}
+    <div class="card stack"><div class="eyebrow">Your line, in Russian</div><div class="serif" style="font-size:1.1rem">${esc(L.ru)}</div></div>
+    ${E.rs?`<div class="t-msg me"><div>${engMark(L.t)}</div>${audioBtn(engPlain(L.t))}</div>
+      <div class="grades" style="grid-template-columns:1fr 1fr"><button class="grade again" data-act="edRecall" data-v="0">Not yet</button><button class="grade easy" data-act="edRecall" data-v="1">Got it</button></div>`
+     :`<p class="hint" style="margin:0">Say the line out loud, then check yourself.</p><div class="actions"><button class="btn" data-act="edShow">Show the line</button></div>`}</div>`; }
+
+function edEnd(){ const E=st.E, T=edT(), pf=E.ftot?Math.round(E.fhit/E.ftot*100):100, pr=E.rl.length?Math.round(E.rh/E.rl.length*100):100, other=E.role==='Y'?(T.partner||'Dan'):'You'; bar(100);
+  return `<div class="stack"><div class="summary-hero"><div class="n">${pf}%</div><h2 style="margin:10px 0 4px;font-size:1.25rem">of gaps filled correctly</h2>
+    <p class="muted" style="margin:0">Recalled ${E.rh} of ${E.rl.length} lines · traps ${E.tq.length-E.tmiss}/${E.tq.length}</p></div>
+    <div class="card stack"><h3>Your turn</h3><p style="margin:0">${esc(T.talk.en)}</p><p class="hint" style="margin:0">${esc(T.talk.ru)}</p>
+      <div class="chips">${T.talk.targets.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
+      <p class="hint" style="margin:0">Speak for one minute, out loud or recorded in Mode 3 free talk.</p></div>
+    <div class="actions" style="flex-direction:column"><button class="btn" data-act="edCards">Review Everyday cards</button><button class="btn ghost" data-act="edOther">Play the other side (${esc(other)})</button><button class="btn ghost" data-act="edHome">Back to Everyday English</button></div></div>`; }
+
+function edCards(){ const E=st.E, C=E.c; if(!C) return '';
+  if(C.i>=C.q.length){ bar(100); return `<div class="stack"><div class="summary-hero"><div class="n">${C.n}</div><h2 style="margin:10px 0 4px;font-size:1.25rem">cards reviewed</h2><p class="muted" style="margin:0">Next ones come back on schedule.</p></div>
+    <div class="actions"><button class="btn" data-act="edHome">Back to Everyday English</button></div></div>`; }
+  const it=C.q[C.i]; bar(C.i/C.q.length*100); const gb=(g,l)=>`<button class="grade ${g}" data-act="edGrade" data-g="${g}">${l}<small>${preview(it,g)}</small></button>`;
+  return `<div class="stack"><div class="eyebrow">Everyday cards · ${C.i+1}/${C.q.length}${card(it)?'':' · new'}</div>
+    <div class="card stack"><div class="serif" style="font-size:1.2rem">${C.f?engMark(it.ex):engBlank(it.ex)}</div><div class="muted">${esc(it.ex_ru)}</div>
+      ${C.f?`<div class="row" style="justify-content:space-between;gap:10px"><b>${esc(it.en)}</b>${audioBtn(engPlain(it.ex))}</div><div class="muted" style="font-size:.9rem">${esc(it.def)}</div>`
+        :`<div class="hint" style="margin:0">Fill the gap from memory. Meaning: ${esc(it.ru)}</div>`}</div>
+    ${C.f?`<div class="grades">${gb('again','Again')}${gb('hard','Hard')}${gb('good','Good')}${gb('easy','Easy')}</div>`:`<div class="actions"><button class="btn" data-act="edReveal">Show answer</button></div>`}</div>`; }
+
+actions.openEveryday = () => { st.E={ phase:'home' }; go('everyday'); };
+actions.edHome = () => { speechSynthesis?.cancel(); st.E={ phase:'home' }; render(); edTop(); };
+actions.edTopic = d => { st.E={ phase:'topic', topic:d.id, role:'Y' }; render(); edTop(); };
+actions.edRole = d => { st.E.role=d.v; render(); };
+actions.edNpd = d => { engSet(p=>{ p.npd=+d.v; }); render(); };
+actions.edStart = () => { st.E.phase='learn'; render(); edTop(); };
+actions.edLearnNext = () => { const E=st.E, T=edT(); engSet(p=>{ p.learned[T.id]=p.learned[T.id]||Date.now(); });
+  E.tq=shuffle(T.items.filter(x=>x.trap)); E.ti=0; E.tmiss=0; E.to=null; E.tp=undefined; E.phase=E.tq.length?'trap':'read'; render(); edTop(); };
+actions.edTrapPick = d => { const E=st.E; if(E.tp!==undefined) return; E.tp=+d.n; if(E.to[E.tp]!==E.tq[E.ti].trap.ok) E.tmiss++; render(); };
+actions.edTrapNext = () => { const E=st.E; E.ti++; E.to=null; E.tp=undefined; if(E.ti>=E.tq.length) E.phase='read'; render(); edTop(); };
+actions.edRu = () => { st.E.ru=!st.E.ru; render(); };
+actions.edReadNext = () => { const E=st.E, T=edT(), mine=T.dialogue.map((L,i)=>L.w===E.role?i:-1).filter(i=>i>=0);
+  E.fl=mine.filter(i=>engTargets(T.dialogue[i].t).length); E.fi=0; E.fa=null; E.fhit=0; E.ftot=0; E.rl=mine; E.ri=0; E.rs=false; E.rh=0;
+  E.phase=E.fl.length?'fill':'recall'; render(); edTop(); setTimeout(()=>$('.ed-in')?.focus(),40); };
+actions.edCheck = () => { const E=st.E; if(E.fa) return; const T=edT(), L=T.dialogue[E.fl[E.fi]], ins=[...document.querySelectorAll('.ed-in')];
+  E.fa=engTargets(L.t).map((t,k)=>{ const v=(ins[k]?.value||'').trim(); return { v, t, ok:edNorm(v)===edNorm(t) }; });
+  E.fa.forEach(a=>{ E.ftot++; if(a.ok) E.fhit++; }); render(); };
+actions.edFillNext = () => { const E=st.E; E.fi++; E.fa=null; if(E.fi>=E.fl.length) E.phase='recall'; render(); edTop(); setTimeout(()=>$('.ed-in')?.focus(),40); };
+actions.edShow = () => { const E=st.E; E.rs=true; render(); };
+actions.edRecall = d => { const E=st.E; if(d.v==='1') E.rh++; E.ri++; E.rs=false;
+  if(E.ri>=E.rl.length){ const T=edT(), pf=E.ftot?Math.round(E.fhit/E.ftot*100):100, pr=E.rl.length?Math.round(E.rh/E.rl.length*100):100;
+    engSet(p=>{ p.done[T.id]={ fill:pf, recall:pr, ts:Date.now() }; }); E.phase='end'; }
+  render(); edTop(); };
+actions.edOther = () => { const E=st.E; E.role=E.role==='Y'?'B':'Y'; E.phase='read'; render(); edTop(); };
+actions.edCards = () => { const Q=engQueue(); if(!Q.due.length&&!Q.fresh.length) return toast(Q.pool.length?'Nothing due or new today. Come back tomorrow.':'Learn a topic first to unlock its cards.');
+  st.E={ phase:'cards', c:{ q:[...Q.due,...Q.fresh], i:0, f:false, n:0 } }; go('everyday'); };
+actions.edReveal = () => { const C=st.E.c; C.f=true; render(); if(cfg.autoSpeak) speak(engPlain(C.q[C.i].ex)); };
+actions.edGrade = d => { const C=st.E.c, it=C.q[C.i]; if(!card(it)) engSet(p=>{ const ids=engIntro(p); p.intro={ d:today(), ids:[...ids,it.id] }; }); grade(it,d.g); if(d.g==='again'&&!it._r) C.q.push({ ...it, _r:1 }); C.i++; C.f=false; C.n++; render(); edTop(); };
+document.addEventListener('keydown', e => { if(e.key!=='Enter'||!e.target.classList?.contains('ed-in')) return; e.preventDefault();
+  const ins=[...document.querySelectorAll('.ed-in')], n=ins.indexOf(e.target); if(n<ins.length-1) ins[n+1].focus(); else actions.edCheck(); });
+
+X_VIEWS.everyday = { title:'Everyday English', v:()=>vEveryday() };
+{ const _b=actions.back; actions.back=()=>{ if(st.view!=='everyday') return _b(); const E=st.E||{ phase:'home' }; speechSynthesis?.cancel();
+    if(E.phase==='home') return go('home');
+    st.E = (E.topic && E.phase!=='topic') ? { phase:'topic', topic:E.topic, role:E.role||'Y' } : { phase:'home' }; render(); edTop(); }; }
+{ const _home=vHome; vHome=function(){ const Q=engQueue(), n=engTopics().length||1,
+    tile=`<button class="deck" data-act="openEveryday"><div class="ico" style="background:var(--navy-soft);color:var(--navy)">${ICON.book}</div>
+      <div class="meta"><h3>Everyday English</h3><div class="muted" style="font-size:.85rem">Mode 7 · general English, collocations in dialogues</div>
+      <div class="row" style="margin-top:8px;gap:6px">${Q.due.length?`<span class="pill due">${Q.due.length} due</span>`:''}<span class="pill">${n} topic${n===1?'':'s'}</span></div></div></button>`,
+    h=_home(), m='<button class="deck" data-act="openStats"';
+    return h.includes(m) ? h.replace(m, tile+m) : h.replace('<p class="hint">', tile+'<p class="hint">'); }; }
+
 rpLoad();
+engLoad();
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
 LS.set(SPK.hist, spkHist().filter(s=>s.result));   // one-off clean-up: drop takes that were saved without an analysis

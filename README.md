@@ -30,6 +30,18 @@ each answer and pulls on open, on return to the tab and on reconnect. Cards: new
 5. On every other device: open Settings > Copy setup link for another device on a connected device, send the link to yourself
    and open it on the new device (or repeat step 4 by hand).
 
+## Everyday English (Mode 7, prototype)
+
+General English outside business, built from collocation books. Data lives in `everyday.json` (topics, each with collocations,
+a dialogue and a speaking prompt). One lesson: learn the collocations, pick the natural wording (traps for typical Russian-speaker
+errors), read the dialogue, fill the gaps in your lines, say them from memory. You can play either side of the dialogue.
+
+- Cards go into their own SRS deck `eng` (keys `eng:<id>`), with their own daily limit (3, 5 or 8 new cards), so they never mix with Modes 1 and 2.
+  They sync across devices like every other card. Topic progress (which topics are learned, last scores) stays on the device.
+- A topic is added as one object in `everyday.json`. Item `ex` and dialogue lines mark the target with `**double asterisks**`;
+  `trap` is optional (`s` with `___`, `ok`, two wrong options, `why_ru`).
+- Source texts are written fresh, not copied from the books: only the short collocations are reused.
+
 ## Speak & Record (Mode 3): two paths
 
 - **With my cards**: 4 to 6 targets from both decks, a business scene with four parts, 2 to 3 minutes. Review dates update from how each target was used.
