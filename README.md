@@ -2,28 +2,144 @@
 
 Business English Trainer, offline-first PWA.
 
-- `/` main app (formerly v2): vocabulary from the Google Sheet `vocabulary_v2`, phrases from the published phrases sheet
+- `/` main app (formerly v2): one Google Sheet `vocabulary_v2`
+  - tab `Eng_Phrases` (gid 64343216) -> Phrases & Functions (Mode 1)
+    columns: `#`, `Universal Phrase`, `Native Translation (RU)`, `Category`, `Strategic Intent (RU)`, `Dialogues`,
+    `Alternatives` (other ways to say it, separated by ` | `), `Status` (`Active` = core set, `Passive` = extended, `Drop` = hidden)
+  - tab `Eng_Phrases_archive` keeps the full original 694-phrase list (not read by the app)
+  - tab `Eng_Chunks` (gid 2132440094) -> Vocabulary & Chunks (Mode 2)
+  - the sheet must stay shared as "Anyone with the link can view"
 - `/v1/` archived first version, kept for reference
 - `/v2/` redirects to `/`
+- `/` is now version 3 (see below). The previous root app is kept at `/v2/` (same storage keys, same sheet and sync, so you can switch back at any time). `/v3/` only redirects to `/`.
 
-Progress is stored per browser: main app under `bet3.*`, v1 under `bet.*`.
+Progress is kept in the browser (`bet3.*`, v1 under `bet.*`) and can be synced across devices, see below.
 
-## Cloud sync (your Google Drive via Apps Script)
+## Sync progress across devices
 
-Progress (cards, daily log, bullet records) syncs between devices through a private file in your own Google Drive.
-A tiny Google Apps Script web app (`apps-script/Code.gs`) reads and writes it. No Google Cloud project, no OAuth, no tokens that expire.
-The app stays local-first and works offline. Merge rules: newer review wins per card, daily counters and best scores take the max,
-"Erase all progress" is propagated via a `wipedAt` marker. Sheet sources, theme and other settings are not synced.
+`apps-script/Code.gs` is a small Google Apps Script web app that stores progress in a tab `Progress` of `vocabulary_v2`
+(cards, daily log, practice settings). The browser stays the working copy (offline-first); it pushes a few seconds after
+each answer and pulls on open, on return to the tab and on reconnect. Cards: newest change wins. Daily log: highest counts win.
 
-One-time setup (about 5 minutes):
+1. Open `vocabulary_v2` > Extensions > Apps Script, replace the code with `apps-script/Code.gs`.
+2. Project Settings (gear) > Script Properties: add `TOKEN` (a long random string). If you used the old version with the token
+   written in the code, copy that same value into the property, so connected devices keep working.
+3. Deploy > New deployment > type Web app > Execute as: Me > Who has access: Anyone > Deploy. Authorize when asked.
+   Updating an existing deployment: Deploy > Manage deployments > Edit (pencil) > Version: New version > Deploy (the URL stays the same).
+4. Copy the `/exec` URL. In the app: Settings > Sync across devices, paste URL and the same token, Save and sync.
+5. On every other device: open Settings > Copy setup link for another device on a connected device, send the link to yourself
+   and open it on the new device (or repeat step 4 by hand).
 
-1. Open script.google.com -> New project. Replace the code with `apps-script/Code.gs`.
-2. Change `SECRET` to a password you make up (letters and digits).
-3. Deploy -> New deployment -> type **Web app**. Execute as: **Me**. Who has access: **Anyone**. Deploy and allow access
-   (Advanced -> Go to project (unsafe) -> Allow; Google warns because the script is yours and unverified).
-4. Copy the Web app URL (ends with `/exec`). Your sync code is that URL, then `#`, then your secret:
-   `https://script.google.com/macros/s/.../exec#my-secret`
-5. In the app: Settings -> Cloud sync -> paste the code -> Connect. Do the same on every device (first on the one with the most progress).
+## Speak & Record (Mode 3): two paths
 
-The secret is checked by the script, so the URL alone cannot read or change your progress. Keep the sync code private and do not commit it.
-If you change the script code later, use Deploy -> Manage deployments -> Edit -> New version (the URL stays the same).
+- **With my cards**: 4 to 6 targets from both decks, a business scene with four parts, 2 to 3 minutes. Review dates update from how each target was used.
+- **Free talk**: any topic (optional topic field and idea chips), no targets, up to 15 minutes, or upload a call/meeting (only the learner is analysed). Same Gemini analysis (audio-tutor rules: patterns before instances, no inflation, hooks, praise as data), no review-date changes. Mistakes go to the error journal with task `Free talk: <topic>`.
+- The result screen has **Main menu** next to New set / Talk again.
+- **Don't count this session** (both paths): a finished analysis is counted only when you leave the result screen. Until then the result screen offers a button that keeps the take in the history ("not counted") but applies nothing: no card review dates, no rows in the error journal, no point in Progress or the Mode 4 pattern hints, no activity tick, and the set is not treated as recently practised. "Count it after all" undoes the choice. If the app is closed on the result screen, the session is counted after 30 minutes. Sessions saved before this change count as already counted.
+
+## AI keys (Mode 3 Speak & Record, Mode 4 Context Drills)
+
+The key lives only in the Script Properties of your Apps Script (`GEMINI_KEY`), never in the repo or the sheet. Use a key from a
+Google Cloud project with billing for the app (inputs are not used for training); keep the podcast pipeline on a separate
+free-tier project.
+
+Model profiles (Settings > AI coach), cheapest model that does each job well:
+
+| Profile | Writes drill tasks | Checks answers | Listens to speech (Mode 3) |
+|---|---|---|---|
+| Economy | 2.5 Flash-Lite | 2.5 Flash-Lite | 3.1 Flash-Lite |
+| Balanced (default) | 2.5 Flash-Lite | 2.5 Flash | 2.5 Flash |
+| Best | 2.5 Flash-Lite | newest Flash | newest Flash |
+
+Thinking is capped (512 tokens for drills, 2048 for speech) because thinking is billed as output. The app estimates spend per
+device from token counts (Settings > AI coach). Drill difficulty: B2, B2+ (default), C1; the summary suggests a step up or down.
+
+Every device connected to sync asks the script for the key (action `keys`, protected by the token) and caches them locally.
+Rotate the key: change the property, then Settings > AI coach > Reload key from Apps Script. A key typed in Settings on a device
+overrides the script for that device only. In Google Cloud > Credentials restrict the Gemini key to the Generative Language API
+and to the site address `https://andriip93-art.github.io/*`.
+
+## Mode 4 · Context Drills
+
+Pushed written output with a coach. Targets come from both decks, weighted to due and weak cards. Task types:
+Respond (reply to a work moment, a function phrase is paired with a content chunk), Translate (Russian cue to natural English,
+the target is hidden), Upgrade (rewrite a blunt or calqued line), Create (own sentence), Mix (interleaved). Two graded hints per
+item. Feedback: grade A to D, target status, tappable error and success highlights, a minimal fix, a native executive version,
+one rule per error with the same interference codes as Mode 3, one rewrite per item. First-attempt grade updates review dates
+(A/B = Good, C or any hint = Hard, avoided or D = back tomorrow). Error codes from drills and speaking add up to a personal
+pattern list on the start screen. Dictation uses the browser's speech recognition where available.
+
+## Error journal and Mode 5 · Fix My Errors
+
+Every mistake from Speak & Record (Mode 3) and the first attempt in Context Drills (Mode 4) is saved as one row in the
+`Errors` tab of vocabulary_v2 (created by the script): key, date, mode, task, code, type, wrong, fix, why_ru, context,
+target, level, status, updated. Rows queue on the device while offline. Speak sessions already stored on a device are
+imported once.
+
+Fix My Errors trains one rule at a time. Every error carries a topic id in the `type` column (`ART.a-an-adj`,
+`NEG.no-any`, `LEX.make-do-take`; the `code` column is the prefix). There are 42 topics, each one rule a learner can state in
+a line; grammar topics are "rule" lessons, collocations, idioms, false friends, calques and terms are "chunks" lessons (a
+phrase family, every phrase drilled). The Speak and Drills coaches get the topic list and tag new errors with an id directly.
+
+The bank has two layers. `fixbank.json` in this repo holds the base lesson and 12 tasks (3 of each type) for every topic.
+The `FixBank` tab of vocabulary_v2 is a layer on top, one row per topic id: a newer lesson replaces the base one, tasks are
+added by id (same id replaces). The `Topics` tab lists the valid ids with title, coach hint, task count and how many errors
+the lesson was written from. A scheduled Claude run every 3 days classifies errors that arrived without a valid id (writes
+`code` and `type` only), opens a new topic when 3 or more errors share a rule no topic covers, refreshes a lesson when a topic
+gains 3 or more new errors, and adds 4 tasks at a time to topics with 5 or more live errors until they have 24.
+
+Chips at the top narrow everything to one family (Grammar, Articles, Prepositions, Word order, Vocabulary): the rule list, the Train button and Mixed review; the choice is remembered. Topics are listed by priority: open errors weigh more than drilled ones, recent errors more than old ones. Errors with no known
+topic fall back to one group per code with a Gemini lesson once a code has 3 of them.
+
+A session is a lesson plus 8 tasks from easy to hard: 2 choose, 2 fill the gap, 2 fix the mistake, 2 translate, unseen
+tasks first. 7 of 8 marks the topic's errors as drilled. On a later day, Mixed review shuffles production tasks (fill the
+gap, fix, translate) from up to 4 drilled topics with no label saying which rule applies; the Rule button reveals it. A topic
+whose tasks are all right moves its drilled errors to fixed; a missed topic goes back to open for a fresh lesson. A plain
+7 of 8 on the same topic on another day also marks it fixed. Exact answers are checked in the app, others by Gemini.
+
+## Version 3 preview (`/v3/`)
+
+`v3/index.html` is the main app plus one added section (17) and a few styles; nothing in `/` changed.
+
+- **Today plan** on the home screen: Review (due cards) > Fix one rule > Speak or Write (alternate days). Steps tick off from the daily log (`fix`, `out` counters next to `rev`).
+- **Fix My Errors**
+  - Diagnostic first: up to 3 of your own wrong fragments to repair before the rule is shown (not scored).
+  - Deeper lesson: `lesson.deep` in `v3/fixbank.json` = `steps_ru` (decision steps), `contrast` (`a`, `b`, `note_ru`), `text` (short text, targets in `**bold**`), `say` (lines to say aloud), `more_ru` (fine points). Written for all 42 rules. A FixBank-tab lesson without `deep` keeps the repo one.
+  - Set: 8 bank tasks plus up to 2 of your own errors ("Your own words"). A missed task returns once at the end. Pass = 80% of first attempts.
+  - Spaced reviews per rule: after 1, 3 and 7 days (`fix:<topic id>` entries in the card store, synced by the existing script). Review mixes all due rules, production tasks only. Passing the third review marks the errors fixed; a miss sends them back to open.
+- Error journal: repeated words ("in in many") are collapsed before logging; rows that were only a stutter are dropped.
+- `v3/sw.js`: the page itself opens offline (network first, cache as fallback).
+
+To promote v3 later: copy `v3/index.html`, `v3/fixbank.json` and `v3/sw.js` to the root (keep the root manifest, change `../icon` paths in `sw.js` to `icon`), after moving the current root to `/v2/`.
+
+### v3.1
+
+- **Interactive lesson** (Fix My Errors): the lesson is a sequence of short screens, each ending with an action: rule and decision steps > "which one is correct" on the lesson pairs > contrasts (predict, then reveal) > the context text as a word-bank cloze > say it aloud with a recognition score (Web Speech API; self-marking where it is missing) > fine points. "Whole lesson on one page" keeps the reference view. No new data fields: it runs on `lesson` + `lesson.deep`.
+- **Progress** page: errors per 100 words across recorded Speak and Roleplay sessions (device-local history), new errors per week, rule families 14 days vs the 14 before, errors by stage and review schedule, cards, 6-week activity.
+- **Live Roleplay (Mode 6)**: 8 scenes, cooperative or tough partner, six exchanges by voice (dictation) or keyboard, no corrections during the talk; one debrief call at the end writes errors to the journal (`mode` = `roleplay`, keys `r<time>#n`) and suggests executive rewrites. Turns use the cheap "gen" model, the debrief the "eval" model.
+- **FSRS-4.5** as an optional scheduler (Settings > Scheduler, default Classic). Cards get `s` and `d` next to `ivl` and `ease`, so switching back, and using `/`, stays safe.
+- Today step 3 rotates Speak / Write / Roleplay.
+
+### v3.2
+
+Layout pass, same visual language. Progress: deck rows are a label line, a full-width bar and a legend (the bar no longer runs into the label), the review schedule and streak are stat tiles. Fix My Errors: rule rows have the title on one line and the status below, badges share one width. Action rows wrap instead of leaving the screen, long words break, the filter chips fade at the edge to show they scroll. Checked with an automated overlap and overflow audit of 39 screens at 320, 360 and 412 px.
+
+## v3.3: Roleplay rebuilt (pilot)
+
+Mode 6 is no longer a live Gemini chat. It is now a set of ready dialogues you learn: 12 topics, 5 role plays each, opened one after another.
+
+- **Data:** `v3/roleplay.json`. Topic 1 (Call with a lender), role play 1 is written. The other 59 are titled and marked "soon".
+- **Three passes:** read and listen (with a fork: agree or push back), fill the gaps in your lines, say your lines from memory (voice or keyboard).
+- **Phrases:** underlined phrases come from Mode 1 (`p:<id>`) and Mode 2 (`v:<id>`). Tap one to see the original, the Russian and synonyms; a chosen synonym replaces the phrase in the line. Gap and recall checks accept any listed synonym.
+- Progress is stored in `bet3.rp` on the device.
+
+### v3.3.2: variants and shuffle
+
+Each phrase in `roleplay.json` has a main wording and variants. A variant is a string, or `{ "t": "...", "post": "...", "id": "p:12" }`: `post` replaces the text right after the phrase so the whole sentence stays natural, `id` points to another dictionary entry. Every play picks variants at random, so the dialogue differs each time. A tap in the Phrase bank pins a version; "Shuffle versions" clears the pins. Gap and recall checks accept every variant.
+
+### v3.3.3: RolePlay sheet layer
+Tab `RolePlay` (`id | topic | n | updated | json`) in `vocabulary_v2` is merged over `v3/roleplay.json` at load (`rpValid` drops invalid rows). A weekly scheduled task writes new role plays and adds new dictionary alternatives there, so no PR is needed for new content.
+
+
+### v3.4: promoted to the root
+Root = v3 (`index.html`, `fixbank.json`, `roleplay.json`, `sw.js`); the old root app moved to `/v2/` with its own manifest and icons; `/v3/` is a redirect plus a service worker that unregisters itself. Roleplay: phrase bank and RU hidden by default, Skip fill and Skip recall.

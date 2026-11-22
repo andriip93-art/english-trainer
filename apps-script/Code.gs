@@ -1,25 +1,169 @@
-// English Trainer sync backend. Paste into script.google.com, set SECRET, deploy as a Web app
-// (Execute as: Me, Who has access: Anyone). Progress is stored in your Drive as a private file.
-const SECRET = 'PUT-YOUR-OWN-SECRET-HERE';
-const FILE = 'english-trainer-progress.json';
+/**
+ * Business English Trainer: progress sync backend.
+ * Lives inside the vocabulary_v2 spreadsheet (Extensions > Apps Script) and keeps one tab, "Progress".
+ *
+ * Tab layout (created automatically): key | json | u | sv
+ *   c|<deck>|<id>   one spaced-repetition card        (last write wins, by u = card update time)
+ *   l|<YYYY-MM-DD>  one day of the activity log        (merged field by field, highest number wins)
+ *   g               synced settings                    (last write wins)
+ *   sv = server time of the last change, used so each device only downloads what is new.
+ *
+ * Setup: Project Settings > Script Properties, add:
+ *          TOKEN       a long random string (the app asks for it once per device)
+ *          GEMINI_KEY  your Gemini API key (paid project: no training on your data)   optional
+ *          GROQ_KEY    your Groq API key (backup for text analysis)                    optional
+ *        Then Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone.
+ *        Copy the /exec URL into the app (Settings > Sync). After editing this file later use
+ *        Deploy > Manage deployments > Edit > Version: New version, so the URL stays the same.
+ *
+ * Errors tab (created automatically): one row per mistake from Speak (Mode 3) and Drills (Mode 4), used by
+ * Fix My Errors (Mode 5). Action "errors" appends new rows (deduplicated by key) and updates status;
+ * action "errorsGet" returns them. Columns: key | date | mode | task | code | type | wrong | fix | why_ru |
+ * context | target | level | status | updated. status: open, drilled, fixed. Safe to filter, sort and pivot.
+ *
+ * Key vault: action "keys" hands the AI keys to a device that knows the TOKEN, so each phone or laptop
+ * gets them automatically and nobody types a key twice. Keys never live in the repo or in the sheet.
+ */
+const TOKEN_FALLBACK = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';   // used only if the TOKEN script property is not set
+function token_() { return PropertiesService.getScriptProperties().getProperty('TOKEN') || TOKEN_FALLBACK; }
+const TAB = 'Progress';
+const ERR_TAB = 'Errors';
+const ERR_COLS = ['key', 'date', 'mode', 'task', 'code', 'type', 'wrong', 'fix', 'why_ru', 'context', 'target', 'level', 'status', 'updated'];
 
-function file_() {
-  const it = DriveApp.getFilesByName(FILE);
-  return it.hasNext() ? it.next() : DriveApp.createFile(FILE, 'null', 'application/json');
+function errTab_() {
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName(ERR_TAB);
+  if (!s) {
+    s = ss.insertSheet(ERR_TAB);
+    s.getRange(1, 1, 1, ERR_COLS.length).setValues([ERR_COLS]).setFontWeight('bold');
+    s.setFrozenRows(1);
+  }
+  return s;
 }
-function out_(o) {
+
+// Text from the learner or the model must never be read as a formula
+function safe_(v) { const t = String(v == null ? '' : v).slice(0, 500); return /^[=+\-@]/.test(t) ? "'" + t : t; }
+
+function errors_(req) {
+  const s = errTab_();
+  const n = s.getLastRow() - 1;
+  const data = n > 0 ? s.getRange(2, 1, n, ERR_COLS.length).getValues() : [];
+  const idx = {};
+  data.forEach(function (r, i) { idx[r[0]] = i; });
+  const stamp = new Date().toISOString().slice(0, 10);
+  const add = [];
+  (req.rows || []).forEach(function (o) {
+    if (!o || !o.key || idx[o.key] !== undefined) return;
+    idx[o.key] = -1;
+    add.push(ERR_COLS.map(function (c) { return c === 'status' ? (o.status || 'open') : c === 'updated' ? stamp : safe_(o[c]); }));
+  });
+  if (add.length) s.getRange(s.getLastRow() + 1, 1, add.length, ERR_COLS.length).setValues(add);
+  const st = ERR_COLS.indexOf('status');
+  (req.updates || []).forEach(function (u) {
+    const i = idx[u && u.key];
+    if (i === undefined || i < 0) return;
+    s.getRange(i + 2, st + 1, 1, 2).setValues([[u.status, stamp]]);
+  });
+  return { ok: true, added: add.length };
+}
+
+function errorsGet_() {
+  const s = errTab_();
+  const n = s.getLastRow() - 1;
+  const data = n > 0 ? s.getRange(2, 1, n, ERR_COLS.length).getValues() : [];
+  const rows = data.slice(-3000).map(function (r) {
+    const o = {};
+    ERR_COLS.forEach(function (c, j) { o[c] = r[j] instanceof Date ? r[j].toISOString().slice(0, 10) : String(r[j]); });
+    return o;
+  });
+  return { ok: true, rows: rows };
+}
+
+function tab_() {
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName(TAB);
+  if (!s) {
+    s = ss.insertSheet(TAB);
+    s.appendRow(['key', 'json', 'u', 'sv']);
+    s.setFrozenRows(1);
+  }
+  return s;
+}
+
+function json_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
-function doGet() { return out_({ ok: true, app: 'english-trainer-sync' }); }
+
+function maxMerge_(a, b) {
+  let x = {}, y = {};
+  try { x = JSON.parse(a) || {}; } catch (e) {}
+  try { y = JSON.parse(b) || {}; } catch (e) {}
+  Object.keys(y).forEach(function (f) { x[f] = Math.max(Number(x[f]) || 0, Number(y[f]) || 0); });
+  return JSON.stringify(x);
+}
+
+function doGet() {
+  return json_({ ok: true, service: 'english-trainer-progress' });
+}
+
 function doPost(e) {
-  let q;
-  try { q = JSON.parse(e.postData.contents); } catch (err) { return out_({ error: 'bad request' }); }
-  if (q.key !== SECRET) return out_({ error: 'wrong key' });
+  let req;
+  try { req = JSON.parse(e.postData.contents); } catch (err) { return json_({ error: 'bad request' }); }
+  if (!req || req.token !== token_() || token_() === 'CHANGE_ME_TO_A_LONG_RANDOM_STRING') { Utilities.sleep(800); return json_({ error: 'bad token' }); }
+
+  if (req.action === 'keys') {
+    const p = PropertiesService.getScriptProperties();
+    return json_({ ok: true, gemini: p.getProperty('GEMINI_KEY') || '', groq: p.getProperty('GROQ_KEY') || '' });
+  }
+
   const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  lock.waitLock(25000);
   try {
-    const f = file_();
-    if (q.action === 'put') { f.setContent(JSON.stringify(q.state)); return out_({ ok: true }); }
-    return out_({ state: JSON.parse(f.getBlob().getDataAsString() || 'null') });
-  } finally { lock.releaseLock(); }
+    if (req.action === 'errors') return json_(errors_(req));
+    if (req.action === 'errorsGet') return json_(errorsGet_());
+    const s = tab_();
+    const now = Date.now();
+
+    if (req.action === 'wipe') {
+      const n = s.getLastRow() - 1;
+      if (n > 0) s.getRange(2, 1, n, 4).clearContent();
+      return json_({ ok: true, now: now, rows: [] });
+    }
+
+    const last = s.getLastRow();
+    const data = last > 1 ? s.getRange(2, 1, last - 1, 4).getValues() : [];
+    const idx = {};
+    data.forEach(function (r, i) { idx[r[0]] = i; });
+    let dirty = false;
+
+    (req.items || []).forEach(function (it) {
+      if (!it || typeof it.k !== 'string' || typeof it.j !== 'string') return;
+      const i = idx[it.k];
+      if (i === undefined) {
+        idx[it.k] = data.length;
+        data.push([it.k, it.j, Number(it.u) || 0, now]);
+        dirty = true;
+        return;
+      }
+      const row = data[i];
+      if (it.k.indexOf('l|') === 0) {
+        const merged = maxMerge_(row[1], it.j);
+        if (merged !== row[1]) { row[1] = merged; row[2] = Math.max(Number(row[2]) || 0, Number(it.u) || 0); row[3] = now; dirty = true; }
+      } else if ((Number(it.u) || 0) > (Number(row[2]) || 0)) {
+        row[1] = it.j; row[2] = Number(it.u); row[3] = now; dirty = true;
+      }
+    });
+
+    if (dirty) s.getRange(2, 1, data.length, 4).setValues(data);
+
+    const since = Number(req.since) || 0;
+    const rows = data
+      .filter(function (r) { return r[0] && Number(r[3]) >= since; })
+      .map(function (r) { return { k: r[0], j: String(r[1]), u: Number(r[2]) }; });
+    return json_({ ok: true, now: now, rows: rows });
+  } catch (err) {
+    return json_({ error: String(err) });
+  } finally {
+    lock.releaseLock();
+  }
 }
