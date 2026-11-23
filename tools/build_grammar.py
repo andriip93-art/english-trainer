@@ -5,7 +5,7 @@
 
 The rules are turned into a small, safe HTML subset (everything is escaped first). Exercises are parsed into typed items and the
 keys are matched to them, so a unit that does not parse cleanly stops the build with a clear message instead of shipping a
-broken key. Item types: choose, type, place, fix. Other exercise kinds raise NotImplementedError for now.
+broken key. Item types: choose, type, place, fix, rewrite. Other exercise kinds raise NotImplementedError for now.
 """
 import html, json, re, sys, os
 
@@ -103,6 +103,9 @@ def edit_dist(a, b):
             p, d[j] = d[j], min(d[j] + 1, d[j - 1] + 1, p + (x != y))
     return d[-1]
 
+START_OK = {"usually", "normally", "often", "sometimes", "occasionally", "generally", "frequently", "regularly"}
+END_OK = {"sometimes", "occasionally"}
+
 # ---------- exercises ----------
 def parse_exercises(block):
     exs, cur = [], None
@@ -120,6 +123,7 @@ def kind_of(h):
     if h.startswith("Choose the correct form"): return "choose"
     if h.startswith("Put the adverb"): return "place"
     if h.startswith("Find and correct"): return "fix"
+    if re.match(r"(Rewrite|Make the|Make questions|Report the|Shorten|Join with|Disagree|Write a reply|Replace|Correct the)", h): return "rewrite"
     if h.startswith("Put the verb in brackets") or h.startswith("Complete"): return "type"
     raise NotImplementedError(f"exercise kind not supported yet: {h!r}")
 
@@ -157,7 +161,14 @@ def build_item(kind, n, q, key):
             idx = [i for i in range(len(toks) - len(a) + 1) if [t.lower() for t in toks[i:i + len(a)]] == a]
             if len(idx) != 1: raise ValueError(f"item {n}: adverb {adv!r} not found once in {sentence!r}")
             pos.add(idx[0])
-        return {"n": n, "t": "place", "adv": adv, "words": words, "end": end, "ans": sorted(pos)}
+        order = sorted(pos)
+        # single frequency adverbs may also open the sentence; sometimes/occasionally may also close it
+        low = adv.lower()
+        if low in START_OK and 0 not in order: order.append(0)
+        if low in END_OK and len(words) not in order: order.append(len(words))
+        return {"n": n, "t": "place", "adv": adv, "words": words, "end": end, "ans": order}
+    if kind == "rewrite":
+        return {"n": n, "t": "rewrite", "q": q, "ans": alts_of(key)}
     if kind == "fix":
         full = alts_of(key)
         words = q.split()

@@ -1575,6 +1575,8 @@ function copy(text, msg){ (navigator.clipboard?.writeText(text)||Promise.reject(
 // and everything newer from other devices is pulled on open, on return to the tab and on reconnect.
 // ---- SYNC START
 const SYNC_CFG_KEYS = ['ivl','ivlVer','dir','scope','hideCaution','lessonSize','autoSpeak','ygAccent'];
+// Extra progress (Modes 7 and 8) rides on the same sync: each mode registers { out(items, prev), pull(key, value) }.
+const SYNC_EXT = [];
 const SK = 'bet3.sync';                                   // { at, sv, ok, when, cards, msg }
 const syncInfo = () => LS.get(SK, {at:0, sv:0});
 const syncOn = () => !!(cfg.syncUrl && cfg.syncToken);
@@ -1599,6 +1601,7 @@ async function syncNow({silent=false, full=false}={}){
     const since=prev?today(new Date(prev-DAY)):'';
     for(const [d,v] of Object.entries(log)) if(!since||d>=since) items.push({k:'l|'+d, j:JSON.stringify(v), u:started});
     if((cfg.u||0)>prev) items.push({k:'g', j:JSON.stringify(Object.fromEntries(SYNC_CFG_KEYS.filter(x=>cfg[x]!==undefined).map(x=>[x,cfg[x]]))), u:cfg.u});
+    SYNC_EXT.forEach(x=>x.out(items, prev));
     const out=await syncPost({action:'sync', items, since:full?0:(info.sv||0)});
     let n=0;
     for(const r of out.rows||[]){
@@ -1607,6 +1610,7 @@ async function syncNow({silent=false, full=false}={}){
       else if(r.k.startsWith('l|')){ const d=r.k.slice(2), l=log[d]||{}, m={...l}; for(const f of Object.keys(v)) m[f]=Math.max(m[f]||0, v[f]||0);
         if(JSON.stringify(m)!==JSON.stringify(l)){ log[d]=m; n++; } }
       else if(r.k==='g' && r.u>(cfg.u||0)){ SYNC_CFG_KEYS.forEach(x=>{ if(v[x]!==undefined) cfg[x]=v[x]; }); cfg.u=r.u; n++; }
+      else if(SYNC_EXT.some(x=>x.pull(r.k,v))) n++;
     }
     LS.set(K.srs,srs); LS.set(K.log,log); LS.set(K.cfg,cfg);
     LS.set(SK,{at:started, sv:out.now, ok:true, when:Date.now(), cards:Object.keys(srs).length, msg:''});
@@ -3886,7 +3890,8 @@ actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
 const ENK = 'bet3.eng';
 let END = LS.get('bet3.engdata', null);
 const engProg = () => LS.get(ENK, { learned:{}, done:{}, npd:5 });
-const engSet = f => { const p=engProg(); f(p); LS.set(ENK,p); return p; };
+const engSet = f => { const p=engProg(); f(p); p.ut=Date.now(); LS.set(ENK,p); queueSync(); return p; };
+const devId = () => { let d=LS.get('bet3.dev',null); if(!d){ d=Math.random().toString(36).slice(2,8); LS.set('bet3.dev',d); } return d; };
 const engTopics = () => END?.topics || [];
 const engItems = tid => engTopics().filter(T=>!tid||T.id===tid).flatMap(T=>T.items.map(it=>({ ...it, deck:'eng', topic:T.id })));
 async function engLoad(){ try{ const r=await fetch('everyday.json',{cache:'no-store'}); if(r.ok){ END=await r.json(); LS.set('bet3.engdata',END); } }catch(e){} if(st.view==='everyday') render(); }
@@ -3994,7 +3999,7 @@ actions.openEveryday = () => { st.E={ phase:'home' }; go('everyday'); };
 actions.edHome = () => { speechSynthesis?.cancel(); st.E={ phase:'home' }; render(); edTop(); };
 actions.edTopic = d => { st.E={ phase:'topic', topic:d.id, role:'Y' }; render(); edTop(); };
 actions.edRole = d => { st.E.role=d.v; render(); };
-actions.edNpd = d => { engSet(p=>{ p.npd=+d.v; }); render(); };
+actions.edNpd = d => { engSet(p=>{ p.npd=+d.v; p.nu=Date.now(); }); render(); };
 actions.edStart = () => { st.E.phase='learn'; render(); edTop(); };
 actions.edLearnNext = () => { const E=st.E, T=edT(); engSet(p=>{ p.learned[T.id]=p.learned[T.id]||Date.now(); });
   E.tq=shuffle(T.items.filter(x=>x.trap)); E.ti=0; E.tmiss=0; E.to=null; E.tp=undefined; E.phase=E.tq.length?'trap':'read'; render(); edTop(); };
@@ -4021,6 +4026,20 @@ actions.edGrade = d => { const C=st.E.c, it=C.q[C.i]; if(!card(it)) engSet(p=>{ 
 document.addEventListener('keydown', e => { if(e.key!=='Enter'||!e.target.classList?.contains('ed-in')) return; e.preventDefault();
   const ins=[...document.querySelectorAll('.ed-in')], n=ins.indexOf(e.target); if(n<ins.length-1) ins[n+1].focus(); else actions.edCheck(); });
 
+
+// Sync (Everyday): one row per device, never overwritten by another device; rows are merged on read, so nothing is lost.
+// learned keeps the earliest time, done the newest result per topic, the daily limit the latest choice, the day's new cards are united.
+function engMerge(v){ const p=engProg(); let ch=false;
+  for(const [t,ts] of Object.entries(v.learned||{})) if(!p.learned[t]||ts<p.learned[t]){ p.learned[t]=ts; ch=true; }
+  for(const [t,d] of Object.entries(v.done||{})) if(!p.done[t]||d.ts>p.done[t].ts){ p.done[t]=d; ch=true; }
+  if((v.nu||0)>(p.nu||0)){ p.npd=v.npd; p.nu=v.nu; ch=true; }
+  if(v.intro){ const a=p.intro; if(!a||v.intro.d>a.d){ p.intro=v.intro; ch=true; }
+    else if(v.intro.d===a.d){ const ids=[...new Set([...a.ids,...v.intro.ids])]; if(ids.length!==a.ids.length){ p.intro={ d:a.d, ids }; ch=true; } } }
+  if(ch) LS.set(ENK,p); return ch; }
+SYNC_EXT.push({
+  out(items, prev){ const p=engProg(); if(!p.ut && Object.keys(p.learned).length){ p.ut=Date.now(); LS.set(ENK,p); }
+    if(p.ut>prev) items.push({ k:'x7|'+devId(), j:JSON.stringify({ learned:p.learned, done:p.done, npd:p.npd, nu:p.nu, intro:p.intro }), u:p.ut }); },
+  pull(k, v){ return k.startsWith('x7|') && k!=='x7|'+devId() && engMerge(v); } });
 X_VIEWS.everyday = { title:'Everyday English', v:()=>vEveryday() };
 { const _b=actions.back; actions.back=()=>{ if(st.view!=='everyday') return _b(); const E=st.E||{ phase:'home' }; speechSynthesis?.cancel();
     if(E.phase==='home') return go('home');
@@ -4040,7 +4059,9 @@ X_VIEWS.everyday = { title:'Everyday English', v:()=>vEveryday() };
 const GRK = 'bet3.gram', GR_PASS = 90;
 let GRD = null, GRD_TRIED = false;
 const grProg = () => LS.get(GRK, { u:{}, miss:{} });
-const grSet = f => { const p=grProg(); f(p); LS.set(GRK,p); return p; };
+const grSet = f => { const p=grProg(); f(p); p.ut=Date.now(); LS.set(GRK,p); queueSync(); return p; };
+// a missed item is { due, u }; a corrected one stays as { gone, u } so that the deletion also reaches other devices
+const grMiss = P => Object.entries(P.miss).filter(([k,m])=>!m.gone);
 async function grLoad(){ try{ const r=await fetch('grammar.json',{cache:'no-store'}); if(r.ok) GRD=await r.json(); }catch(e){} GRD_TRIED=true; if(st.view==='grammar') render(); }
 const grUnit = n => GRD?.units?.[String(n)];
 const grItems = n => grUnit(n).ex.flatMap(e=>e.items.map(it=>({ ...it, exh:e.h, key:n+':'+it.n })));
@@ -4069,9 +4090,9 @@ function vGrammar(){ const G=st.G||(st.G={ phase:'home' });
   if(!GRD){ if(!GRD_TRIED){ grLoad(); return '<div class="stack"><p class="hint">Loading…</p></div>'; } return '<div class="stack"><p class="hint">Could not load grammar.json. Check the connection and try again.</p></div>'; }
   return ({ home:grHome, unit:grUnitV, rules:grRules, run:grRun, result:grResult })[G.phase](); }
 
-function grDue(P){ return Object.entries(P.miss).filter(([k,m])=>m.due<=Date.now()); }
-function grHome(){ const P=grProg(), idx=GRD.index, closed=idx.filter(x=>P.u[x.n]?.passed).length, ready=Object.keys(GRD.units).length, due=grDue(P).length, all=Object.keys(P.miss).length;
-  const next=all&&!due?Math.ceil((Math.min(...Object.values(P.miss).map(m=>m.due))-Date.now())/DAY):0;
+function grDue(P){ return grMiss(P).filter(([k,m])=>m.due<=Date.now()); }
+function grHome(){ const P=grProg(), idx=GRD.index, closed=idx.filter(x=>P.u[x.n]?.passed).length, ready=Object.keys(GRD.units).length, due=grDue(P).length, all=grMiss(P).length;
+  const next=all&&!due?Math.ceil((Math.min(...grMiss(P).map(([k,m])=>m.due))-Date.now())/DAY):0;
   const row = x => { const U=P.u[x.n], ok=!!GRD.units[x.n];
     return `<button class="gr-row ${U?.passed?'ok':''} ${ok?'':'dim'}" ${ok?`data-act="grUnit" data-n="${x.n}"`:'disabled'}><span class="gr-n">${U?.passed?'✓':x.n}</span><span style="flex:1;min-width:0">${esc(x.t)}</span>${U?`<span class="pill ${U.passed?'ok':''}">${U.best}%</span>`:ok?'':'<span class="pill">soon</span>'}</button>`; };
   const part = p => { const us=idx.filter(x=>x.part===p.id); return `<div class="eyebrow" style="margin-top:10px">Part ${esc(p.id)} · ${esc(p.t)} · ${us.filter(x=>P.u[x.n]?.passed).length}/${us.length}</div>${us.map(row).join('')}`; };
@@ -4082,7 +4103,7 @@ function grHome(){ const P=grProg(), idx=GRD.index, closed=idx.filter(x=>P.u[x.n
       <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${due?'due':''}">${due} due</span><span class="pill">${all} saved</span>${next?`<span class="pill">next in ${next}d</span>`:''}</div></div></button>`:''}
     ${GRD.parts.map(part).join('')}</div>`; }
 
-function grUnitV(){ const G=st.G, u=grUnit(G.n), P=grProg(), U=P.u[G.n], idx=GRD.index.find(x=>x.n===G.n), total=grItems(G.n).length, mine=Object.keys(P.miss).filter(k=>k.startsWith(G.n+':')).length;
+function grUnitV(){ const G=st.G, u=grUnit(G.n), P=grProg(), U=P.u[G.n], idx=GRD.index.find(x=>x.n===G.n), total=grItems(G.n).length, mine=grMiss(P).filter(([k])=>k.startsWith(G.n+':')).length;
   return `<div class="stack"><div class="hero spk-hero"><div class="lbl">Unit ${G.n} · Part ${esc(idx.part)}</div><div class="q">${esc(u.t)}</div></div>
     <div class="card stack">${U?.passed?`<div style="color:var(--ok);font-weight:700">✓ Closed · best ${U.best}%</div>`:'<div style="font-weight:600">Not closed yet</div>'}
       <div class="muted" style="font-size:.9rem">${U?`${U.runs} run${U.runs===1?'':'s'} · last ${U.last}% · `:''}${GR_PASS}% on a full run closes the unit${U?.passed?'. A new run never removes the tick.':'.'}</div>
@@ -4110,13 +4131,14 @@ function grRun(){ const G=st.G, it=G.items[G.i], total=G.items.length, r=G.res[G
     body=`<div class="card stack"><div class="row" style="gap:8px"><span class="muted">Where does</span><span class="chip on">${esc(it.adv)}</span><span class="muted">go?</span></div>
       <div class="serif" style="font-size:1.15rem;line-height:2.3">${it.words.map((w,i)=>ins(i)+' '+esc(w)).join(' ')} ${ins(it.words.length)}${esc(it.end)}</div></div>`;
   } else {
-    body=`<div class="card stack"><div class="muted" style="font-size:.85rem">Edit the sentence so that it is correct.</div>
+    body=`<div class="card stack"><div class="muted" style="font-size:.85rem">${it.t==='rewrite'?'Write your version of the sentence.':'Edit the sentence so that it is correct.'}</div>
       <textarea id="grFix" class="gr-fix" rows="2" ${r?'disabled':''} autocapitalize="off" spellcheck="false">${esc(r?r.given:it.q)}</textarea></div>`;
   }
   const done=!!r, last=G.i+1>=total, full=grFull(it);
-  const fb=done?`<div class="card stack" style="border-color:${r.ok?'var(--ok)':'var(--bad)'}"><div style="font-weight:700;color:${r.ok?'var(--ok)':'var(--bad)'}">${r.ok?'Right.':'Not quite.'}</div>
-      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:nowrap"><div class="serif" style="font-size:1.05rem">${r.ok?'':'Correct: '}${esc(full)}</div>${audioBtn(full)}</div></div>`:'';
-  const needsCheck=it.t==='type'||it.t==='fix';
+  const fb=done?`<div class="card stack" style="border-color:${r.ok?'var(--ok)':'var(--bad)'}"><div style="font-weight:700;color:${r.ok?'var(--ok)':'var(--bad)'}">${r.ok?(r.self?'Right (your own check).':'Right.'):'Not quite.'}</div>
+      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:nowrap"><div class="serif" style="font-size:1.05rem">${r.ok&&!r.self?'':(it.t==='rewrite'?'Model answer: ':'Correct: ')}${esc(full)}</div>${audioBtn(full)}</div>
+      ${!r.ok&&(it.t==='fix'||it.t==='rewrite')?`<button class="btn ghost small" data-act="grSelfOk" style="align-self:flex-start">My answer is also correct</button>`:''}</div>`:'';
+  const needsCheck=it.t==='type'||it.t==='fix'||it.t==='rewrite';
   return `<div class="stack"><div class="eyebrow">${G.mode==='review'?'Review':'Unit '+G.n} · ${G.i+1}/${total}</div><p class="hint" style="margin:0">${esc(it.exh)}</p>
     ${G.showRules?grRulesHtml(G.n):''}${body}${fb}
     <div class="actions">${done?`<button class="btn" data-act="grNext">${last?'Finish':'Next'}</button>`:needsCheck?`<button class="btn" data-act="grCheck">Check</button>`:''}
@@ -4145,13 +4167,14 @@ actions.grReview = () => { const due=grDue(grProg()).map(([k])=>grFind(k)).filte
 actions.grRulesToggle = () => { st.G.showRules=!st.G.showRules; render(); };
 function grAnswer(a){ const G=st.G, it=G.items[G.i]; if(G.res[G.i]) return; const ok=grCheck(it,a);
   G.res[G.i]={ ok, given:a, gaps:it.t==='type'?it.ans.map((alts,g)=>alts.some(x=>grExpand(x)===grExpand(a[g]||''))):undefined }; render(); }
+actions.grSelfOk = () => { const r=st.G.res[st.G.i]; if(!r||r.ok) return; r.ok=true; r.self=true; render(); };
 actions.grChoose = d => grAnswer(+d.n);
 actions.grPlace = d => grAnswer(+d.n);
 actions.grCheck = () => { const G=st.G, it=G.items[G.i]; if(G.res[G.i]) return;
   grAnswer(it.t==='type'?[...document.querySelectorAll('.gr-in')].map(x=>x.value):(document.getElementById('grFix')?.value||'')); };
 actions.grNext = () => { const G=st.G; G.i++; if(G.i<G.items.length){ render(); edTop(); setTimeout(()=>document.querySelector('.gr-in:not([disabled])')?.focus(),40); return; }
   const now=Date.now(), pct=Math.round(G.res.filter(r=>r.ok).length/G.items.length*100);
-  grSet(p=>{ G.items.forEach((it,i)=>{ if(G.res[i].ok) delete p.miss[it.key]; else p.miss[it.key]={ due:now+3*DAY }; });
+  grSet(p=>{ G.items.forEach((it,i)=>{ if(G.res[i].ok){ if(p.miss[it.key]&&!p.miss[it.key].gone) p.miss[it.key]={ gone:true, u:now }; } else p.miss[it.key]={ due:now+3*DAY, u:now }; });
     if(G.mode==='run'){ const u=p.u[G.n]||(p.u[G.n]={ best:0, passed:false, runs:0 }); u.runs++; u.last=pct; u.best=Math.max(u.best,pct); u.ts=now; if(pct>=GR_PASS) u.passed=true; } });
   markActive(); G.phase='result'; render(); edTop(); };
 document.addEventListener('keydown', e => { if(e.key!=='Enter') return; const t=e.target;
@@ -4159,6 +4182,18 @@ document.addEventListener('keydown', e => { if(e.key!=='Enter') return; const t=
   else if(t.id==='grFix'){ e.preventDefault(); actions.grCheck(); } });
 document.addEventListener('click', e => { const i=e.target.closest('.gr-rules i.ex'); if(i) speak(i.textContent); });
 
+
+// Sync (Grammar): one row per device, merged on read: best score is the maximum, a tick is never lost, a missed item follows its newest change.
+function grMerge(v){ const p=grProg(); let ch=false;
+  for(const [n,u] of Object.entries(v.u||{})){ const l=p.u[n]; if(!l){ p.u[n]=u; ch=true; continue; }
+    const m={ best:Math.max(l.best,u.best), passed:!!(l.passed||u.passed), runs:Math.max(l.runs,u.runs), ...((u.ts||0)>(l.ts||0)?{ last:u.last, ts:u.ts }:{ last:l.last, ts:l.ts }) };
+    if(JSON.stringify(m)!==JSON.stringify(l)){ p.u[n]=m; ch=true; } }
+  for(const [k,m] of Object.entries(v.miss||{})){ const l=p.miss[k]; if(!l||(m.u||0)>(l.u||0)){ p.miss[k]=m; ch=true; } }
+  if(ch) LS.set(GRK,p); return ch; }
+SYNC_EXT.push({
+  out(items, prev){ const p=grProg(); if(!p.ut && (Object.keys(p.u).length||Object.keys(p.miss).length)){ p.ut=Date.now(); LS.set(GRK,p); }
+    if(p.ut>prev) items.push({ k:'x8|'+devId(), j:JSON.stringify({ u:p.u, miss:p.miss }), u:p.ut }); },
+  pull(k, v){ return k.startsWith('x8|') && k!=='x8|'+devId() && grMerge(v); } });
 X_VIEWS.grammar = { title:'Business Grammar', v:()=>vGrammar() };
 { const _b=actions.back; actions.back=()=>{ if(st.view!=='grammar') return _b(); const G=st.G||{ phase:'home' }; speechSynthesis?.cancel();
     if(G.phase==='home') return go('home');
