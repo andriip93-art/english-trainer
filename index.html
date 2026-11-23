@@ -688,6 +688,23 @@ h2,h3,.q,.f-q,.serif,.note,.hint,.f-pair,.f-con .ab span,.t-msg>div{overflow-wra
 .ed-in{font:inherit;border:0;border-bottom:2px solid var(--line);background:transparent;padding:2px 4px;margin:0 2px;width:var(--w,9em);max-width:100%;color:var(--fg);outline:0;border-radius:0}
 .ed-in:focus{border-color:var(--primary)}.ed-in.ok{border-color:var(--ok);color:var(--ok)}.ed-in.bad{border-color:var(--bad);color:var(--bad)}
 .ed-ans{color:var(--ok);font-weight:600}
+.gr-row{display:flex;gap:12px;align-items:center;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:12px 14px;text-align:left;margin-top:8px;font-size:.95rem}
+.gr-row:disabled{cursor:default}.gr-row.dim{opacity:.5}.gr-row.ok{border-color:var(--ok)}
+.gr-n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.gr-row.ok .gr-n{background:var(--ok);color:#fff}
+.gr-bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}.gr-bar span{display:block;height:100%;background:var(--ok)}
+.gr-rules{overflow-x:auto}.gr-rules p{margin:6px 0}
+.gr-rules table{width:100%;border-collapse:collapse;font-size:.86rem;margin:6px 0}
+.gr-rules th,.gr-rules td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.gr-rules th{background:var(--surface-2)}
+.gr-rules code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.88em}
+.gr-rules ul,.gr-rules ol{padding-left:20px;margin:6px 0;display:grid;gap:6px}
+.gr-rules i.ex{border-bottom:1px dotted var(--muted);cursor:pointer}
+.gr-in{font:inherit;border:0;border-bottom:2px solid var(--line);background:transparent;padding:2px 4px;margin:0 2px;width:var(--w,9em);max-width:100%;color:var(--fg);outline:0;border-radius:0}
+.gr-in:focus{border-color:var(--primary)}.gr-in.ok{border-color:var(--ok);color:var(--ok)}.gr-in.bad{border-color:var(--bad);color:var(--bad)}
+.gr-ins{border:1px dashed var(--line);background:transparent;border-radius:999px;min-width:26px;height:26px;padding:0 8px;font-weight:600;color:var(--muted);vertical-align:middle;font-size:.85rem}
+.gr-ins.right{border:1px solid var(--ok);background:var(--ok-soft);color:var(--ok)}.gr-ins.wrong{border:1px solid var(--bad);background:var(--bad-soft);color:var(--bad)}
+.gr-fix{width:100%;font:inherit;font-size:1.05rem;border:1px solid var(--line);border-radius:var(--r-md);padding:10px;background:var(--surface);color:var(--fg);resize:vertical}
 </style>
 </head>
 <body>
@@ -1558,6 +1575,8 @@ function copy(text, msg){ (navigator.clipboard?.writeText(text)||Promise.reject(
 // and everything newer from other devices is pulled on open, on return to the tab and on reconnect.
 // ---- SYNC START
 const SYNC_CFG_KEYS = ['ivl','ivlVer','dir','scope','hideCaution','lessonSize','autoSpeak','ygAccent'];
+// Extra progress (Modes 7 and 8) rides on the same sync: each mode registers { out(items, prev), pull(key, value) }.
+const SYNC_EXT = [];
 const SK = 'bet3.sync';                                   // { at, sv, ok, when, cards, msg }
 const syncInfo = () => LS.get(SK, {at:0, sv:0});
 const syncOn = () => !!(cfg.syncUrl && cfg.syncToken);
@@ -1582,6 +1601,7 @@ async function syncNow({silent=false, full=false}={}){
     const since=prev?today(new Date(prev-DAY)):'';
     for(const [d,v] of Object.entries(log)) if(!since||d>=since) items.push({k:'l|'+d, j:JSON.stringify(v), u:started});
     if((cfg.u||0)>prev) items.push({k:'g', j:JSON.stringify(Object.fromEntries(SYNC_CFG_KEYS.filter(x=>cfg[x]!==undefined).map(x=>[x,cfg[x]]))), u:cfg.u});
+    SYNC_EXT.forEach(x=>x.out(items, prev));
     const out=await syncPost({action:'sync', items, since:full?0:(info.sv||0)});
     let n=0;
     for(const r of out.rows||[]){
@@ -1590,6 +1610,7 @@ async function syncNow({silent=false, full=false}={}){
       else if(r.k.startsWith('l|')){ const d=r.k.slice(2), l=log[d]||{}, m={...l}; for(const f of Object.keys(v)) m[f]=Math.max(m[f]||0, v[f]||0);
         if(JSON.stringify(m)!==JSON.stringify(l)){ log[d]=m; n++; } }
       else if(r.k==='g' && r.u>(cfg.u||0)){ SYNC_CFG_KEYS.forEach(x=>{ if(v[x]!==undefined) cfg[x]=v[x]; }); cfg.u=r.u; n++; }
+      else if(SYNC_EXT.some(x=>x.pull(r.k,v))) n++;
     }
     LS.set(K.srs,srs); LS.set(K.log,log); LS.set(K.cfg,cfg);
     LS.set(SK,{at:started, sv:out.now, ok:true, when:Date.now(), cards:Object.keys(srs).length, msg:''});
@@ -3869,7 +3890,8 @@ actions.fsrsR = d => { cfg.fsrsR=+d.v; touchCfg(); render(); };
 const ENK = 'bet3.eng';
 let END = LS.get('bet3.engdata', null);
 const engProg = () => LS.get(ENK, { learned:{}, done:{}, npd:5 });
-const engSet = f => { const p=engProg(); f(p); LS.set(ENK,p); return p; };
+const engSet = f => { const p=engProg(); f(p); p.ut=Date.now(); LS.set(ENK,p); queueSync(); return p; };
+const devId = () => { let d=LS.get('bet3.dev',null); if(!d){ d=Math.random().toString(36).slice(2,8); LS.set('bet3.dev',d); } return d; };
 const engTopics = () => END?.topics || [];
 const engItems = tid => engTopics().filter(T=>!tid||T.id===tid).flatMap(T=>T.items.map(it=>({ ...it, deck:'eng', topic:T.id })));
 async function engLoad(){ try{ const r=await fetch('everyday.json',{cache:'no-store'}); if(r.ok){ END=await r.json(); LS.set('bet3.engdata',END); } }catch(e){} if(st.view==='everyday') render(); }
@@ -3977,7 +3999,7 @@ actions.openEveryday = () => { st.E={ phase:'home' }; go('everyday'); };
 actions.edHome = () => { speechSynthesis?.cancel(); st.E={ phase:'home' }; render(); edTop(); };
 actions.edTopic = d => { st.E={ phase:'topic', topic:d.id, role:'Y' }; render(); edTop(); };
 actions.edRole = d => { st.E.role=d.v; render(); };
-actions.edNpd = d => { engSet(p=>{ p.npd=+d.v; }); render(); };
+actions.edNpd = d => { engSet(p=>{ p.npd=+d.v; p.nu=Date.now(); }); render(); };
 actions.edStart = () => { st.E.phase='learn'; render(); edTop(); };
 actions.edLearnNext = () => { const E=st.E, T=edT(); engSet(p=>{ p.learned[T.id]=p.learned[T.id]||Date.now(); });
   E.tq=shuffle(T.items.filter(x=>x.trap)); E.ti=0; E.tmiss=0; E.to=null; E.tp=undefined; E.phase=E.tq.length?'trap':'read'; render(); edTop(); };
@@ -4004,6 +4026,20 @@ actions.edGrade = d => { const C=st.E.c, it=C.q[C.i]; if(!card(it)) engSet(p=>{ 
 document.addEventListener('keydown', e => { if(e.key!=='Enter'||!e.target.classList?.contains('ed-in')) return; e.preventDefault();
   const ins=[...document.querySelectorAll('.ed-in')], n=ins.indexOf(e.target); if(n<ins.length-1) ins[n+1].focus(); else actions.edCheck(); });
 
+
+// Sync (Everyday): one row per device, never overwritten by another device; rows are merged on read, so nothing is lost.
+// learned keeps the earliest time, done the newest result per topic, the daily limit the latest choice, the day's new cards are united.
+function engMerge(v){ const p=engProg(); let ch=false;
+  for(const [t,ts] of Object.entries(v.learned||{})) if(!p.learned[t]||ts<p.learned[t]){ p.learned[t]=ts; ch=true; }
+  for(const [t,d] of Object.entries(v.done||{})) if(!p.done[t]||d.ts>p.done[t].ts){ p.done[t]=d; ch=true; }
+  if((v.nu||0)>(p.nu||0)){ p.npd=v.npd; p.nu=v.nu; ch=true; }
+  if(v.intro){ const a=p.intro; if(!a||v.intro.d>a.d){ p.intro=v.intro; ch=true; }
+    else if(v.intro.d===a.d){ const ids=[...new Set([...a.ids,...v.intro.ids])]; if(ids.length!==a.ids.length){ p.intro={ d:a.d, ids }; ch=true; } } }
+  if(ch) LS.set(ENK,p); return ch; }
+SYNC_EXT.push({
+  out(items, prev){ const p=engProg(); if(!p.ut && Object.keys(p.learned).length){ p.ut=Date.now(); LS.set(ENK,p); }
+    if(p.ut>prev) items.push({ k:'x7|'+devId(), j:JSON.stringify({ learned:p.learned, done:p.done, npd:p.npd, nu:p.nu, intro:p.intro }), u:p.ut }); },
+  pull(k, v){ return k.startsWith('x7|') && k!=='x7|'+devId() && engMerge(v); } });
 X_VIEWS.everyday = { title:'Everyday English', v:()=>vEveryday() };
 { const _b=actions.back; actions.back=()=>{ if(st.view!=='everyday') return _b(); const E=st.E||{ phase:'home' }; speechSynthesis?.cancel();
     if(E.phase==='home') return go('home');
@@ -4015,8 +4051,164 @@ X_VIEWS.everyday = { title:'Everyday English', v:()=>vEveryday() };
     h=_home(), m='<button class="deck" data-act="openStats"';
     return h.includes(m) ? h.replace(m, tile+m) : h.replace('<p class="hint">', tile+'<p class="hint">'); }; }
 
+// ---- 20. Mode 8 · Business Grammar (prototype)
+// One unit of the adapted textbook at a time: read the rules (tap an example to hear it), then work through typed exercises.
+// 90% on a full run closes the unit with a tick; a closed unit can be run again and keeps its tick and best score.
+// Wrong items are saved for a review after 3 days. Data: grammar.json (built from the textbook by tools/build_grammar.py).
+// Progress (bet3.gram) stays on this device.
+const GRK = 'bet3.gram', GR_PASS = 90;
+let GRD = null, GRD_TRIED = false;
+const grProg = () => LS.get(GRK, { u:{}, miss:{} });
+const grSet = f => { const p=grProg(); f(p); p.ut=Date.now(); LS.set(GRK,p); queueSync(); return p; };
+// a missed item is { due, u }; a corrected one stays as { gone, u } so that the deletion also reaches other devices
+const grMiss = P => Object.entries(P.miss).filter(([k,m])=>!m.gone);
+async function grLoad(){ try{ const r=await fetch('grammar.json',{cache:'no-store'}); if(r.ok) GRD=await r.json(); }catch(e){} GRD_TRIED=true; if(st.view==='grammar') render(); }
+const grUnit = n => GRD?.units?.[String(n)];
+const grItems = n => grUnit(n).ex.flatMap(e=>e.items.map(it=>({ ...it, exh:e.h, key:n+':'+it.n })));
+const grFind = key => { const [n,i]=key.split(':'); const u=grUnit(n); return u ? grItems(+n).find(x=>x.key===key) : null; };
+// "don't" and "do not" are the same answer
+const grExpand = s => norm(s).replace(/\bcannot\b/g,'can not').replace(/\bwon't\b/g,'will not').replace(/\bcan't\b/g,'can not').replace(/n't\b/g,' not')
+  .replace(/'re\b/g,' are').replace(/'m\b/g,' am').replace(/'ve\b/g,' have').replace(/'ll\b/g,' will').replace(/\s+/g,' ').trim();
+function grCheck(it, a){
+  if(it.t==='choose') return a===it.ans;
+  if(it.t==='place') return it.ans.includes(a);
+  if(it.t==='type') return it.ans.every((alts,g)=>alts.some(x=>grExpand(x)===grExpand(a[g]||'')));
+  return it.ans.some(x=>grExpand(x)===grExpand(a||''));
+}
+const GR_CAP = ['We','He','She','It','They','You','The','Our','My','His','Her','Their','This','That','There'];
+function grFull(it){
+  if(it.t==='choose') return it.q.replace('___', it.opts[it.ans]);
+  if(it.t==='type'){ let g=0; return it.q.replace(/___/g,()=>it.ans[g++][0]).replace(/\s*\([a-z-]+\)/g,''); }
+  if(it.t==='place'){ const p=it.ans[0], w=[...it.words]; let adv=it.adv;
+    if(p===0){ adv=adv[0].toUpperCase()+adv.slice(1); if(GR_CAP.includes(w[0])) w[0]=w[0][0].toLowerCase()+w[0].slice(1); }
+    w.splice(p,0,adv); return w.join(' ')+it.end; }
+  return it.ans[0];
+}
+const grBlank = '<span class="ed-blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>';
+
+function vGrammar(){ const G=st.G||(st.G={ phase:'home' });
+  if(!GRD){ if(!GRD_TRIED){ grLoad(); return '<div class="stack"><p class="hint">Loading…</p></div>'; } return '<div class="stack"><p class="hint">Could not load grammar.json. Check the connection and try again.</p></div>'; }
+  return ({ home:grHome, unit:grUnitV, rules:grRules, run:grRun, result:grResult })[G.phase](); }
+
+function grDue(P){ return grMiss(P).filter(([k,m])=>m.due<=Date.now()); }
+function grHome(){ const P=grProg(), idx=GRD.index, closed=idx.filter(x=>P.u[x.n]?.passed).length, ready=Object.keys(GRD.units).length, due=grDue(P).length, all=grMiss(P).length;
+  const next=all&&!due?Math.ceil((Math.min(...grMiss(P).map(([k,m])=>m.due))-Date.now())/DAY):0;
+  const row = x => { const U=P.u[x.n], ok=!!GRD.units[x.n];
+    return `<button class="gr-row ${U?.passed?'ok':''} ${ok?'':'dim'}" ${ok?`data-act="grUnit" data-n="${x.n}"`:'disabled'}><span class="gr-n">${U?.passed?'✓':x.n}</span><span style="flex:1;min-width:0">${esc(x.t)}</span>${U?`<span class="pill ${U.passed?'ok':''}">${U.best}%</span>`:ok?'':'<span class="pill">soon</span>'}</button>`; };
+  const part = p => { const us=idx.filter(x=>x.part===p.id); return `<div class="eyebrow" style="margin-top:10px">Part ${esc(p.id)} · ${esc(p.t)} · ${us.filter(x=>P.u[x.n]?.passed).length}/${us.length}</div>${us.map(row).join('')}`; };
+  return `<div class="stack">
+    <div class="hero spk-hero"><div class="lbl">Mode 8 · Business Grammar</div><div class="q">One unit at a time. ${GR_PASS}% closes it with a tick; you can always run it again.</div></div>
+    <div class="card stack"><div class="row" style="justify-content:space-between"><b>${closed} of ${idx.length} units closed</b><span class="muted">${ready} ready</span></div><div class="gr-bar"><span style="width:${closed/idx.length*100}%"></span></div></div>
+    ${all?`<button class="deck" data-act="grReview"><div class="meta"><h3>Mistakes to review</h3><div class="muted" style="font-size:.85rem">Items you missed come back after 3 days.</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${due?'due':''}">${due} due</span><span class="pill">${all} saved</span>${next?`<span class="pill">next in ${next}d</span>`:''}</div></div></button>`:''}
+    ${GRD.parts.map(part).join('')}</div>`; }
+
+function grUnitV(){ const G=st.G, u=grUnit(G.n), P=grProg(), U=P.u[G.n], idx=GRD.index.find(x=>x.n===G.n), total=grItems(G.n).length, mine=grMiss(P).filter(([k])=>k.startsWith(G.n+':')).length;
+  return `<div class="stack"><div class="hero spk-hero"><div class="lbl">Unit ${G.n} · Part ${esc(idx.part)}</div><div class="q">${esc(u.t)}</div></div>
+    <div class="card stack">${U?.passed?`<div style="color:var(--ok);font-weight:700">✓ Closed · best ${U.best}%</div>`:'<div style="font-weight:600">Not closed yet</div>'}
+      <div class="muted" style="font-size:.9rem">${U?`${U.runs} run${U.runs===1?'':'s'} · last ${U.last}% · `:''}${GR_PASS}% on a full run closes the unit${U?.passed?'. A new run never removes the tick.':'.'}</div>
+      ${mine?`<div class="muted" style="font-size:.9rem">${mine} missed item${mine===1?'':'s'} saved for review.</div>`:''}</div>
+    <div class="card stack"><h3>${total} exercises</h3><div class="muted">${u.ex.map(e=>`${esc(e.h.replace(/\.$/,''))}: ${e.items.length}`).join('<br>')}</div></div>
+    <div class="actions" style="flex-direction:column"><button class="btn" data-act="grRulesGo">${U?'Read the rules, then start':'Start: rules, then exercises'}</button>
+      <button class="btn ghost" data-act="grRun">Skip to the exercises</button></div></div>`; }
+
+function grRulesHtml(n){ return grUnit(n).rules.map(s=>`<div class="card stack gr-rules">${s.h?`<h3 style="margin:0">${esc(s.h)}</h3>`:''}${s.html}</div>`).join(''); }
+function grRules(){ const G=st.G; bar(5);
+  return `<div class="stack"><div class="eyebrow">Unit ${G.n} · Rules</div><p class="hint" style="margin:0">Tap an example to hear it.</p>${grRulesHtml(G.n)}
+    <div class="actions"><button class="btn" data-act="grRun">Next: exercises</button></div></div>`; }
+
+function grRun(){ const G=st.G, it=G.items[G.i], total=G.items.length, r=G.res[G.i]; bar(G.i/total*100);
+  let body='';
+  if(it.t==='choose'){
+    body=`<div class="card stack"><div class="serif" style="font-size:1.15rem">${esc(it.q).replace('___',grBlank)}</div></div>`
+      +it.opts.map((o,n)=>`<button class="opt ${r?(n===it.ans?'right':r.given===n?'wrong':''):''}" data-act="grChoose" data-n="${n}">${esc(o)}</button>`).join('');
+  } else if(it.t==='type'){
+    let g=0; const parts=it.q.split('___');
+    const line=parts.map((p,i)=>esc(p)+(i<parts.length-1?(()=>{ const k=g++, ok=r?.gaps?.[k]; return `<input class="gr-in ${r?(ok?'ok':'bad'):''}" data-k="${k}" ${r?'disabled':''} value="${r?esc(r.given[k]||''):''}" style="--w:${Math.max(5,(it.ans[k][0].length)*0.7)}em" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="gap ${k+1}">`; })():'')).join('');
+    body=`<div class="card stack"><div class="serif" style="font-size:1.15rem;line-height:2">${line}</div></div>`;
+  } else if(it.t==='place'){
+    const ins=i=>`<button class="gr-ins ${r?(it.ans.includes(i)?'right':r.given===i?'wrong':''):''}" data-act="grPlace" data-n="${i}" aria-label="insert here">${r&&(it.ans.includes(i)||r.given===i)?esc(it.adv):'+'}</button>`;
+    body=`<div class="card stack"><div class="row" style="gap:8px"><span class="muted">Where does</span><span class="chip on">${esc(it.adv)}</span><span class="muted">go?</span></div>
+      <div class="serif" style="font-size:1.15rem;line-height:2.3">${it.words.map((w,i)=>ins(i)+' '+esc(w)).join(' ')} ${ins(it.words.length)}${esc(it.end)}</div></div>`;
+  } else {
+    body=`<div class="card stack"><div class="muted" style="font-size:.85rem">${it.t==='rewrite'?'Write your version of the sentence.':'Edit the sentence so that it is correct.'}</div>
+      <textarea id="grFix" class="gr-fix" rows="2" ${r?'disabled':''} autocapitalize="off" spellcheck="false">${esc(r?r.given:it.q)}</textarea></div>`;
+  }
+  const done=!!r, last=G.i+1>=total, full=grFull(it);
+  const fb=done?`<div class="card stack" style="border-color:${r.ok?'var(--ok)':'var(--bad)'}"><div style="font-weight:700;color:${r.ok?'var(--ok)':'var(--bad)'}">${r.ok?(r.self?'Right (your own check).':'Right.'):'Not quite.'}</div>
+      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:nowrap"><div class="serif" style="font-size:1.05rem">${r.ok&&!r.self?'':(it.t==='rewrite'?'Model answer: ':'Correct: ')}${esc(full)}</div>${audioBtn(full)}</div>
+      ${!r.ok&&(it.t==='fix'||it.t==='rewrite')?`<button class="btn ghost small" data-act="grSelfOk" style="align-self:flex-start">My answer is also correct</button>`:''}</div>`:'';
+  const needsCheck=it.t==='type'||it.t==='fix'||it.t==='rewrite';
+  return `<div class="stack"><div class="eyebrow">${G.mode==='review'?'Review':'Unit '+G.n} · ${G.i+1}/${total}</div><p class="hint" style="margin:0">${esc(it.exh)}</p>
+    ${G.showRules?grRulesHtml(G.n):''}${body}${fb}
+    <div class="actions">${done?`<button class="btn" data-act="grNext">${last?'Finish':'Next'}</button>`:needsCheck?`<button class="btn" data-act="grCheck">Check</button>`:''}
+      ${G.mode==='review'?'':`<button class="btn ghost small" data-act="grRulesToggle">${G.showRules?'Hide rules':'Show rules'}</button>`}</div></div>`; }
+
+function grResult(){ const G=st.G, total=G.items.length, ok=G.res.filter(r=>r.ok).length, pct=Math.round(ok/total*100), P=grProg(), U=P.u[G.n], wrong=G.items.filter((it,i)=>!G.res[i].ok); bar(100);
+  const full=G.mode==='run';
+  return `<div class="stack"><div class="summary-hero"><div class="n">${pct}%</div>
+    <h2 style="margin:10px 0 4px;font-size:1.25rem">${full?(pct>=GR_PASS?(G.wasPassed?'Unit passed again ✓':'Unit closed ✓'):(U?.passed?`Below ${GR_PASS}%, the tick stays`:`Below ${GR_PASS}%: not closed yet`)):(G.mode==='review'?'Review done':'Practice done')}</h2>
+    <p class="muted" style="margin:0">${ok} of ${total} right${full&&U?` · best ${U.best}%`:''}${wrong.length?' · missed items come back in 3 days':''}</p></div>
+    ${wrong.length?`<div class="card stack"><h3>Missed</h3>${wrong.map(it=>`<div><div class="muted" style="font-size:.8rem">${esc(it.exh)}</div><div class="serif">${esc(grFull(it))}</div></div>`).join('')}</div>`:''}
+    <div class="actions" style="flex-direction:column">${wrong.length&&G.mode!=='review'?`<button class="btn" data-act="grRetry">Practise the ${wrong.length} missed now</button>`:''}
+      ${G.n&&G.mode!=='review'?`<button class="btn ${wrong.length?'ghost':''}" data-act="grAgain">Start a new full run</button><button class="btn ghost" data-act="grRulesGo">Read the rules again</button>`:''}
+      <button class="btn ghost" data-act="grHome">Back to units</button></div></div>`; }
+
+actions.openGrammar = () => { st.G={ phase:'home' }; go('grammar'); };
+actions.grHome = () => { st.G={ phase:'home' }; render(); edTop(); };
+actions.grUnit = d => { st.G={ phase:'unit', n:+d.n }; render(); edTop(); };
+actions.grRulesGo = () => { st.G={ phase:'rules', n:st.G.n }; render(); edTop(); };
+function grBegin(n, mode, items){ st.G={ phase:'run', n, mode, items, i:0, res:[], showRules:false, wasPassed:!!grProg().u[n]?.passed }; render(); edTop(); }
+actions.grRun = () => grBegin(st.G.n, 'run', grItems(st.G.n));
+actions.grAgain = () => grBegin(st.G.n, 'run', grItems(st.G.n));
+actions.grRetry = () => { const G=st.G; grBegin(G.n, 'retry', G.items.filter((it,i)=>!G.res[i].ok)); };
+actions.grReview = () => { const due=grDue(grProg()).map(([k])=>grFind(k)).filter(Boolean);
+  if(!due.length) return toast('Nothing due yet. Missed items come back after 3 days.'); grBegin(0, 'review', shuffle(due)); };
+actions.grRulesToggle = () => { st.G.showRules=!st.G.showRules; render(); };
+function grAnswer(a){ const G=st.G, it=G.items[G.i]; if(G.res[G.i]) return; const ok=grCheck(it,a);
+  G.res[G.i]={ ok, given:a, gaps:it.t==='type'?it.ans.map((alts,g)=>alts.some(x=>grExpand(x)===grExpand(a[g]||''))):undefined }; render(); }
+actions.grSelfOk = () => { const r=st.G.res[st.G.i]; if(!r||r.ok) return; r.ok=true; r.self=true; render(); };
+actions.grChoose = d => grAnswer(+d.n);
+actions.grPlace = d => grAnswer(+d.n);
+actions.grCheck = () => { const G=st.G, it=G.items[G.i]; if(G.res[G.i]) return;
+  grAnswer(it.t==='type'?[...document.querySelectorAll('.gr-in')].map(x=>x.value):(document.getElementById('grFix')?.value||'')); };
+actions.grNext = () => { const G=st.G; G.i++; if(G.i<G.items.length){ render(); edTop(); setTimeout(()=>document.querySelector('.gr-in:not([disabled])')?.focus(),40); return; }
+  const now=Date.now(), pct=Math.round(G.res.filter(r=>r.ok).length/G.items.length*100);
+  grSet(p=>{ G.items.forEach((it,i)=>{ if(G.res[i].ok){ if(p.miss[it.key]&&!p.miss[it.key].gone) p.miss[it.key]={ gone:true, u:now }; } else p.miss[it.key]={ due:now+3*DAY, u:now }; });
+    if(G.mode==='run'){ const u=p.u[G.n]||(p.u[G.n]={ best:0, passed:false, runs:0 }); u.runs++; u.last=pct; u.best=Math.max(u.best,pct); u.ts=now; if(pct>=GR_PASS) u.passed=true; } });
+  markActive(); G.phase='result'; render(); edTop(); };
+document.addEventListener('keydown', e => { if(e.key!=='Enter') return; const t=e.target;
+  if(t.classList?.contains('gr-in')){ e.preventDefault(); const ins=[...document.querySelectorAll('.gr-in')], n=ins.indexOf(t); if(n<ins.length-1) ins[n+1].focus(); else actions.grCheck(); }
+  else if(t.id==='grFix'){ e.preventDefault(); actions.grCheck(); } });
+document.addEventListener('click', e => { const i=e.target.closest('.gr-rules i.ex'); if(i) speak(i.textContent); });
+
+
+// Sync (Grammar): one row per device, merged on read: best score is the maximum, a tick is never lost, a missed item follows its newest change.
+function grMerge(v){ const p=grProg(); let ch=false;
+  for(const [n,u] of Object.entries(v.u||{})){ const l=p.u[n]; if(!l){ p.u[n]=u; ch=true; continue; }
+    const m={ best:Math.max(l.best,u.best), passed:!!(l.passed||u.passed), runs:Math.max(l.runs,u.runs), ...((u.ts||0)>(l.ts||0)?{ last:u.last, ts:u.ts }:{ last:l.last, ts:l.ts }) };
+    if(JSON.stringify(m)!==JSON.stringify(l)){ p.u[n]=m; ch=true; } }
+  for(const [k,m] of Object.entries(v.miss||{})){ const l=p.miss[k]; if(!l||(m.u||0)>(l.u||0)){ p.miss[k]=m; ch=true; } }
+  if(ch) LS.set(GRK,p); return ch; }
+SYNC_EXT.push({
+  out(items, prev){ const p=grProg(); if(!p.ut && (Object.keys(p.u).length||Object.keys(p.miss).length)){ p.ut=Date.now(); LS.set(GRK,p); }
+    if(p.ut>prev) items.push({ k:'x8|'+devId(), j:JSON.stringify({ u:p.u, miss:p.miss }), u:p.ut }); },
+  pull(k, v){ return k.startsWith('x8|') && k!=='x8|'+devId() && grMerge(v); } });
+X_VIEWS.grammar = { title:'Business Grammar', v:()=>vGrammar() };
+{ const _b=actions.back; actions.back=()=>{ if(st.view!=='grammar') return _b(); const G=st.G||{ phase:'home' }; speechSynthesis?.cancel();
+    if(G.phase==='home') return go('home');
+    if(G.phase==='run' && G.res.length && G.res.length<G.items.length && !confirm('Leave this run? Your answers will not be saved.')) return;
+    st.G = (G.phase==='run'||G.phase==='result')&&G.n ? { phase:'unit', n:G.n } : { phase:'home' }; render(); edTop(); }; }
+{ const _home=vHome; vHome=function(){ const P=grProg(), closed=GRD?GRD.index.filter(x=>P.u[x.n]?.passed).length:0, due=grDue(P).length,
+    tile=`<button class="deck" data-act="openGrammar"><div class="ico" style="background:var(--mint);color:var(--ok)">${ICON.book}</div>
+      <div class="meta"><h3>Business Grammar</h3><div class="muted" style="font-size:.85rem">Mode 8 · rules and exercises, 90% closes a unit</div>
+      <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${closed?'ok':''}">${closed} of ${GRD?GRD.index.length:50} closed</span>${due?`<span class="pill due">${due} to review</span>`:''}</div></div></button>`,
+    h=_home(), m='<button class="deck" data-act="openStats"';
+    return h.includes(m) ? h.replace(m, tile+m) : h.replace('<p class="hint">', tile+'<p class="hint">'); }; }
+
 rpLoad();
 engLoad();
+grLoad();
 bankLoad().then(()=>{ if(st.view==='home') render(); });   // rule titles on the Today plan need the bank
 errBackfill();
 LS.set(SPK.hist, spkHist().filter(s=>s.result));   // one-off clean-up: drop takes that were saved without an analysis

@@ -1,0 +1,566 @@
+{
+ "v": 1,
+ "parts": [
+  {
+   "id": "I",
+   "t": "Глагольные времена"
+  },
+  {
+   "id": "II",
+   "t": "Страдательный залог (Passive)"
+  },
+  {
+   "id": "III",
+   "t": "Модальные глаголы"
+  },
+  {
+   "id": "IV",
+   "t": "Вопросы"
+  },
+  {
+   "id": "V",
+   "t": "Условные предложения (Conditionals)"
+  },
+  {
+   "id": "VI",
+   "t": "Глаголы с -ing или инфинитивом"
+  },
+  {
+   "id": "VII",
+   "t": "Косвенная речь (Reported speech)"
+  },
+  {
+   "id": "VIII",
+   "t": "Фразовые глаголы (Phrasal verbs)"
+  },
+  {
+   "id": "IX",
+   "t": "Другие глагольные конструкции"
+  },
+  {
+   "id": "X",
+   "t": "Определительные придаточные (Relative clauses)"
+  },
+  {
+   "id": "XI",
+   "t": "Существительные, местоимения и артикли"
+  },
+  {
+   "id": "XII",
+   "t": "Прилагательные и наречия"
+  },
+  {
+   "id": "XIII",
+   "t": "Слова-связки и логика изложения"
+  },
+  {
+   "id": "XIV",
+   "t": "Предлоги"
+  },
+  {
+   "id": "XV",
+   "t": "Тенденции, графики, цифры"
+  },
+  {
+   "id": "XVI",
+   "t": "Пунктуация"
+  }
+ ],
+ "index": [
+  {
+   "n": 1,
+   "part": "I",
+   "t": "Present time 1: Present Simple и Present Continuous"
+  },
+  {
+   "n": 2,
+   "part": "I",
+   "t": "Present time 2: Present Simple или Continuous? Глаголы состояния"
+  },
+  {
+   "n": 3,
+   "part": "I",
+   "t": "Past time 1: Past Simple и Past Continuous"
+  },
+  {
+   "n": 4,
+   "part": "I",
+   "t": "Past time 2: Past Perfect, Past Perfect Continuous, used to / would"
+  },
+  {
+   "n": 5,
+   "part": "I",
+   "t": "Past and present 1: Present Perfect"
+  },
+  {
+   "n": 6,
+   "part": "I",
+   "t": "Past and present 2: Past Simple или Present Perfect? Present Perfect Continuous"
+  },
+  {
+   "n": 7,
+   "part": "I",
+   "t": "Future 1: will, going to, Present Continuous"
+  },
+  {
+   "n": 8,
+   "part": "I",
+   "t": "Future 2: временные придаточные, Future Continuous, Future Perfect"
+  },
+  {
+   "n": 9,
+   "part": "II",
+   "t": "Passive 1: форма, смысл, системы и процессы"
+  },
+  {
+   "n": 10,
+   "part": "II",
+   "t": "Passive 2: связность, формальный стиль, Passive + infinitive, have something done"
+  },
+  {
+   "n": 11,
+   "part": "III",
+   "t": "Modals 1: форма, способность, will и готовность"
+  },
+  {
+   "n": 12,
+   "part": "III",
+   "t": "Modals 2: необходимость, разрешение, запрет, совет, критика"
+  },
+  {
+   "n": 13,
+   "part": "III",
+   "t": "Modals 3: вероятность, уверенность, предположение"
+  },
+  {
+   "n": 14,
+   "part": "III",
+   "t": "Modals 4: просьбы, разрешения, предложения помощи, советы и идеи (suggestions)"
+  },
+  {
+   "n": 15,
+   "part": "IV",
+   "t": "Questions 1: общие и специальные вопросы"
+  },
+  {
+   "n": 16,
+   "part": "IV",
+   "t": "Questions 2: вопросительные хвосты, косвенные вопросы"
+  },
+  {
+   "n": 17,
+   "part": "V",
+   "t": "Conditionals 1: нулевой, первый и второй типы, unless"
+  },
+  {
+   "n": 18,
+   "part": "V",
+   "t": "Conditionals 2: прошедшие условия, wish, if I were you"
+  },
+  {
+   "n": 19,
+   "part": "VI",
+   "t": "Verb + -ing or infinitive 1"
+  },
+  {
+   "n": 20,
+   "part": "VI",
+   "t": "Verb + -ing or infinitive 2: смена значения, глаголы восприятия, пассив"
+  },
+  {
+   "n": 21,
+   "part": "VII",
+   "t": "Reported speech 1: сдвиг времён, местоимения, время и место"
+  },
+  {
+   "n": 22,
+   "part": "VII",
+   "t": "Reported speech 2: say и tell, глаголы передачи, вопросы и просьбы"
+  },
+  {
+   "n": 23,
+   "part": "VIII",
+   "t": "Phrasal verbs 1: разделяемые и неразделяемые"
+  },
+  {
+   "n": 24,
+   "part": "VIII",
+   "t": "Phrasal verbs 2: с предлогом, трёхсловные, значения частиц"
+  },
+  {
+   "n": 25,
+   "part": "IX",
+   "t": "Verbs and objects: переходные и непереходные глаголы, два дополнения"
+  },
+  {
+   "n": 26,
+   "part": "IX",
+   "t": "The -ing form: существительное, прилагательное, после предлогов, обороты"
+  },
+  {
+   "n": 27,
+   "part": "IX",
+   "t": "make, do, get, have"
+  },
+  {
+   "n": 28,
+   "part": "X",
+   "t": "Relative clauses 1: who, which, that, whose"
+  },
+  {
+   "n": 29,
+   "part": "X",
+   "t": "Relative clauses 2: объединение предложений, what, where/when/why, причастия"
+  },
+  {
+   "n": 30,
+   "part": "XI",
+   "t": "Countable и uncountable nouns"
+  },
+  {
+   "n": 31,
+   "part": "XI",
+   "t": "Pronouns: неопределённые и возвратные"
+  },
+  {
+   "n": 32,
+   "part": "XI",
+   "t": "Determiners: all, most, no, none, each, every, both, either, neither"
+  },
+  {
+   "n": 33,
+   "part": "XI",
+   "t": "Possessives и compound nouns"
+  },
+  {
+   "n": 34,
+   "part": "XI",
+   "t": "Articles 1: a/an, the, нулевой артикль"
+  },
+  {
+   "n": 35,
+   "part": "XI",
+   "t": "Articles 2: географические названия, особые случаи"
+  },
+  {
+   "n": 36,
+   "part": "XII",
+   "t": "Adjectives and adverbs"
+  },
+  {
+   "n": 37,
+   "part": "XII",
+   "t": "Comparing 1: сравнительная и превосходная степень"
+  },
+  {
+   "n": 38,
+   "part": "XII",
+   "t": "Comparing 2: разница, структуры, наречия, существительные"
+  },
+  {
+   "n": 39,
+   "part": "XII",
+   "t": "Adverbs of degree: too, enough, so, such, quite, rather"
+  },
+  {
+   "n": 40,
+   "part": "XII",
+   "t": "Time adverbs: предлоги времени"
+  },
+  {
+   "n": 41,
+   "part": "XIII",
+   "t": "Linking words 1: добавление и противопоставление"
+  },
+  {
+   "n": 42,
+   "part": "XIII",
+   "t": "Linking words 2: причина, результат, цель, образ действия"
+  },
+  {
+   "n": 43,
+   "part": "XIII",
+   "t": "Developing an argument 1: связки для аргументации"
+  },
+  {
+   "n": 44,
+   "part": "XIII",
+   "t": "Developing an argument 2: личное мнение, фокус, at the end / in the end"
+  },
+  {
+   "n": 45,
+   "part": "XIV",
+   "t": "Prepositions of place"
+  },
+  {
+   "n": 46,
+   "part": "XIV",
+   "t": "Verb + preposition"
+  },
+  {
+   "n": 47,
+   "part": "XIV",
+   "t": "Adjective + preposition"
+  },
+  {
+   "n": 48,
+   "part": "XIV",
+   "t": "Noun + preposition"
+  },
+  {
+   "n": 49,
+   "part": "XV",
+   "t": "Trends, graphs and figures"
+  },
+  {
+   "n": 50,
+   "part": "XVI",
+   "t": "Punctuation"
+  }
+ ],
+ "units": {
+  "1": {
+   "n": 1,
+   "t": "Present time 1: Present Simple и Present Continuous",
+   "rules": [
+    {
+     "h": "A. Present Simple: форма",
+     "html": "<table><thead><tr><th></th><th>Утверждение</th><th>Отрицание</th><th>Вопрос</th></tr></thead><tbody><tr><td>I / you / we / they</td><td>We <b>issue</b> bonds.</td><td>We <b>don't</b> issue bonds.</td><td><b>Do</b> you issue bonds?</td></tr><tr><td>he / she / it</td><td>The Group <b>issues</b> bonds.</td><td>The Group <b>doesn't</b> issue bonds.</td><td><b>Does</b> the Group issue bonds?</td></tr></tbody></table><ul><li>В 3-м лице единственного числа добавляем <b>-s</b> (works, issues, goes, has). Если есть <code>does/doesn't</code>, <b>-s уходит</b>: <i class=\"ex\">Does she work</i>, не <i class=\"ex\">Does she works</i>.</li><li>Краткие ответы повторяют вспомогательный глагол: <i class=\"ex\">Do you work here? Yes, I do. / No, I don't.</i></li><li><b>Ловушка для русскоговорящих:</b> в русском нет вспомогательного глагола в вопросе, поэтому хочется сказать <i class=\"ex\">You work here?</i> или <i class=\"ex\">Where you work?</i>. В английском вопрос и отрицание <b>всегда</b> через do/does (кроме глагола <i class=\"ex\">be</i>).</li></ul>"
+    },
+    {
+     "h": "B. Present Simple: когда используем",
+     "html": "<ol><li>Постоянные факты: <i class=\"ex\">This furnace melts 300 tonnes per heat.</i></li><li>То, что верно в целом: <i class=\"ex\">We offer a full range of hedging products.</i></li><li>Повторяющиеся действия, привычки, рутина: <i class=\"ex\">Treasury reports the cash position every Monday.</i></li></ol>"
+    },
+    {
+     "h": "C. Наречия частотности с Present Simple",
+     "html": "<p>always, usually, normally, often, sometimes, occasionally, rarely, hardly ever, never.</p><table><thead><tr><th>Позиция</th><th>Правило</th><th>Пример</th></tr></thead><tbody><tr><td>Перед основным глаголом</td><td>I <b>often</b> take the train to Rotterdam.</td><td>I don't <b>often</b> take...</td></tr><tr><td>После глагола <i class=\"ex\">be</i></td><td>I'm <b>usually</b> nervous before a roadshow.</td><td></td></tr><tr><td>В начале или конце фразы</td><td>Фразы вроде <i class=\"ex\">every day, once a month, most of the time, from time to time, now and then</i></td><td>We update the model <b>once a month.</b></td></tr></tbody></table><p><b>Ловушка:</b> по-русски наречие свободно гуляет по предложению. По-английски <i class=\"ex\">Always I check</i> и <i class=\"ex\">I check always</i> неверно. Верно: <i class=\"ex\">I always check</i>.</p><p>Present Simple также используется после союзов времени в значении будущего: <i class=\"ex\">when, after, before, unless, in case, as soon as, until, by the time</i> (подробно в Unit 8).</p>"
+    },
+    {
+     "h": "D. Present Continuous: форма",
+     "html": "<p><code>am / is / are + V-ing</code></p><ul><li><i class=\"ex\">I'm working. You're/He's/We're/They're working.</i></li><li>Отрицание: <i class=\"ex\">I'm not working. She isn't / She's not working.</i></li><li>Вопрос: <i class=\"ex\">Are you working? Is he working?</i> Краткие ответы: <i class=\"ex\">Yes, I am. / No, he isn't.</i></li></ul>"
+    },
+    {
+     "h": "E. Present Continuous: когда используем",
+     "html": "<p>Временные действия и ситуации:</p><ol><li><b>Прямо сейчас:</b> <i class=\"ex\">Sorry, Anna can't talk. She's speaking to a rating analyst.</i></li><li><b>«Около сейчас»</b>, не обязательно в момент речи: <i class=\"ex\">We're preparing a new bond issue this quarter.</i></li><li><b>Текущие тенденции:</b> <i class=\"ex\">Steel demand is recovering slowly.</i></li></ol><p><b>F. Маркеры времени для Present Continuous:</b> now, at the moment, nowadays, currently, these days, right now.</p>"
+    }
+   ],
+   "ex": [
+    {
+     "id": "e1",
+     "h": "Choose the correct form.",
+     "kind": "choose",
+     "items": [
+      {
+       "n": 1,
+       "t": "choose",
+       "q": "Our team ___ the monthly liquidity report on the third working day of each month.",
+       "opts": [
+        "prepares",
+        "is preparing"
+       ],
+       "ans": 0
+      },
+      {
+       "n": 2,
+       "t": "choose",
+       "q": "Sorry, I can't join the call now. We ___ the draft offering memorandum.",
+       "opts": [
+        "review",
+        "are reviewing"
+       ],
+       "ans": 1
+      },
+      {
+       "n": 3,
+       "t": "choose",
+       "q": "___ when the roadshow starts?",
+       "opts": [
+        "Do you know",
+        "Know you"
+       ],
+       "ans": 0
+      },
+      {
+       "n": 4,
+       "t": "choose",
+       "q": "The iron ore price ___ our hedging policy directly.",
+       "opts": [
+        "don't affect",
+        "doesn't affect"
+       ],
+       "ans": 1
+      },
+      {
+       "n": 5,
+       "t": "choose",
+       "q": "Steel prices ___ these days, so margins are under pressure.",
+       "opts": [
+        "are falling",
+        "fall"
+       ],
+       "ans": 0
+      }
+     ]
+    },
+    {
+     "id": "e2",
+     "h": "Put the verb in brackets into Present Simple or Present Continuous.",
+     "kind": "type",
+     "items": [
+      {
+       "n": 6,
+       "t": "type",
+       "q": "Our CFO usually ___ (travel) to London twice a year to meet investors.",
+       "ans": [
+        [
+         "travels"
+        ]
+       ]
+      },
+      {
+       "n": 7,
+       "t": "type",
+       "q": "Why ___ you ___ (use) the old model? The new one is ready.",
+       "ans": [
+        [
+         "are"
+        ],
+        [
+         "using"
+        ]
+       ]
+      },
+      {
+       "n": 8,
+       "t": "type",
+       "q": "The rating agency never ___ (publish) rating actions on Fridays.",
+       "ans": [
+        [
+         "publishes"
+        ]
+       ]
+      },
+      {
+       "n": 9,
+       "t": "type",
+       "q": "Look! The model ___ (recalculate) all the sheets.",
+       "ans": [
+        [
+         "is recalculating"
+        ]
+       ]
+      },
+      {
+       "n": 10,
+       "t": "type",
+       "q": "___ your department ___ (use) this template for the covenant calculations?",
+       "ans": [
+        [
+         "Does"
+        ],
+        [
+         "use"
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "id": "e3",
+     "h": "Put the adverb in the correct place.",
+     "kind": "place",
+     "items": [
+      {
+       "n": 11,
+       "t": "place",
+       "adv": "usually",
+       "words": [
+        "I",
+        "check",
+        "the",
+        "covenant",
+        "calculations",
+        "before",
+        "the",
+        "compliance",
+        "certificate",
+        "is",
+        "signed"
+       ],
+       "end": ".",
+       "ans": [
+        1,
+        0
+       ]
+      },
+      {
+       "n": 12,
+       "t": "place",
+       "adv": "never",
+       "words": [
+        "He",
+        "is",
+        "available",
+        "on",
+        "Thursdays"
+       ],
+       "end": ".",
+       "ans": [
+        2
+       ]
+      },
+      {
+       "n": 13,
+       "t": "place",
+       "adv": "once a quarter",
+       "words": [
+        "We",
+        "update",
+        "the",
+        "debt",
+        "maturity",
+        "profile"
+       ],
+       "end": ".",
+       "ans": [
+        0,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "e4",
+     "h": "Find and correct the mistake.",
+     "kind": "fix",
+     "items": [
+      {
+       "n": 14,
+       "t": "fix",
+       "q": "He work in the DCM team.",
+       "ans": [
+        "He works in the DCM team."
+       ]
+      },
+      {
+       "n": 15,
+       "t": "fix",
+       "q": "Always I send the summary on Friday.",
+       "ans": [
+        "I always send the summary on Friday."
+       ]
+      },
+      {
+       "n": 16,
+       "t": "fix",
+       "q": "Does your analyst prepares the comps?",
+       "ans": [
+        "Does your analyst prepare the comps?"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
