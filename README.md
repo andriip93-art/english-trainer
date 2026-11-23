@@ -45,11 +45,12 @@ errors), read the dialogue, fill the gaps in your lines, say them from memory. Y
 
 ## Business Grammar (Mode 8, prototype)
 
-A grammar unit for each chapter of the adapted textbook (50 units listed, built ones are open). Per unit: read the rules (tap an italic
+A grammar unit for each chapter of the adapted textbook: all 50 units, 685 exercises. Per unit: read the rules (tap an italic
 example to hear it), then work through typed exercises: choose the form, type into gaps, put an adverb in the right place, correct a
 sentence. 90% on a full run closes the unit with a tick; a closed unit can be run again and keeps its tick and best score.
 Missed items are saved and come back after 3 days ("Mistakes to review"). Progress (`bet3.gram`) syncs through the same Apps Script, one row per device (`x8|<device>`) merged on read: the best score is the maximum, a tick is never lost, a corrected item disappears everywhere. No change to the Apps Script is needed.
 
+- Exercise types: choose (also labels like T/I or A/B/C, lettered sentences, options named in the instruction), type into gaps (a whole-answer match such as "must" + "have seen" counts, `–` accepts a hyphen), put an adverb in the right place, correct a sentence, rewrite (exact comparison where punctuation or capitals are the point).
 - Data: `grammar.json`, built from the textbook markdown by `python3 tools/build_grammar.py SOURCE.md [UNIT ...]`. The builder escapes
   the rules into a small HTML subset, parses the exercises into typed items and matches every key; a unit that does not parse cleanly stops the build.
 - Answers are compared ignoring case and punctuation, and "don't" equals "do not".
