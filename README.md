@@ -38,6 +38,7 @@ errors), read the dialogue, fill the gaps in your lines, say them from memory. Y
 
 - Cards go into their own SRS deck `eng` (keys `eng:<id>`), with their own daily limit (3, 5 or 8 new cards), so they never mix with Modes 1 and 2.
   They sync across devices like every other card. Topic progress (which topics are learned, last scores) stays on the device.
+- 29 topics (every chapter of the source collocation book), 231 collocations. Run `python3 tools/check_everyday.py` after editing `everyday.json`.
 - A topic is added as one object in `everyday.json`. Item `ex` and dialogue lines mark the target with `**double asterisks**`;
   `trap` is optional (`s` with `___`, `ok`, two wrong options, `why_ru`).
 - Source texts are written fresh, not copied from the books: only the short collocations are reused.
