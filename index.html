@@ -4069,15 +4069,25 @@ const grFind = key => { const [n,i]=key.split(':'); const u=grUnit(n); return u 
 // "don't" and "do not" are the same answer
 const grExpand = s => norm(s).replace(/\bcannot\b/g,'can not').replace(/\bwon't\b/g,'will not').replace(/\bcan't\b/g,'can not').replace(/n't\b/g,' not')
   .replace(/'re\b/g,' are').replace(/'m\b/g,' am').replace(/'ve\b/g,' have').replace(/'ll\b/g,' will').replace(/\s+/g,' ').trim();
+const grExact = s => String(s||'').trim().replace(/\s+/g,' ').replace(/[’]/g,"'").replace(/[“”]/g,'"');
+const grIsZero = x => /^\s*[–—-]\s*$/.test(x);                       // "–": no article / no word
+const grZero = s => grIsZero(s) || /^\s*(0|x|no|none|nothing|no article)\s*$/i.test(s);
+const grGap = (x, a) => grIsZero(x) ? grZero(a) : grExpand(x)===grExpand(a);
+const grIsAns = (it, n) => Array.isArray(it.ans) ? it.ans.includes(n) : it.ans===n;
+function grGaps(it, a){ // per gap; a whole-answer match (e.g. "must" + "have seen") counts every gap as right
+  const K=Math.max(...it.ans.map(al=>al.length)), joined=it.ans.every(al=>al.every(x=>!grIsZero(x)))
+    && Array.from({length:K},(_,k)=>it.ans.map(al=>al[k]??al[0]).join(' ')).some(s=>grExpand(s)===grExpand(a.join(' ')));
+  return it.ans.map((alts,g)=>joined || (!!String(a[g]||'').trim() && alts.some(x=>grGap(x,a[g]||'')))); }
 function grCheck(it, a){
-  if(it.t==='choose') return a===it.ans;
+  if(it.t==='choose') return grIsAns(it,a);
   if(it.t==='place') return it.ans.includes(a);
-  if(it.t==='type') return it.ans.every((alts,g)=>alts.some(x=>grExpand(x)===grExpand(a[g]||'')));
-  return it.ans.some(x=>grExpand(x)===grExpand(a||''));
+  if(it.t==='type') return grGaps(it,a).every(Boolean);
+  if(!String(a||'').trim()) return false;
+  return it.exact ? it.ans.some(x=>grExact(x)===grExact(a)) : it.ans.some(x=>grExpand(x)===grExpand(a));
 }
 const GR_CAP = ['We','He','She','It','They','You','The','Our','My','His','Her','Their','This','That','There'];
 function grFull(it){
-  if(it.t==='choose') return it.q.replace('___', it.opts[it.ans]);
+  if(it.t==='choose'){ const o=it.opts[Array.isArray(it.ans)?it.ans[0]:it.ans]; if(it.lettered) return o; return it.q.includes('___') ? it.q.replace('___', o.replace(/ \(no article\)$/,'')) : it.q+' → '+o; }
   if(it.t==='type'){ let g=0; return it.q.replace(/___/g,()=>it.ans[g++][0]).replace(/\s*\([a-z-]+\)/g,''); }
   if(it.t==='place'){ const p=it.ans[0], w=[...it.words]; let adv=it.adv;
     if(p===0){ adv=adv[0].toUpperCase()+adv.slice(1); if(GR_CAP.includes(w[0])) w[0]=w[0][0].toLowerCase()+w[0].slice(1); }
@@ -4121,7 +4131,7 @@ function grRun(){ const G=st.G, it=G.items[G.i], total=G.items.length, r=G.res[G
   let body='';
   if(it.t==='choose'){
     body=`<div class="card stack"><div class="serif" style="font-size:1.15rem">${esc(it.q).replace('___',grBlank)}</div></div>`
-      +it.opts.map((o,n)=>`<button class="opt ${r?(n===it.ans?'right':r.given===n?'wrong':''):''}" data-act="grChoose" data-n="${n}">${esc(o)}</button>`).join('');
+      +it.opts.map((o,n)=>`<button class="opt ${r?(grIsAns(it,n)?'right':r.given===n?'wrong':''):''}" data-act="grChoose" data-n="${n}">${esc(o)}</button>`).join('');
   } else if(it.t==='type'){
     let g=0; const parts=it.q.split('___');
     const line=parts.map((p,i)=>esc(p)+(i<parts.length-1?(()=>{ const k=g++, ok=r?.gaps?.[k]; return `<input class="gr-in ${r?(ok?'ok':'bad'):''}" data-k="${k}" ${r?'disabled':''} value="${r?esc(r.given[k]||''):''}" style="--w:${Math.max(5,(it.ans[k][0].length)*0.7)}em" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="gap ${k+1}">`; })():'')).join('');
@@ -4131,8 +4141,8 @@ function grRun(){ const G=st.G, it=G.items[G.i], total=G.items.length, r=G.res[G
     body=`<div class="card stack"><div class="row" style="gap:8px"><span class="muted">Where does</span><span class="chip on">${esc(it.adv)}</span><span class="muted">go?</span></div>
       <div class="serif" style="font-size:1.15rem;line-height:2.3">${it.words.map((w,i)=>ins(i)+' '+esc(w)).join(' ')} ${ins(it.words.length)}${esc(it.end)}</div></div>`;
   } else {
-    body=`<div class="card stack"><div class="muted" style="font-size:.85rem">${it.t==='rewrite'?'Write your version of the sentence.':'Edit the sentence so that it is correct.'}</div>
-      <textarea id="grFix" class="gr-fix" rows="2" ${r?'disabled':''} autocapitalize="off" spellcheck="false">${esc(r?r.given:it.q)}</textarea></div>`;
+    body=`<div class="card stack"><div class="muted" style="font-size:.85rem">${it.t==='rewrite'?'Type your answer.':'Edit the sentence so that it is correct.'}</div>
+      <textarea id="grFix" class="gr-fix" rows="2" ${r?'disabled':''} autocapitalize="off" spellcheck="false">${esc(r?r.given:(it.t==='fix'?it.q:''))}</textarea></div>`;
   }
   const done=!!r, last=G.i+1>=total, full=grFull(it);
   const fb=done?`<div class="card stack" style="border-color:${r.ok?'var(--ok)':'var(--bad)'}"><div style="font-weight:700;color:${r.ok?'var(--ok)':'var(--bad)'}">${r.ok?(r.self?'Right (your own check).':'Right.'):'Not quite.'}</div>
@@ -4166,7 +4176,7 @@ actions.grReview = () => { const due=grDue(grProg()).map(([k])=>grFind(k)).filte
   if(!due.length) return toast('Nothing due yet. Missed items come back after 3 days.'); grBegin(0, 'review', shuffle(due)); };
 actions.grRulesToggle = () => { st.G.showRules=!st.G.showRules; render(); };
 function grAnswer(a){ const G=st.G, it=G.items[G.i]; if(G.res[G.i]) return; const ok=grCheck(it,a);
-  G.res[G.i]={ ok, given:a, gaps:it.t==='type'?it.ans.map((alts,g)=>alts.some(x=>grExpand(x)===grExpand(a[g]||''))):undefined }; render(); }
+  G.res[G.i]={ ok, given:a, gaps:it.t==='type'?grGaps(it,a):undefined }; render(); }
 actions.grSelfOk = () => { const r=st.G.res[st.G.i]; if(!r||r.ok) return; r.ok=true; r.self=true; render(); };
 actions.grChoose = d => grAnswer(+d.n);
 actions.grPlace = d => grAnswer(+d.n);
