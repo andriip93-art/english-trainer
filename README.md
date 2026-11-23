@@ -43,6 +43,17 @@ errors), read the dialogue, fill the gaps in your lines, say them from memory. Y
   `trap` is optional (`s` with `___`, `ok`, two wrong options, `why_ru`).
 - Source texts are written fresh, not copied from the books: only the short collocations are reused.
 
+## Business Grammar (Mode 8, prototype)
+
+A grammar unit for each chapter of the adapted textbook (50 units listed, built ones are open). Per unit: read the rules (tap an italic
+example to hear it), then work through typed exercises: choose the form, type into gaps, put an adverb in the right place, correct a
+sentence. 90% on a full run closes the unit with a tick; a closed unit can be run again and keeps its tick and best score.
+Missed items are saved and come back after 3 days ("Mistakes to review"). Progress (`bet3.gram`) stays on the device.
+
+- Data: `grammar.json`, built from the textbook markdown by `python3 tools/build_grammar.py SOURCE.md [UNIT ...]`. The builder escapes
+  the rules into a small HTML subset, parses the exercises into typed items and matches every key; a unit that does not parse cleanly stops the build.
+- Answers are compared ignoring case and punctuation, and "don't" equals "do not".
+
 ## Speak & Record (Mode 3): two paths
 
 - **With my cards**: 4 to 6 targets from both decks, a business scene with four parts, 2 to 3 minutes. Review dates update from how each target was used.
